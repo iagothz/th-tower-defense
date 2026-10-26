@@ -38,6 +38,21 @@ object Balance {
     /** Fraction of max HP healed per second by the regenerating boss. */
     const val REGEN_PER_SEC = 0.02f
 
+    const val ATTACK_SPEED_PER_PIP = 0.15f
+    const val FIRE_SPLASH_RADIUS = 70f
+    const val FIRE_SPLASH_FRACTION = 0.5f
+    const val ICE_SLOW_BASE = 0.15f
+    const val ICE_SLOW_PER_PIP = 0.05f
+    const val ICE_SLOW_MAX = 0.5f
+    /** Poison damage per second per pip, before the power multiplier. */
+    const val POISON_DPS = 8f
+    const val CHAIN_JUMPS = 2
+    const val CHAIN_RADIUS = 120f
+    const val CHAIN_FALLOFF = 0.7f
+    const val IRON_BOSS_MULT = 2f
+
+    fun powerMult(level: Int): Float = POWER_MULT[level - 1]
+
     fun stats(t: DieType): DieStats = when (t) {
         DieType.FIRE -> DieStats(20f, 1.0f)
         DieType.ICE -> DieStats(10f, 1.0f)
