@@ -41,6 +41,7 @@ object Balance {
     const val ATTACK_SPEED_PER_PIP = 0.15f
     const val FIRE_SPLASH_RADIUS = 70f
     const val FIRE_SPLASH_FRACTION = 0.5f
+    /** Ice slow = BASE + PER_PIP × pips: 20% at 1 pip, 50% at 7. */
     const val ICE_SLOW_BASE = 0.15f
     const val ICE_SLOW_PER_PIP = 0.05f
     const val ICE_SLOW_MAX = 0.5f

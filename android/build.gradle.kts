@@ -23,6 +23,7 @@ android {
         java.srcDirs("src/main/kotlin")
         res.srcDirs("res")
         jniLibs.srcDirs("libs")
+        assets.srcDirs("../assets")
     }
 
     compileOptions {
@@ -40,6 +41,7 @@ dependencies {
     implementation("com.badlogicgames.gdx:gdx-backend-android:$gdxVersion")
     listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64").forEach {
         natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-$it")
+        natives("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-$it")
     }
 }
 

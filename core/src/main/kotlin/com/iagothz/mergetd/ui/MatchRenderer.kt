@@ -42,7 +42,7 @@ class MatchRenderer(private val shapes: ShapeRenderer, private val batch: Sprite
         batch.textCentered(font, "Vidas ${match.lives}", 330f, 1210f)
         batch.textCentered(font, "SP ${match.sp}", 520f, 1210f)
         if (match.waveCountdown > 0f) {
-            batch.textCentered(font, "Proxima onda em ${ceil(match.waveCountdown).toInt()}", 360f, 1110f)
+            batch.textCentered(font, "Próxima onda em ${ceil(match.waveCountdown).toInt()}", 360f, 1110f)
         }
     }
 

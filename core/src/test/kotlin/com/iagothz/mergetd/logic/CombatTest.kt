@@ -72,10 +72,10 @@ class CombatTest {
     fun iceSlowByPips() {
         val e1 = enemy(500f)
         Combat.attack(Die(DieType.ICE, 1), origin, 1, listOf(e1), path)
-        assertEquals(0.15f, e1.slow, 1e-4f)
+        assertEquals(0.20f, e1.slow, 1e-4f)
         val e7 = enemy(500f)
         Combat.attack(Die(DieType.ICE, 7), origin, 1, listOf(e7), path)
-        assertEquals(0.45f, e7.slow, 1e-4f)
+        assertEquals(0.50f, e7.slow, 1e-4f)
     }
 
     @Test

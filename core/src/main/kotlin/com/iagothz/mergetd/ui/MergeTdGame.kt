@@ -6,6 +6,7 @@ import com.badlogic.gdx.Screen
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 
 class MergeTdGame : Game() {
@@ -13,13 +14,17 @@ class MergeTdGame : Game() {
     lateinit var batch: SpriteBatch
     lateinit var font: BitmapFont
     lateinit var bigFont: BitmapFont
+    lateinit var smallFont: BitmapFont
     lateinit var save: SaveData
 
     override fun create() {
         shapes = ShapeRenderer()
         batch = SpriteBatch()
-        font = newFont(2.2f)
-        bigFont = newFont(4f)
+        val generator = FreeTypeFontGenerator(Gdx.files.internal("fonts/Roboto-Medium.ttf"))
+        font = newFont(generator, 34)
+        bigFont = newFont(generator, 64)
+        smallFont = newFont(generator, 24)
+        generator.dispose()
         save = SaveData(Gdx.app.getPreferences("merge-td"))
         showMenu()
     }
@@ -38,10 +43,15 @@ class MergeTdGame : Game() {
         old?.dispose()
     }
 
-    private fun newFont(scale: Float) = BitmapFont().apply {
-        data.setScale(scale)
-        region.texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear)
-        setUseIntegerPositions(false)
+    /** Rasterizes the TTF at [size] world pixels, including Portuguese accented letters. */
+    private fun newFont(generator: FreeTypeFontGenerator, size: Int): BitmapFont {
+        val params = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
+            this.size = size
+            characters = FreeTypeFontGenerator.DEFAULT_CHARS + "áàâãéêíóôõúçÁÀÂÃÉÊÍÓÔÕÚÇ"
+            minFilter = Texture.TextureFilter.Linear
+            magFilter = Texture.TextureFilter.Linear
+        }
+        return generator.generateFont(params).apply { setUseIntegerPositions(false) }
     }
 
     override fun dispose() {
@@ -50,5 +60,6 @@ class MergeTdGame : Game() {
         batch.dispose()
         font.dispose()
         bigFont.dispose()
+        smallFont.dispose()
     }
 }

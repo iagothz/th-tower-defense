@@ -30,7 +30,7 @@ object Combat {
                 .filter { it !== target && it.alive && path.positionAt(it.distance).dst(targetPos) <= Balance.FIRE_SPLASH_RADIUS }
                 .forEach { it.hp -= damage * Balance.FIRE_SPLASH_FRACTION }
             DieType.ICE -> target.applySlow(
-                minOf(Balance.ICE_SLOW_MAX, Balance.ICE_SLOW_BASE + Balance.ICE_SLOW_PER_PIP * (die.pips - 1)),
+                minOf(Balance.ICE_SLOW_MAX, Balance.ICE_SLOW_BASE + Balance.ICE_SLOW_PER_PIP * die.pips),
             )
             DieType.POISON -> target.addPoison(Balance.POISON_DPS * die.pips * Balance.powerMult(powerLevel))
             DieType.ELECTRIC -> chain(target, damage, enemies, path, hits)

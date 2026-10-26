@@ -29,7 +29,7 @@ object Skin {
         DieType.FIRE to "Fogo",
         DieType.ICE to "Gelo",
         DieType.POISON to "Veneno",
-        DieType.ELECTRIC to "Eletrico",
+        DieType.ELECTRIC to "Elétrico",
         DieType.WIND to "Vento",
         DieType.IRON to "Ferro",
         DieType.MINE to "Mina",

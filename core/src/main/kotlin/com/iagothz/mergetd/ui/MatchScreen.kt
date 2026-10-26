@@ -58,9 +58,15 @@ class MatchScreen(game: MergeTdGame) : BaseScreen(game) {
         for ((t, b) in powerButtons) {
             val cx = b.rect.x + b.rect.width / 2
             val cost = match.powerUpCost(t)
-            batch.textCentered(game.font, "Nv${match.powerLevel(t)}", cx, b.rect.y + 85f)
-            batch.textCentered(game.font, cost?.toString() ?: "MAX", cx, b.rect.y + 35f)
+            val ink = if (b.enabled) Skin.pipColor(t) else Color.LIGHT_GRAY
+            game.smallFont.color = ink
+            game.font.color = ink
+            batch.textCentered(game.smallFont, Skin.label(t), cx, b.rect.y + 96f)
+            batch.textCentered(game.font, "Nv${match.powerLevel(t)}", cx, b.rect.y + 58f)
+            batch.textCentered(game.smallFont, cost?.toString() ?: "MAX", cx, b.rect.y + 22f)
         }
+        game.smallFont.color = Color.WHITE
+        game.font.color = Color.WHITE
         batch.end()
 
         if (paused) drawPauseOverlay()
