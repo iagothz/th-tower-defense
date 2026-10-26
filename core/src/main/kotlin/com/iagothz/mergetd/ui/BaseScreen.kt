@@ -35,6 +35,11 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
             return true
         }
 
+        override fun keyDown(keycode: Int): Boolean {
+            onKey(keycode)
+            return true
+        }
+
         override fun touchCancelled(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
             if (pointer == 0) {
                 gesture.cancel()
@@ -72,6 +77,7 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
     open fun onDrag(p: Vec2) {}
     open fun onTouchUp(p: Vec2) {}
     open fun onTouchCancelled() {}
+    open fun onKey(keycode: Int) {}
 
     private companion object {
         val NO_SHAKE = Vec2(0f, 0f)

@@ -1,6 +1,7 @@
 package com.iagothz.mergetd.ui
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
@@ -18,6 +19,8 @@ class MatchScreen(game: MergeTdGame) : BaseScreen(game) {
     private var clock = 0f
     private val previousBest = game.save.bestWave
     private var paused = false
+    /** Simulation speed multiplier; only changed by dev-mode keys. */
+    private var speed = 1
 
     private val buy = Button(Rectangle(160f, 320f, 400f, 100f), "")
     private val pauseButton = Button(Rectangle(620f, 1170f, 80f, 80f), "II", color = Skin.PANEL)
@@ -31,13 +34,13 @@ class MatchScreen(game: MergeTdGame) : BaseScreen(game) {
     override fun pause() {
         paused = true
         onTouchCancelled()
-        game.save.recordWave(match.wave)
+        if (!game.devMode) game.save.recordWave(match.wave)
     }
 
     override fun draw(delta: Float) {
         if (!paused) {
             clock += delta
-            match.update(delta)
+            match.update(delta * speed)
             renderer.update(match, delta)
             val events = match.drainEvents()
             effects.consume(events)
@@ -63,6 +66,11 @@ class MatchScreen(game: MergeTdGame) : BaseScreen(game) {
         batch.begin()
         renderer.drawHud(match)
         effects.drawText(batch, game.smallFont, game.bigFont)
+        if (game.devMode) {
+            game.smallFont.color = Color.ORANGE
+            batch.textCentered(game.smallFont, "DEV ${speed}x  N B S L K F", 360f, 1260f)
+            game.smallFont.color = Color.WHITE
+        }
         buy.drawText(batch, game.font)
         pauseButton.drawText(batch, game.font)
         for ((t, b) in powerButtons) {
@@ -142,8 +150,21 @@ class MatchScreen(game: MergeTdGame) : BaseScreen(game) {
         buttonTap.cancel()
     }
 
+    /** Desktop cheats: N next wave, B boss, S +500 SP, L +1 life, K kill all, F speed 1x/2x/4x. */
+    override fun onKey(keycode: Int) {
+        if (!game.devMode || paused) return
+        when (keycode) {
+            Input.Keys.N -> match.devNextWave()
+            Input.Keys.B -> match.devBossWave()
+            Input.Keys.S -> match.devAddSp(500)
+            Input.Keys.L -> match.devAddLife()
+            Input.Keys.K -> match.devKillAll()
+            Input.Keys.F -> speed = if (speed >= 4) 1 else speed * 2
+        }
+    }
+
     private fun finish() {
-        game.save.recordWave(match.wave)
-        game.showGameOver(match.wave, match.wave > previousBest)
+        if (!game.devMode) game.save.recordWave(match.wave)
+        game.showGameOver(match.wave, !game.devMode && match.wave > previousBest)
     }
 }

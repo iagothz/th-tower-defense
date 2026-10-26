@@ -9,7 +9,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 
-class MergeTdGame : Game() {
+/** [devMode] enables desktop-only cheat keys and disables record saving. */
+class MergeTdGame(val devMode: Boolean = false) : Game() {
     lateinit var shapes: ShapeRenderer
     lateinit var batch: SpriteBatch
     lateinit var font: BitmapFont

@@ -96,6 +96,23 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
         enemyList += e
     }
 
+    // Desktop dev-mode cheats (never wired in the Android build).
+
+    internal fun devNextWave() = debugStartWave(wave + 1)
+
+    internal fun devBossWave() = debugStartWave((wave / Balance.BOSS_EVERY + 1) * Balance.BOSS_EVERY)
+
+    /** Kills every enemy; rewards are paid on the next step as usual. */
+    internal fun devKillAll() = enemyList.forEach { it.hp = 0f }
+
+    internal fun devAddSp(amount: Int) {
+        sp += amount
+    }
+
+    internal fun devAddLife() {
+        lives++
+    }
+
     private fun startWave(n: Int) {
         wave = n
         inWave = true

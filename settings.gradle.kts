@@ -14,4 +14,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "merge-td"
-include("core", "lwjgl3", "android")
+include("core", "lwjgl3", "android", "sim")

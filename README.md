@@ -27,6 +27,31 @@ Tower defense de merge no estilo Random Dice, para jogar offline no Android. Fei
 ./gradlew :core:test
 ```
 
+## Modo de teste (só no PC)
+
+```bash
+./gradlew :lwjgl3:run --args=--dev
+```
+
+Teclas na partida:
+
+- **N:** próxima onda.
+- **B:** próximo chefe.
+- **S:** +500 SP.
+- **L:** +1 vida.
+- **K:** mata todos os inimigos.
+- **F:** velocidade 1×/2×/4×.
+
+No modo de teste, o recorde não é salvo.
+
+## Simulador de balanceamento
+
+```bash
+./gradlew :sim:run --args="--games 300 --bot all"
+```
+
+Joga partidas sem tela com bots (`--bot simple|smart|all`) e mostra em que onda as partidas terminam. Com `--decks random`, mostra também a força de cada tipo de dado. O CSV com os resultados vai para `sim/build/sim-results.csv`.
+
 ## Gerar e instalar o APK
 
 ```bash
@@ -50,4 +75,5 @@ adb install -r android/build/outputs/apk/debug/android-debug.apk
   - `fonts/`: Roboto Medium, licença Apache 2.0 (ver `LICENSE-Roboto.txt`).
   - `sounds/`: efeitos sintetizados. Para regenerar, rode `python tools/gen_sounds.py`.
 - `lwjgl3/`: launcher desktop.
+- `sim/`: simulador de balanceamento (bots e relatório).
 - `android/`: launcher Android.
