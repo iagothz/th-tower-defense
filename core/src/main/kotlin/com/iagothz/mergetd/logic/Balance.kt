@@ -21,6 +21,23 @@ object Balance {
     const val STEP = 1f / 60f
     const val MAX_FRAME = 0.25f
 
+    const val BASE_HP = 100f
+    /** Path units per second at speedMult 1. */
+    const val BASE_SPEED = 120f
+    const val HP_GROWTH = 1.12f
+    const val SPAWN_INTERVAL = 0.6f
+    const val WAVE_DELAY = 3f
+    const val MAX_WAVE_SIZE = 40
+    const val BOSS_EVERY = 10
+
+    const val SLOW_DURATION = 2f
+    const val POISON_DURATION = 3f
+    const val POISON_MAX_STACKS = 5
+    const val BOSS_ABILITY_INTERVAL = 6f
+    const val SILENCE_DURATION = 5f
+    /** Fraction of max HP healed per second by the regenerating boss. */
+    const val REGEN_PER_SEC = 0.02f
+
     fun stats(t: DieType): DieStats = when (t) {
         DieType.FIRE -> DieStats(20f, 1.0f)
         DieType.ICE -> DieStats(10f, 1.0f)
