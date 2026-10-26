@@ -12,6 +12,13 @@ class SaveData(private val prefs: Preferences) {
             prefs.flush()
         }
 
+    /** Saves [wave] if it beats the best; returns whether it did. */
+    fun recordWave(wave: Int): Boolean {
+        if (wave <= bestWave) return false
+        bestWave = wave
+        return true
+    }
+
     var deck: List<DieType>
         get() = DeckCodec.decode(prefs.getString("deck", null))
         set(value) {

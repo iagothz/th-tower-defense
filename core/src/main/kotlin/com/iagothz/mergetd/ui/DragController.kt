@@ -13,6 +13,7 @@ class DragController(private val match: Match) {
         private set
 
     fun down(p: Vec2): Boolean {
+        cancel()
         val cell = Layout.cellAt(p) ?: return false
         if (match.board[cell] == null) return false
         dragging = cell
@@ -30,6 +31,12 @@ class DragController(private val match: Match) {
         pointer = null
         val to = Layout.cellAt(p) ?: return false
         return match.merge(from, to)
+    }
+
+    /** Drops the drag without merging (touch cancelled, app paused). */
+    fun cancel() {
+        dragging = null
+        pointer = null
     }
 
     fun highlights(): List<Cell> {

@@ -12,6 +12,8 @@ class MatchScreen(game: MergeTdGame) : BaseScreen(game) {
     private val match = Match(game.save.deck)
     private val drag = DragController(match)
     private val renderer = MatchRenderer(game.shapes, game.batch, game.font)
+    private val buttonTap = Tap<Button>()
+    private val previousBest = game.save.bestWave
     private var paused = false
 
     private val buy = Button(Rectangle(160f, 320f, 400f, 100f), "")
@@ -22,8 +24,11 @@ class MatchScreen(game: MergeTdGame) : BaseScreen(game) {
     private val resume = Button(Rectangle(160f, 700f, 400f, 110f), "Continuar")
     private val quit = Button(Rectangle(160f, 540f, 400f, 110f), "Sair", color = Color(0.7f, 0.25f, 0.25f, 1f))
 
+    /** App going to the background: stop, drop any gesture, and keep the record in case we're killed. */
     override fun pause() {
         paused = true
+        onTouchCancelled()
+        game.save.recordWave(match.wave)
     }
 
     override fun draw(delta: Float) {
@@ -86,8 +91,13 @@ class MatchScreen(game: MergeTdGame) : BaseScreen(game) {
         game.batch.end()
     }
 
+    private fun buttonAt(p: Vec2): Button? {
+        val visible = if (paused) listOf(resume, quit) else listOf(buy, pauseButton) + powerButtons.map { it.second }
+        return visible.firstOrNull { it.contains(p.x, p.y) }
+    }
+
     override fun onTouchDown(p: Vec2) {
-        if (!paused) drag.down(p)
+        if (paused || !drag.down(p)) buttonTap.press(buttonAt(p))
     }
 
     override fun onDrag(p: Vec2) {
@@ -95,27 +105,27 @@ class MatchScreen(game: MergeTdGame) : BaseScreen(game) {
     }
 
     override fun onTouchUp(p: Vec2) {
-        if (paused) {
-            when {
-                resume.contains(p.x, p.y) -> paused = false
-                quit.contains(p.x, p.y) -> finish()
-            }
-            return
-        }
         if (drag.dragging != null) {
             drag.up(p)
             return
         }
-        when {
-            buy.contains(p.x, p.y) -> match.buyDie()
-            pauseButton.contains(p.x, p.y) -> paused = true
-            else -> powerButtons.firstOrNull { it.second.contains(p.x, p.y) }?.let { match.powerUp(it.first) }
+        when (val b = buttonTap.release(buttonAt(p))) {
+            null -> Unit
+            resume -> paused = false
+            quit -> finish()
+            buy -> match.buyDie()
+            pauseButton -> paused = true
+            else -> powerButtons.firstOrNull { it.second === b }?.let { match.powerUp(it.first) }
         }
     }
 
+    override fun onTouchCancelled() {
+        drag.cancel()
+        buttonTap.cancel()
+    }
+
     private fun finish() {
-        val isRecord = match.wave > game.save.bestWave
-        if (isRecord) game.save.bestWave = match.wave
-        game.showGameOver(match.wave, isRecord)
+        game.save.recordWave(match.wave)
+        game.showGameOver(match.wave, match.wave > previousBest)
     }
 }

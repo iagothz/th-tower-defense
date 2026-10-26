@@ -13,10 +13,15 @@ import com.iagothz.mergetd.logic.Vec2
 abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
     protected val viewport = FitViewport(Layout.WORLD_W, Layout.WORLD_H)
     private val tmp = Vector2()
+    /** Ignores releases of touches that began on a previous screen. */
+    private val gesture = Tap<Unit>()
 
     private val input = object : InputAdapter() {
         override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-            if (pointer == 0) onTouchDown(world(screenX, screenY))
+            if (pointer == 0) {
+                gesture.press(Unit)
+                onTouchDown(world(screenX, screenY))
+            }
             return true
         }
 
@@ -26,7 +31,15 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
         }
 
         override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-            if (pointer == 0) onTouchUp(world(screenX, screenY))
+            if (pointer == 0 && gesture.release(Unit) != null) onTouchUp(world(screenX, screenY))
+            return true
+        }
+
+        override fun touchCancelled(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+            if (pointer == 0) {
+                gesture.cancel()
+                onTouchCancelled()
+            }
             return true
         }
     }
@@ -52,6 +65,7 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
     open fun onTouchDown(p: Vec2) {}
     open fun onDrag(p: Vec2) {}
     open fun onTouchUp(p: Vec2) {}
+    open fun onTouchCancelled() {}
 
     private fun world(x: Int, y: Int): Vec2 {
         viewport.unproject(tmp.set(x.toFloat(), y.toFloat()))

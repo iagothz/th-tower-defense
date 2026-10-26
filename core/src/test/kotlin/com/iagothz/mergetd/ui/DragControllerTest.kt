@@ -64,6 +64,25 @@ class DragControllerTest {
     }
 
     @Test
+    fun cancelClearsDrag() {
+        val (match, drag) = setup()
+        drag.down(Layout.cellCenter(a))
+        drag.cancel()
+        assertNull(drag.dragging)
+        assertNull(drag.pointer)
+        assertFalse(drag.up(Layout.cellCenter(b)))
+        assertEquals(1, match.board[b]!!.pips)
+    }
+
+    @Test
+    fun downOnEmptyClearsStaleDrag() {
+        val (_, drag) = setup()
+        drag.down(Layout.cellCenter(a))
+        assertFalse(drag.down(Vec2(360f, 300f)))
+        assertNull(drag.dragging)
+    }
+
+    @Test
     fun downOnEmptyCellDoesNothing() {
         val (_, drag) = setup()
         assertFalse(drag.down(Layout.cellCenter(Cell(2, 4))))
