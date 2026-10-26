@@ -51,6 +51,10 @@ object Balance {
     const val CHAIN_FALLOFF = 0.7f
     const val IRON_BOSS_MULT = 2f
 
+    const val MINE_INTERVAL = 5f
+    const val MINE_SP_PER_PIP = 5
+    const val GROWTH_INTERVAL = 20f
+
     fun powerMult(level: Int): Float = POWER_MULT[level - 1]
 
     fun stats(t: DieType): DieStats = when (t) {
