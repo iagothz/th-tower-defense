@@ -28,7 +28,7 @@ class MergeTdGame : Game() {
 
     fun showDeck() = switchTo(DeckScreen(this))
 
-    fun startMatch() = showGameOver(0, false)
+    fun startMatch() = switchTo(MatchScreen(this))
 
     fun showGameOver(wave: Int, isRecord: Boolean) = switchTo(GameOverScreen(this, wave, isRecord))
 
