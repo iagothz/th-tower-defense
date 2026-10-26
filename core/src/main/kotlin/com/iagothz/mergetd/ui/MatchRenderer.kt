@@ -26,11 +26,12 @@ class MatchRenderer(private val shapes: ShapeRenderer, private val batch: Sprite
     }
 
     /** Call inside a Filled ShapeRenderer batch. */
-    fun drawShapes(match: Match, drag: DragController) {
+    fun drawShapes(match: Match, drag: DragController, effects: Effects) {
         drawPath()
-        drawBoard(match, drag)
-        drawEnemies(match)
+        drawBoard(match, drag, effects)
+        drawEnemies(match, effects)
         drawTraces()
+        effects.drawShapes(shapes)
         val from = drag.dragging
         val at = drag.pointer
         if (from != null && at != null) match.board[from]?.let { drawDie(it, at, 1f) }
@@ -57,7 +58,7 @@ class MatchRenderer(private val shapes: ShapeRenderer, private val batch: Sprite
         shapes.circle(pts.last().x, pts.last().y, 14f, 20)
     }
 
-    private fun drawBoard(match: Match, drag: DragController) {
+    private fun drawBoard(match: Match, drag: DragController, effects: Effects) {
         val highlights = drag.highlights().toSet()
         for (cell in match.board.cells()) {
             val c = Layout.cellCenter(cell)
@@ -69,19 +70,25 @@ class MatchRenderer(private val shapes: ShapeRenderer, private val batch: Sprite
             shapes.color = Skin.PANEL
             shapes.roundedRect(c.x - half, c.y - half, Layout.CELL, Layout.CELL, 16f)
             val die = match.board[cell] ?: continue
-            if (cell == drag.dragging) drawDie(die, c, 0.35f) else drawDie(die, c, if (die.disabled) 0.4f else 1f)
+            when {
+                cell == drag.dragging -> drawDie(die, c, 0.35f)
+                else -> drawDie(die, c, if (die.disabled) 0.4f else 1f, effects.popScale(cell))
+            }
         }
     }
 
-    private fun drawDie(die: Die, c: Vec2, brightness: Float) {
-        val half = DIE / 2
+    private fun drawDie(die: Die, c: Vec2, brightness: Float, scale: Float = 1f) {
+        val size = DIE * scale
+        val half = size / 2
         shapes.color = tmp.set(Skin.color(die.type)).mul(brightness, brightness, brightness, 1f)
-        shapes.roundedRect(c.x - half, c.y - half, DIE, DIE, 18f)
+        shapes.roundedRect(c.x - half, c.y - half, size, size, 18f * scale)
         shapes.color = tmp.set(Skin.pipColor(die.type)).mul(brightness, brightness, brightness, 1f)
-        for ((dx, dy) in PIPS[die.pips - 1]) shapes.circle(c.x + dx * PIP_STEP, c.y + dy * PIP_STEP, PIP_R, 12)
+        for ((dx, dy) in PIPS[die.pips - 1]) {
+            shapes.circle(c.x + dx * PIP_STEP * scale, c.y + dy * PIP_STEP * scale, PIP_R * scale, 12)
+        }
     }
 
-    private fun drawEnemies(match: Match) {
+    private fun drawEnemies(match: Match, effects: Effects) {
         for (e in match.enemies) {
             val p = Layout.PATH.positionAt(e.distance)
             val r = Skin.enemyRadius(e.kind)
@@ -91,6 +98,7 @@ class MatchRenderer(private val shapes: ShapeRenderer, private val batch: Sprite
             }
             shapes.color = tmp.set(Skin.color(e.kind))
             if (e.slow > 0f) shapes.color = tmp.lerp(0.5f, 0.8f, 1f, 1f, 0.5f)
+            if (effects.isFlashing(e)) shapes.color = Color.WHITE
             shapes.circle(p.x, p.y, r, 24)
 
             val w = r * 2

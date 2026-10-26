@@ -46,5 +46,8 @@ adb install -r android/build/outputs/apk/debug/android-debug.apk
 
 - `core/.../logic`: regras puras (sem libGDX), cobertas por testes JUnit. Os números de balanceamento ficam em `Balance.kt`.
 - `core/.../ui`: telas, renderização e input.
+- `assets/`: arquivos usados pelo PC e pelo Android.
+  - `fonts/`: Roboto Medium, licença Apache 2.0 (ver `LICENSE-Roboto.txt`).
+  - `sounds/`: efeitos sintetizados. Para regenerar, rode `python tools/gen_sounds.py`.
 - `lwjgl3/`: launcher desktop.
 - `android/`: launcher Android.

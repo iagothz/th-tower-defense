@@ -17,6 +17,8 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
     /** Shots fired during the last [update] call. */
     val lastShots: List<ShotEvent> get() = shots
 
+    private val events = mutableListOf<GameEvent>()
+
     private var purchases = 0
     private val powerLevels = mutableMapOf<DieType, Int>()
 
@@ -41,15 +43,21 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
 
     fun buyDie(): Boolean {
         if (!canBuy()) return false
-        board[board.emptyCells().random(rng)] = Die(deck.random(rng), 1)
+        val cell = board.emptyCells().random(rng)
+        board[cell] = Die(deck.random(rng), 1)
         sp -= buyCost
         purchases++
+        events += GameEvent.DieBought(cell)
         return true
     }
 
     fun canMerge(from: Cell, to: Cell): Boolean = !isGameOver && board.canMerge(from, to)
 
-    fun merge(from: Cell, to: Cell): Boolean = !isGameOver && board.merge(from, to, deck, rng)
+    fun merge(from: Cell, to: Cell): Boolean {
+        if (isGameOver || !board.merge(from, to, deck, rng)) return false
+        events += GameEvent.Merged(to)
+        return true
+    }
 
     fun powerUp(t: DieType): Boolean {
         if (isGameOver) return false
@@ -57,7 +65,15 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
         if (sp < cost) return false
         sp -= cost
         powerLevels[t] = powerLevel(t) + 1
+        events += GameEvent.PoweredUp(t)
         return true
+    }
+
+    /** Returns everything that happened since the last call (actions and updates alike) and clears it. */
+    fun drainEvents(): List<GameEvent> {
+        val out = events.toList()
+        events.clear()
+        return out
     }
 
     /** Runs fixed simulation steps; [dt] is clamped so a long hitch can't fast-forward the match. */
@@ -86,6 +102,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
         spawnQueue.clear()
         spawnQueue.addAll(WaveSpawner.composition(n))
         spawnTimer = 0f
+        events += GameEvent.WaveStarted(n, WaveSpawner.isBossWave(n))
     }
 
     private fun step(dt: Float) {
@@ -123,6 +140,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
             e.distance += e.speed() * dt
             if (e.distance >= Layout.PATH.length) {
                 lives = maxOf(0, lives - e.kind.lifeDamage)
+                events += GameEvent.Leaked(e.kind)
                 iter.remove()
             }
         }
@@ -185,6 +203,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
         } else {
             die.cooldown += Combat.attackInterval(die.type, die.pips)
             shots += shot
+            shot.damage.forEach { (enemy, amount) -> events += GameEvent.Hit(enemy, amount) }
         }
     }
 
@@ -194,6 +213,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
             val e = iter.next()
             if (!e.alive) {
                 sp += e.kind.reward
+                events += GameEvent.Killed(e.kind, Layout.PATH.positionAt(e.distance))
                 iter.remove()
             }
         }

@@ -55,6 +55,9 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
     override fun render(delta: Float) {
         ScreenUtils.clear(Skin.BACKGROUND)
         viewport.apply()
+        val shake = cameraShake()
+        viewport.camera.position.set(Layout.WORLD_W / 2 + shake.x, Layout.WORLD_H / 2 + shake.y, 0f)
+        viewport.camera.update()
         game.shapes.projectionMatrix = viewport.camera.combined
         game.batch.projectionMatrix = viewport.camera.combined
         draw(delta)
@@ -62,10 +65,17 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
 
     abstract fun draw(delta: Float)
 
+    /** Camera offset for this frame, in world units. */
+    open fun cameraShake(): Vec2 = NO_SHAKE
+
     open fun onTouchDown(p: Vec2) {}
     open fun onDrag(p: Vec2) {}
     open fun onTouchUp(p: Vec2) {}
     open fun onTouchCancelled() {}
+
+    private companion object {
+        val NO_SHAKE = Vec2(0f, 0f)
+    }
 
     private fun world(x: Int, y: Int): Vec2 {
         viewport.unproject(tmp.set(x.toFloat(), y.toFloat()))

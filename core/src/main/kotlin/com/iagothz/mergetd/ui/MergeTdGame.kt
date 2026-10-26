@@ -16,6 +16,7 @@ class MergeTdGame : Game() {
     lateinit var bigFont: BitmapFont
     lateinit var smallFont: BitmapFont
     lateinit var save: SaveData
+    lateinit var sfx: Sfx
 
     override fun create() {
         shapes = ShapeRenderer()
@@ -26,6 +27,7 @@ class MergeTdGame : Game() {
         smallFont = newFont(generator, 24)
         generator.dispose()
         save = SaveData(Gdx.app.getPreferences("merge-td"))
+        sfx = Sfx(save)
         showMenu()
     }
 
@@ -61,5 +63,6 @@ class MergeTdGame : Game() {
         font.dispose()
         bigFont.dispose()
         smallFont.dispose()
+        sfx.dispose()
     }
 }

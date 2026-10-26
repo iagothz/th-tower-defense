@@ -69,6 +69,16 @@ class CombatTest {
     }
 
     @Test
+    fun shotReportsEveryDamagedEnemy() {
+        val target = enemy(500f)
+        val near = enemy(480f)
+        val shot = assertNotNull(Combat.attack(Die(DieType.FIRE, 1), origin, 1, listOf(target, near), path))
+        assertEquals(20f, shot.damage.getValue(target), 1e-3f)
+        assertEquals(10f, shot.damage.getValue(near), 1e-3f)
+        assertEquals(2, shot.damage.size)
+    }
+
+    @Test
     fun iceSlowByPips() {
         val e1 = enemy(500f)
         Combat.attack(Die(DieType.ICE, 1), origin, 1, listOf(e1), path)

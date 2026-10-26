@@ -13,6 +13,9 @@ class MatchScreen(game: MergeTdGame) : BaseScreen(game) {
     private val drag = DragController(match)
     private val renderer = MatchRenderer(game.shapes, game.batch, game.font)
     private val buttonTap = Tap<Button>()
+    private val effects = Effects()
+    private val sounds = SoundPlanner()
+    private var clock = 0f
     private val previousBest = game.save.bestWave
     private var paused = false
 
@@ -33,8 +36,13 @@ class MatchScreen(game: MergeTdGame) : BaseScreen(game) {
 
     override fun draw(delta: Float) {
         if (!paused) {
+            clock += delta
             match.update(delta)
             renderer.update(match, delta)
+            val events = match.drainEvents()
+            effects.consume(events)
+            effects.update(delta)
+            game.sfx.play(sounds.plan(events, clock))
             if (match.isGameOver) {
                 finish()
                 return
@@ -43,8 +51,9 @@ class MatchScreen(game: MergeTdGame) : BaseScreen(game) {
         refreshButtons()
 
         val shapes = game.shapes
+        Gdx.gl.glEnable(GL20.GL_BLEND)
         shapes.begin(ShapeRenderer.ShapeType.Filled)
-        renderer.drawShapes(match, drag)
+        renderer.drawShapes(match, drag, effects)
         buy.drawShape(shapes)
         pauseButton.drawShape(shapes)
         powerButtons.forEach { it.second.drawShape(shapes) }
@@ -53,6 +62,7 @@ class MatchScreen(game: MergeTdGame) : BaseScreen(game) {
         val batch = game.batch
         batch.begin()
         renderer.drawHud(match)
+        effects.drawText(batch, game.smallFont, game.bigFont)
         buy.drawText(batch, game.font)
         pauseButton.drawText(batch, game.font)
         for ((t, b) in powerButtons) {
@@ -71,6 +81,8 @@ class MatchScreen(game: MergeTdGame) : BaseScreen(game) {
 
         if (paused) drawPauseOverlay()
     }
+
+    override fun cameraShake(): Vec2 = if (paused) super.cameraShake() else effects.shakeOffset()
 
     private fun refreshButtons() {
         buy.text = "Comprar (${match.buyCost})"

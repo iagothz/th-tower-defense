@@ -12,6 +12,13 @@ class SaveData(private val prefs: Preferences) {
             prefs.flush()
         }
 
+    var soundOn: Boolean
+        get() = prefs.getBoolean("sound", true)
+        set(value) {
+            prefs.putBoolean("sound", value)
+            prefs.flush()
+        }
+
     /** Saves [wave] if it beats the best; returns whether it did. */
     fun recordWave(wave: Int): Boolean {
         if (wave <= bestWave) return false

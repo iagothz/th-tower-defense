@@ -15,11 +15,20 @@ class SaveDataTest {
             when (method.name) {
                 "getInteger" -> values[args[0] as String] ?: args.getOrNull(1) ?: 0
                 "getString" -> values[args[0] as String] ?: args.getOrNull(1)
-                "putInteger", "putString" -> { values[args[0] as String] = args[1]; proxy }
+                "getBoolean" -> values[args[0] as String] ?: args.getOrNull(1) ?: false
+                "putInteger", "putString", "putBoolean" -> { values[args[0] as String] = args[1]; proxy }
                 "flush" -> null
                 else -> throw UnsupportedOperationException(method.name)
             }
         } as Preferences
+    }
+
+    @Test
+    fun soundIsOnByDefaultAndPersists() {
+        val prefs = memoryPrefs()
+        assertTrue(SaveData(prefs).soundOn)
+        SaveData(prefs).soundOn = false
+        assertFalse(SaveData(prefs).soundOn)
     }
 
     @Test
