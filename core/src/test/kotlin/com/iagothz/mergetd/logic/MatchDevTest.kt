@@ -36,7 +36,7 @@ class MatchDevTest {
         m.devKillAll()
         m.update(Balance.STEP)
         assertTrue(m.enemies.isEmpty())
-        assertEquals(100 + 10 + 20, m.sp)
+        assertEquals(150 + 10 + 20, m.sp)
     }
 
     @Test
@@ -44,7 +44,7 @@ class MatchDevTest {
         val m = match()
         m.devAddSp(500)
         m.devAddLife()
-        assertEquals(600, m.sp)
+        assertEquals(650, m.sp)
         assertEquals(4, m.lives)
     }
 }

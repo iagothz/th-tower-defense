@@ -35,7 +35,7 @@ class WaveSpawnerTest {
     @Test
     fun hpScaling() {
         assertEquals(100f, WaveSpawner.enemyHp(1, EnemyKind.NORMAL), 0.01f)
-        assertEquals(112f, WaveSpawner.enemyHp(2, EnemyKind.NORMAL), 0.01f)
+        assertEquals(109f, WaveSpawner.enemyHp(2, EnemyKind.NORMAL), 0.01f)
         assertEquals(
             40 * WaveSpawner.enemyHp(10, EnemyKind.NORMAL),
             WaveSpawner.enemyHp(10, EnemyKind.BOSS_SILENCER),

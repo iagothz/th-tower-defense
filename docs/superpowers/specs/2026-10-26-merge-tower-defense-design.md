@@ -49,7 +49,7 @@ th-tower-defense/
 - Com 0 vidas, é game over.
 
 **SP**
-- Começa com 100 SP.
+- Começa com 150 SP.
 - Recompensa por inimigo morto: normal 10, rápido 10, tanque 20, chefe 100.
 
 **Compra**
@@ -77,7 +77,7 @@ th-tower-defense/
 **Ondas**
 - A onda `n` tem `8 + 2n` inimigos (máximo 40), surgindo a cada 0,6 s.
 - Composição: rápidos a partir da onda 3, tanques a partir da onda 5.
-- Vida = `base × 1.12^(n−1)`.
+- Vida = `base × 1.09^(n−1)`.
 - A próxima onda começa 3 s depois que a anterior foi totalmente gerada e eliminada.
 - **Chefe** a cada 10 ondas (10, 20, …), sozinho. Vida = 40× a de um normal da mesma onda.
 - Os chefes alternam na ordem Silenciador → Trocador → Regenerador.
@@ -89,15 +89,15 @@ th-tower-defense/
 | Tipo | Cor | Efeito |
 |---|---|---|
 | Fogo | vermelho | Dano em área (raio pequeno) em volta do alvo |
-| Gelo | azul claro | Lentidão de 15% + 5%/pip (máx. 50%); não acumula, vale o efeito mais forte |
+| Gelo | azul claro | Lentidão de 15% + 5% × pips (20% com 1 pip, 50% com 7); não acumula, vale o efeito mais forte |
 | Veneno | verde | Dano por segundo; acumula até 5 aplicações |
 | Elétrico | amarelo | Salta para mais 2 inimigos próximos, com 70% do dano a cada salto |
 | Vento | ciano | Dano baixo e intervalo de ataque muito curto |
 | Ferro | cinza | Dano ×2 contra chefes |
-| Mina | dourado | Não ataca; gera `5 × pips × powerMult` SP a cada 5 s |
+| Mina | dourado | Não ataca; gera `10 × pips × powerMult` SP a cada 5 s |
 | Sniper | roxo | Dano alto e ataque lento; mira o inimigo com mais vida |
 | Espelho | branco | Não ataca. Pode fazer merge com qualquer dado de mesmos pips, e o resultado tem o tipo do outro dado. Dois Espelhos geram um tipo aleatório |
-| Crescimento | rosa | A cada 20 s, ganha +1 pip (máx. 7); fraco nos outros atributos |
+| Crescimento | rosa | A cada 40 s, ganha +1 pip (máx. 7); fraco nos outros atributos |
 
 Os valores base (dano e intervalo) ficam em `Balance.kt`.
 

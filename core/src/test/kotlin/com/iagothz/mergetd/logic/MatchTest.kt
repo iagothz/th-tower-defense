@@ -23,9 +23,9 @@ class MatchTest {
     private fun Match.fill() = board.cells().forEach { board[it] = Die(DieType.FIRE, 1) }
 
     @Test
-    fun startsWith100SpAnd3Lives() {
+    fun startsWith150SpAnd3Lives() {
         val m = match()
-        assertEquals(100, m.sp)
+        assertEquals(150, m.sp)
         assertEquals(3, m.lives)
         assertEquals(0, m.wave)
     }
@@ -38,7 +38,7 @@ class MatchTest {
         assertEquals(20, m.buyCost)
         assertTrue(m.buyDie())
         assertEquals(30, m.buyCost)
-        assertEquals(100 - 10 - 20, m.sp)
+        assertEquals(150 - 10 - 20, m.sp)
     }
 
     @Test
@@ -136,7 +136,7 @@ class MatchTest {
         listOf(Cell(0, 0), Cell(0, 1), Cell(0, 2)).forEach { m.board[it] = Die(DieType.FIRE, 1) }
         m.debugAddEnemy(Enemy(EnemyKind.NORMAL, 1f).also { it.distance = 500f })
         m.update(Balance.STEP)
-        assertEquals(110, m.sp)
+        assertEquals(160, m.sp)
         assertTrue(m.enemies.isEmpty())
         assertEquals(1, m.lastShots.size)
     }
@@ -162,7 +162,7 @@ class MatchTest {
         val m = match()
         m.board[Cell(0, 0)] = Die(DieType.MINE, 2)
         m.advance(5.05f)
-        assertEquals(110, m.sp)
+        assertEquals(170, m.sp)
     }
 
     @Test
@@ -171,7 +171,7 @@ class MatchTest {
         m.lives = 1000
         m.board[Cell(0, 0)] = Die(DieType.GROWTH, 1)
         m.board[Cell(0, 1)] = Die(DieType.GROWTH, 7)
-        m.advance(20.05f)
+        m.advance(40.05f)
         assertEquals(2, m.board[Cell(0, 0)]!!.pips)
         assertEquals(7, m.board[Cell(0, 1)]!!.pips)
     }
@@ -183,7 +183,7 @@ class MatchTest {
         m.debugAddEnemy(Enemy(EnemyKind.NORMAL, 1f).also { it.distance = 500f })
         m.update(Balance.STEP)
         assertEquals(1, m.enemies.size)
-        assertEquals(100, m.sp)
+        assertEquals(150, m.sp)
     }
 
     @Test

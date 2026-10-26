@@ -8,7 +8,7 @@ object Balance {
     const val COLS = 5
     const val MAX_PIPS = 7
 
-    const val START_SP = 100
+    const val START_SP = 150
     const val START_LIVES = 3
     const val BUY_BASE = 10
     const val BUY_STEP = 10
@@ -24,7 +24,7 @@ object Balance {
     const val BASE_HP = 100f
     /** Path units per second at speedMult 1. */
     const val BASE_SPEED = 120f
-    const val HP_GROWTH = 1.12f
+    const val HP_GROWTH = 1.09f
     const val SPAWN_INTERVAL = 0.6f
     const val WAVE_DELAY = 3f
     const val MAX_WAVE_SIZE = 40
@@ -53,8 +53,8 @@ object Balance {
     const val IRON_BOSS_MULT = 2f
 
     const val MINE_INTERVAL = 5f
-    const val MINE_SP_PER_PIP = 5
-    const val GROWTH_INTERVAL = 20f
+    const val MINE_SP_PER_PIP = 10
+    const val GROWTH_INTERVAL = 40f
 
     fun powerMult(level: Int): Float = POWER_MULT[level - 1]
 
