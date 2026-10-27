@@ -130,7 +130,7 @@ Os valores base (dano e intervalo) ficam em `Balance.kt`.
 - Topo: onda, vidas e SP.
 - Centro: o caminho em volta do grid.
 - Embaixo: botão Comprar (com o preço) e 5 botões de power-up mostrando o nível e o custo.
-- Botão de pausa. O jogo pausa sozinho quando o app vai para segundo plano.
+- Botão de pausa. O jogo pausa sozinho quando o app vai para segundo plano e salva a partida em `Preferences`. Se o Android fechar o app nesse meio-tempo, ao reabrir a partida volta pausada de onde parou. Sair da partida ou perder apaga esse save.
 
 **Arrasto**
 - Arrastar um dado destaca os alvos compatíveis.

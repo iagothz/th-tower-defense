@@ -5,6 +5,7 @@ import java.lang.reflect.Proxy
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SaveDataTest {
@@ -17,6 +18,7 @@ class SaveDataTest {
                 "getString" -> values[args[0] as String] ?: args.getOrNull(1)
                 "getBoolean" -> values[args[0] as String] ?: args.getOrNull(1) ?: false
                 "putInteger", "putString", "putBoolean" -> { values[args[0] as String] = args[1]; proxy }
+                "remove" -> { values.remove(args[0] as String); null }
                 "flush" -> null
                 else -> throw UnsupportedOperationException(method.name)
             }
@@ -41,5 +43,16 @@ class SaveDataTest {
         assertFalse(save.recordWave(5))
         assertTrue(save.recordWave(6))
         assertEquals(6, save.bestWave)
+    }
+
+    @Test
+    fun matchSnapshotIsStoredWithItsBestAndCleared() {
+        val prefs = memoryPrefs()
+        val save = SaveData(prefs)
+        assertNull(save.savedMatch)
+        save.saveMatch("v=1", previousBest = 7)
+        assertEquals("v=1" to 7, SaveData(prefs).savedMatch)
+        save.clearMatch()
+        assertNull(SaveData(prefs).savedMatch)
     }
 }

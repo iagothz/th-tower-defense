@@ -32,4 +32,20 @@ class SaveData(private val prefs: Preferences) {
             prefs.putString("deck", DeckCodec.encode(value))
             prefs.flush()
         }
+
+    /** The match left running when the app went to the background, with the record it started from. */
+    val savedMatch: Pair<String, Int>?
+        get() = prefs.getString("match", null)?.let { it to prefs.getInteger("matchBest", 0) }
+
+    fun saveMatch(snapshot: String, previousBest: Int) {
+        prefs.putString("match", snapshot)
+        prefs.putInteger("matchBest", previousBest)
+        prefs.flush()
+    }
+
+    fun clearMatch() {
+        prefs.remove("match")
+        prefs.remove("matchBest")
+        prefs.flush()
+    }
 }

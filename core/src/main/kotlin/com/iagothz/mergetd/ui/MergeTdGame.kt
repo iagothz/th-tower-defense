@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.iagothz.mergetd.logic.Match
 
 /** [devMode] enables desktop-only cheat keys and disables record saving. */
 class MergeTdGame(val devMode: Boolean = false) : Game() {
@@ -29,14 +30,29 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
         generator.dispose()
         save = SaveData(Gdx.app.getPreferences("merge-td"))
         sfx = Sfx(save)
-        showMenu()
+        if (devMode || !resumeSavedMatch()) showMenu()
     }
 
     fun showMenu() = switchTo(MenuScreen(this))
 
     fun showDeck() = switchTo(DeckScreen(this))
 
-    fun startMatch() = switchTo(MatchScreen(this))
+    fun startMatch() {
+        save.clearMatch()
+        switchTo(MatchScreen(this))
+    }
+
+    /** Reopens the match Android closed while the app was in the background; false if there is none. */
+    private fun resumeSavedMatch(): Boolean {
+        val (text, previousBest) = save.savedMatch ?: return false
+        val match = Match.restore(text)
+        if (match == null) {
+            save.clearMatch()
+            return false
+        }
+        switchTo(MatchScreen(this, match, previousBest))
+        return true
+    }
 
     fun showGameOver(wave: Int, isRecord: Boolean) = switchTo(GameOverScreen(this, wave, isRecord))
 

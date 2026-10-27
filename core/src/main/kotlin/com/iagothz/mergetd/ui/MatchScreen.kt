@@ -9,16 +9,23 @@ import com.badlogic.gdx.math.Rectangle
 import com.iagothz.mergetd.logic.Match
 import com.iagothz.mergetd.logic.Vec2
 
-class MatchScreen(game: MergeTdGame) : BaseScreen(game) {
-    private val match = Match(game.save.deck)
+/**
+ * [restored] is a match saved when the app last went to the background; it opens paused.
+ * [previousBest] is the record from before that match began, so "Novo recorde!" still shows after a restore.
+ */
+class MatchScreen(
+    game: MergeTdGame,
+    restored: Match? = null,
+    private val previousBest: Int = game.save.bestWave,
+) : BaseScreen(game) {
+    private val match = restored ?: Match(game.save.deck)
     private val drag = DragController(match)
     private val renderer = MatchRenderer(game.shapes, game.batch, game.font)
     private val buttonTap = Tap<Button>()
     private val effects = Effects()
     private val sounds = SoundPlanner()
     private var clock = 0f
-    private val previousBest = game.save.bestWave
-    private var paused = false
+    private var paused = restored != null
     /** Simulation speed multiplier; only changed by dev-mode keys. */
     private var speed = 1
 
@@ -30,11 +37,13 @@ class MatchScreen(game: MergeTdGame) : BaseScreen(game) {
     private val resume = Button(Rectangle(160f, 700f, 400f, 110f), "Continuar")
     private val quit = Button(Rectangle(160f, 540f, 400f, 110f), "Sair", color = Color(0.7f, 0.25f, 0.25f, 1f))
 
-    /** App going to the background: stop, drop any gesture, and keep the record in case we're killed. */
+    /** App going to the background: stop, drop any gesture, and save the match and record in case we're killed. */
     override fun pause() {
         paused = true
         onTouchCancelled()
-        if (!game.devMode) game.save.recordWave(match.wave)
+        if (game.devMode || match.isGameOver) return
+        game.save.recordWave(match.wave)
+        game.save.saveMatch(match.snapshot(), previousBest)
     }
 
     override fun draw(delta: Float) {
@@ -164,6 +173,7 @@ class MatchScreen(game: MergeTdGame) : BaseScreen(game) {
     }
 
     private fun finish() {
+        game.save.clearMatch()
         if (!game.devMode) game.save.recordWave(match.wave)
         game.showGameOver(match.wave, !game.devMode && match.wave > previousBest)
     }

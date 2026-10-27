@@ -87,6 +87,31 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
         }
     }
 
+    /** Plain-text save of everything [update] depends on except the RNG; read it back with [restore]. */
+    fun snapshot(): String = buildString {
+        fun line(key: String, value: Any) = append(key).append('=').append(value).append('\n')
+        line("v", SNAPSHOT_VERSION)
+        line("deck", DeckCodec.encode(deck))
+        line("wave", wave)
+        line("sp", sp)
+        line("lives", lives)
+        line("purchases", purchases)
+        line("inWave", inWave)
+        line("countdown", countdown)
+        line("spawnTimer", spawnTimer)
+        line("accumulator", accumulator)
+        line("power", powerLevels.entries.joinToString(",") { "${it.key.id}:${it.value}" })
+        line("queue", spawnQueue.joinToString(",") { it.name })
+        for ((c, d) in board.occupied()) {
+            line("die", listOf(c.row, c.col, d.type.id, d.pips, d.cooldown, d.timer, d.disabledFor).joinToString(","))
+        }
+        for (e in enemyList) {
+            val fields = listOf(e.kind.name, e.maxHp, e.hp, e.distance, e.slow, e.slowTime, e.abilityTimer) +
+                e.poison.map { "${it.dps}:${it.remaining}" }
+            line("enemy", fields.joinToString(","))
+        }
+    }
+
     internal fun debugStartWave(n: Int) {
         enemyList.clear()
         startWave(n)
@@ -233,6 +258,67 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
                 events += GameEvent.Killed(e.kind, Layout.PATH.positionAt(e.distance))
                 iter.remove()
             }
+        }
+    }
+
+    companion object {
+        private const val SNAPSHOT_VERSION = 1
+
+        /** Rebuilds a match from [snapshot] text; null if the text is damaged or from another version. */
+        fun restore(text: String, rng: Random = Random.Default): Match? =
+            try {
+                parse(text, rng)
+            } catch (e: RuntimeException) {
+                null
+            }
+
+        private fun parse(text: String, rng: Random): Match {
+            val entries = text.lines().filter { it.isNotBlank() }.map {
+                val i = it.indexOf('=')
+                require(i > 0) { "bad line: $it" }
+                it.substring(0, i) to it.substring(i + 1)
+            }
+            val scalars = entries.toMap()
+            require(scalars["v"]?.toInt() == SNAPSHOT_VERSION) { "unknown snapshot version" }
+            fun type(id: String) = requireNotNull(DieType.byId(id)) { "unknown die $id" }
+            fun list(key: String) = scalars.getValue(key).split(",").filter { it.isNotEmpty() }
+
+            val m = Match(scalars.getValue("deck").split(",").map(::type), rng)
+            m.wave = scalars.getValue("wave").toInt()
+            m.sp = scalars.getValue("sp").toInt()
+            m.lives = scalars.getValue("lives").toInt()
+            m.purchases = scalars.getValue("purchases").toInt()
+            m.inWave = scalars.getValue("inWave").toBooleanStrict()
+            m.countdown = scalars.getValue("countdown").toFloat()
+            m.spawnTimer = scalars.getValue("spawnTimer").toFloat()
+            m.accumulator = scalars.getValue("accumulator").toFloat()
+            for (p in list("power")) {
+                val (id, level) = p.split(":")
+                m.powerLevels[type(id)] = level.toInt()
+            }
+            m.spawnQueue.addAll(list("queue").map { EnemyKind.valueOf(it) })
+            for ((key, value) in entries) {
+                val f = value.split(",")
+                when (key) {
+                    "die" -> m.board[Cell(f[0].toInt(), f[1].toInt())] = Die(type(f[2]), f[3].toInt()).apply {
+                        cooldown = f[4].toFloat()
+                        timer = f[5].toFloat()
+                        disabledFor = f[6].toFloat()
+                    }
+                    "enemy" -> m.enemyList += Enemy(EnemyKind.valueOf(f[0]), f[1].toFloat()).apply {
+                        hp = f[2].toFloat()
+                        distance = f[3].toFloat()
+                        slow = f[4].toFloat()
+                        slowTime = f[5].toFloat()
+                        abilityTimer = f[6].toFloat()
+                        for (stack in f.drop(7)) {
+                            val (dps, remaining) = stack.split(":")
+                            poison += PoisonStack(dps.toFloat(), remaining.toFloat())
+                        }
+                    }
+                }
+            }
+            return m
         }
     }
 }
