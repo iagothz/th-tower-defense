@@ -36,6 +36,7 @@ class MatchScreen(
     }
     private val resume = Button(Rectangle(160f, 700f, 400f, 110f), "Continuar")
     private val quit = Button(Rectangle(160f, 540f, 400f, 110f), "Sair", color = Color(0.7f, 0.25f, 0.25f, 1f))
+    private val allButtons = listOf(buy, pauseButton, resume, quit) + powerButtons.map { it.second }
 
     /** App going to the background: stop, drop any gesture, and save the match and record in case we're killed. */
     override fun pause() {
@@ -61,6 +62,7 @@ class MatchScreen(
             }
         }
         refreshButtons()
+        allButtons.forEach { it.pressed = buttonTap.current === it }
 
         val shapes = game.shapes
         Gdx.gl.glEnable(GL20.GL_BLEND)
@@ -82,7 +84,7 @@ class MatchScreen(
         val batch = game.batch
         batch.begin()
         renderer.drawHud(match)
-        effects.drawText(batch, game.smallFont, game.bigFont)
+        effects.drawText(batch, game.smallFont, game.bigFont, game.font)
         if (game.devMode) {
             game.smallFont.color = Color.ORANGE
             batch.textCentered(game.smallFont, "DEV ${speed}x  N B S L K F", 360f, 1260f)

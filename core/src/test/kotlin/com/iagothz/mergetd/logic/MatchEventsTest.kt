@@ -99,4 +99,40 @@ class MatchEventsTest {
         m.debugStartWave(10)
         assertEquals(listOf<GameEvent>(GameEvent.WaveStarted(10, boss = true)), m.drainEvents())
     }
+
+    @Test
+    fun supernovaKillEmitsBlast() {
+        val m = match()
+        m.board[Cell(1, 2)] = Die(DieType.NOVA, 1)
+        val target = Enemy(EnemyKind.NORMAL, 1f).also { it.distance = 500f }
+        m.debugAddEnemy(target)
+        m.update(Balance.STEP)
+        val blasts = m.drainEvents().filterIsInstance<GameEvent.Blast>()
+        assertEquals(listOf(GameEvent.Blast(Layout.PATH.positionAt(target.distance), Balance.NOVA_RADIUS, DieType.NOVA)), blasts)
+    }
+
+    @Test
+    fun trapExplosionEmitsBlast() {
+        val m = match()
+        m.board[Cell(1, 2)] = Die(DieType.TRAP, 1)
+        m.debugAddEnemy(Enemy(EnemyKind.NORMAL, 1000f).also { it.distance = 500f })
+        repeat(60 * 3) { m.update(Balance.STEP) }
+        val blast = m.drainEvents().filterIsInstance<GameEvent.Blast>().first()
+        assertEquals(DieType.TRAP, blast.type)
+        assertEquals(Balance.TRAP_RADIUS, blast.radius)
+    }
+
+    @Test
+    fun critsAreMarkedOnTheirHits() {
+        val m = match()
+        repeat(3) { m.board[Cell(0, it)] = Die(DieType.CRIT, 7) }
+        m.debugAddEnemy(Enemy(EnemyKind.BOSS_REGEN, 1_000_000f).also { it.distance = 500f })
+        var crits = 0
+        var plain = 0
+        repeat(120) {
+            m.update(Balance.STEP)
+            for (h in m.drainEvents().filterIsInstance<GameEvent.Hit>()) if (h.crit) crits++ else plain++
+        }
+        assertTrue(crits > 0 && plain > 0, "crits=$crits plain=$plain")
+    }
 }

@@ -18,6 +18,7 @@ class SoundPlanner {
                 is GameEvent.Killed -> names += "kill"
                 is GameEvent.Leaked -> names += "leak"
                 is GameEvent.WaveStarted -> names += if (e.boss) "boss" else "wave"
+                is GameEvent.Blast -> Unit
                 is GameEvent.Hit -> if (now - lastHit >= HIT_GAP) {
                     names += "hit"
                     lastHit = now

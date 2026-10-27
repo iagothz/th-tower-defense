@@ -7,8 +7,10 @@ import com.iagothz.mergetd.logic.Vec2
 
 class GameOverScreen(game: MergeTdGame, private val wave: Int, private val isRecord: Boolean) : BaseScreen(game) {
     private val menu = Button(Rectangle(160f, 440f, 400f, 110f), "Menu")
+    private val tap = Tap<Button>()
 
     override fun draw(delta: Float) {
+        menu.pressed = tap.current === menu
         game.shapes.begin(ShapeRenderer.ShapeType.Filled)
         menu.drawShape(game.shapes)
         game.shapes.end()
@@ -25,7 +27,13 @@ class GameOverScreen(game: MergeTdGame, private val wave: Int, private val isRec
         game.batch.end()
     }
 
+    private fun buttonAt(p: Vec2) = menu.takeIf { it.contains(p.x, p.y) }
+
+    override fun onTouchDown(p: Vec2) = tap.press(buttonAt(p))
+
+    override fun onTouchCancelled() = tap.cancel()
+
     override fun onTouchUp(p: Vec2) {
-        if (menu.contains(p.x, p.y)) game.showMenu()
+        if (tap.release(buttonAt(p)) === menu) game.showMenu()
     }
 }

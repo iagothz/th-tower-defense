@@ -18,9 +18,12 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     private val panel = Rectangle(24f, 150f, 672f, 400f)
     private val confirm = Button(Rectangle(40f, 30f, 310f, 100f), "Confirmar")
     private val back = Button(Rectangle(370f, 30f, 310f, 100f), "Voltar", color = Skin.PANEL)
+    private val tap = Tap<Button>()
 
     override fun draw(delta: Float) {
         confirm.enabled = selected.size == DeckCodec.SIZE
+        confirm.pressed = tap.current === confirm
+        back.pressed = tap.current === back
         val shapes = game.shapes
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         for ((t, r) in tiles) {
@@ -76,18 +79,26 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         }
     }
 
+    private fun buttonAt(p: Vec2) = listOf(confirm, back).firstOrNull { it.contains(p.x, p.y) }
+
+    override fun onTouchDown(p: Vec2) = tap.press(buttonAt(p))
+
+    override fun onTouchCancelled() = tap.cancel()
+
     override fun onTouchUp(p: Vec2) {
         val tile = tiles.firstOrNull { it.second.contains(p.x, p.y) }?.first
         if (tile != null) shown = tile
         when {
             tile != null && tile in selected -> selected.remove(tile)
             tile != null && selected.size < DeckCodec.SIZE -> selected.add(tile)
-            tile != null -> Unit
-            confirm.contains(p.x, p.y) -> {
-                game.save.deck = selected.toList()
-                game.showMenu()
+            tile != null -> tap.cancel()
+            else -> when (tap.release(buttonAt(p))) {
+                confirm -> {
+                    game.save.deck = selected.toList()
+                    game.showMenu()
+                }
+                back -> game.showMenu()
             }
-            back.contains(p.x, p.y) -> game.showMenu()
         }
     }
 

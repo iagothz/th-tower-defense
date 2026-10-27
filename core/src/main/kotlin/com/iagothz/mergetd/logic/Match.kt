@@ -277,7 +277,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
             val shot = Combat.attack(die, Layout.cellCenter(cell), powerLevel(die.type), enemyList, Layout.PATH, bonus, rng)
             if (shot != null) {
                 shots += shot
-                shot.damage.forEach { (enemy, amount) -> events += GameEvent.Hit(enemy, amount) }
+                shot.damage.forEach { (enemy, amount) -> events += GameEvent.Hit(enemy, amount, shot.crit) }
             }
             shot != null
         }
@@ -303,12 +303,13 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
             val trap = iter.next()
             if (enemyList.none { it.alive && abs(it.distance - trap.distance) <= Balance.TRAP_TRIGGER }) continue
             iter.remove()
-            blast(Layout.PATH.positionAt(trap.distance), Balance.TRAP_RADIUS, trap.damage, trap.owner)
+            blast(Layout.PATH.positionAt(trap.distance), Balance.TRAP_RADIUS, trap.damage, trap.owner, DieType.TRAP)
         }
     }
 
     /** Area damage around [center], credited to [by]. */
-    private fun blast(center: Vec2, radius: Float, damage: Float, by: Die?) {
+    private fun blast(center: Vec2, radius: Float, damage: Float, by: Die?, type: DieType) {
+        events += GameEvent.Blast(center, radius, type)
         for (e in enemyList) {
             if (!e.alive || Layout.PATH.positionAt(e.distance).dst(center) > radius) continue
             events += GameEvent.Hit(e, e.takeDamage(damage, by))
@@ -329,7 +330,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
                 when (killer.type) {
                     DieType.VAMPIRE -> sp += Balance.VAMPIRE_SP_PER_PIP * killer.pips
                     DieType.HUNTER -> killer.stacks = minOf(Balance.HUNTER_MAX_STACKS, killer.stacks + 1)
-                    DieType.NOVA -> blast(at, Balance.NOVA_RADIUS, Combat.baseDamage(DieType.NOVA, killer.pips, powerLevel(DieType.NOVA)), killer)
+                    DieType.NOVA -> blast(at, Balance.NOVA_RADIUS, Combat.baseDamage(DieType.NOVA, killer.pips, powerLevel(DieType.NOVA)), killer, DieType.NOVA)
                     else -> Unit
                 }
             }

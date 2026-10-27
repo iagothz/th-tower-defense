@@ -1,6 +1,7 @@
 package com.iagothz.mergetd.ui
 
 import com.iagothz.mergetd.logic.Cell
+import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.Enemy
 import com.iagothz.mergetd.logic.EnemyKind
 import com.iagothz.mergetd.logic.GameEvent
@@ -78,5 +79,35 @@ class EffectsTest {
         assertEquals("Chefe!", fx.banner)
         fx.update(Effects.BANNER_TIME + 0.1f)
         assertNull(fx.banner)
+    }
+
+    @Test
+    fun critNumbersAreMarked() {
+        fx.consume(listOf(GameEvent.Hit(enemy, 30f, crit = true)))
+        assertTrue(fx.texts.single().crit)
+        assertEquals("30", fx.texts.single().text)
+    }
+
+    @Test
+    fun killShowsTheReward() {
+        fx.consume(listOf(GameEvent.Killed(EnemyKind.TANK, Vec2(100f, 100f))))
+        assertEquals(listOf("+${EnemyKind.TANK.reward}"), fx.texts.map { it.text })
+        assertTrue(fx.texts.single().reward)
+    }
+
+    @Test
+    fun mergeSparkles() {
+        fx.consume(listOf(GameEvent.Merged(Cell(0, 0))))
+        assertTrue(fx.particles.isNotEmpty())
+    }
+
+    @Test
+    fun blastRingsExpandThenFade() {
+        fx.consume(listOf(GameEvent.Blast(Vec2(50f, 50f), 90f, DieType.NOVA)))
+        val r0 = fx.rings.single().radius
+        fx.update(0.1f)
+        assertTrue(fx.rings.single().radius > r0)
+        fx.update(Effects.RING_TIME)
+        assertTrue(fx.rings.isEmpty())
     }
 }

@@ -47,4 +47,14 @@ class TapTest {
         tap.cancel()
         assertNull(tap.release("fire"))
     }
+
+    @Test
+    fun currentIsTheHeldTargetUntilRelease() {
+        val tap = Tap<String>()
+        assertNull(tap.current)
+        tap.press("fire")
+        assertEquals("fire", tap.current)
+        tap.release("ice")
+        assertNull(tap.current)
+    }
 }

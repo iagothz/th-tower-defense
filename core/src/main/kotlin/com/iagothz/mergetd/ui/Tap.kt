@@ -5,6 +5,9 @@ class Tap<T> {
     private var pressed: T? = null
     private var active = false
 
+    /** The target being held since the last press, for pressed-state visuals. */
+    val current: T? get() = if (active) pressed else null
+
     fun press(target: T?) {
         pressed = target
         active = true

@@ -52,6 +52,20 @@ fun ShapeRenderer.polygon(cx: Float, cy: Float, r: Float, sides: Int, angle: Flo
     }
 }
 
+/** Circle outline of the given [thickness], as a polygon of short line segments. */
+fun ShapeRenderer.ring(cx: Float, cy: Float, r: Float, thickness: Float, segments: Int = 32) {
+    val step = 2f * Math.PI.toFloat() / segments
+    var ax = cx + r
+    var ay = cy
+    for (i in 1..segments) {
+        val bx = cx + cos(step * i) * r
+        val by = cy + sin(step * i) * r
+        rectLine(ax, ay, bx, by, thickness)
+        ax = bx
+        ay = by
+    }
+}
+
 fun ShapeRenderer.heart(cx: Float, cy: Float, s: Float) {
     circle(cx - s * 0.5f, cy + s * 0.3f, s * 0.52f, 16)
     circle(cx + s * 0.5f, cy + s * 0.3f, s * 0.52f, 16)

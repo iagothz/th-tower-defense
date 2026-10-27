@@ -23,17 +23,29 @@ class MatchRenderer(
     private val font: BitmapFont,
     private val smallFont: BitmapFont,
 ) {
-    private class Trace(val shot: ShotEvent, var ttl: Float)
+    private class Trace(val shot: ShotEvent, val ttl: Float, val seed: Int) {
+        var left = ttl
+        /** 1 when fired, 0 when gone. */
+        val life: Float get() = (left / ttl).coerceIn(0f, 1f)
+    }
 
     private val traces = mutableListOf<Trace>()
     private val tmp = Color()
     private val tmp2 = Color()
+    private var seedCounter = 0
 
     /** Collects the shots of the last update and ages old traces. */
     fun update(match: Match, delta: Float) {
-        traces.forEach { it.ttl -= delta }
-        traces.removeAll { it.ttl <= 0f }
-        match.lastShots.forEach { traces += Trace(it, SHOT_TTL) }
+        traces.forEach { it.left -= delta }
+        traces.removeAll { it.left <= 0f }
+        match.lastShots.forEach { traces += Trace(it, traceTtl(it.type), seedCounter++) }
+    }
+
+    private fun traceTtl(t: DieType): Float = when (t) {
+        DieType.SNIPER -> 0.22f
+        DieType.IRON -> 0.18f
+        DieType.FIRE, DieType.NOVA -> 0.2f
+        else -> SHOT_TTL
     }
 
     /** Call inside a Filled ShapeRenderer batch. */
@@ -215,16 +227,104 @@ class MatchRenderer(
 
     private fun drawTraces() {
         for (t in traces) {
-            shapes.color = Skin.color(t.shot.type)
-            // Chains hop from hit to hit; a quake strikes every enemy straight from the die.
-            val fan = t.shot.type == DieType.QUAKE
-            val width = if (t.shot.crit) 8f else 4f
-            var from = t.shot.from
+            val type = t.shot.type
+            val color = tmp.set(Skin.color(type))
+            val life = t.life
+            // Muzzle flash on the die.
+            shapes.color = tmp2.set(color).lerp(Color.WHITE, 0.5f).also { it.a = life }
+            shapes.circle(t.shot.from.x, t.shot.from.y, 6f + 10f * life, 12)
+            when (type) {
+                DieType.ELECTRIC -> drawLightning(t, color)
+                DieType.SNIPER, DieType.IRON -> drawProjectile(t, color)
+                else -> drawBeam(t, color)
+            }
+            if (type == DieType.FIRE) {
+                val hit = t.shot.to.first()
+                val r = Balance.FIRE_SPLASH_RADIUS * (0.4f + 0.6f * (1f - life))
+                shapes.color = tmp2.set(color).also { it.a = 0.25f * life }
+                shapes.circle(hit.x, hit.y, r, 28)
+                shapes.color = tmp2.set(color).also { it.a = life }
+                shapes.ring(hit.x, hit.y, r, 3f)
+            }
+            if (t.shot.crit) {
+                val hit = t.shot.to.first()
+                shapes.color = tmp2.set(1f, 0.85f, 0.4f, life)
+                val s = 14f + 10f * (1f - life)
+                shapes.rectLine(hit.x - s, hit.y, hit.x + s, hit.y, 3f)
+                shapes.rectLine(hit.x, hit.y - s, hit.x, hit.y + s, 3f)
+                shapes.rectLine(hit.x - s * 0.7f, hit.y - s * 0.7f, hit.x + s * 0.7f, hit.y + s * 0.7f, 2f)
+                shapes.rectLine(hit.x - s * 0.7f, hit.y + s * 0.7f, hit.x + s * 0.7f, hit.y - s * 0.7f, 2f)
+            }
+        }
+    }
+
+    /** Straight lines; chains hop from hit to hit, a quake fans out to every enemy from the die. */
+    private fun drawBeam(t: Trace, color: Color) {
+        val fan = t.shot.type == DieType.QUAKE
+        val width = when {
+            t.shot.crit -> 8f
+            t.shot.type == DieType.WIND -> 2.5f
+            else -> 4f
+        } * (0.5f + 0.5f * t.life)
+        shapes.color = tmp2.set(color).also { it.a = t.life }
+        var from = t.shot.from
+        for (to in t.shot.to) {
+            shapes.rectLine(from.x, from.y, to.x, to.y, width)
+            if (!fan) from = to
+        }
+        if (t.shot.crit) {
+            shapes.color = tmp2.set(1f, 1f, 1f, t.life)
+            from = t.shot.from
             for (to in t.shot.to) {
-                shapes.rectLine(from.x, from.y, to.x, to.y, width)
+                shapes.rectLine(from.x, from.y, to.x, to.y, 2f)
                 if (!fan) from = to
             }
         }
+    }
+
+    /** A jagged bolt with a white core; the jitter is fixed per trace so it doesn't shimmer. */
+    private fun drawLightning(t: Trace, color: Color) {
+        val rng = kotlin.random.Random(t.seed)
+        var from = t.shot.from
+        for (to in t.shot.to) {
+            val dx = to.x - from.x
+            val dy = to.y - from.y
+            val len = maxOf(1f, kotlin.math.sqrt(dx * dx + dy * dy))
+            val nx = -dy / len
+            val ny = dx / len
+            val steps = (len / 28f).toInt().coerceIn(2, 10)
+            val pts = ArrayList<Vec2>(steps + 1)
+            pts += from
+            for (i in 1 until steps) {
+                val f = i.toFloat() / steps
+                val off = (rng.nextFloat() * 2f - 1f) * 14f
+                pts += Vec2(from.x + dx * f + nx * off, from.y + dy * f + ny * off)
+            }
+            pts += to
+            shapes.color = tmp2.set(color).also { it.a = t.life }
+            for ((a, b) in pts.zipWithNext()) shapes.rectLine(a.x, a.y, b.x, b.y, 5f)
+            shapes.color = tmp2.set(1f, 1f, 1f, t.life)
+            for ((a, b) in pts.zipWithNext()) shapes.rectLine(a.x, a.y, b.x, b.y, 1.5f)
+            from = to
+        }
+    }
+
+    /** A visible bullet (Sniper) or cannonball (Iron) flying from the die to the target. */
+    private fun drawProjectile(t: Trace, color: Color) {
+        val from = t.shot.from
+        val to = t.shot.to.first()
+        val f = 1f - t.life
+        val x = from.x + (to.x - from.x) * f
+        val y = from.y + (to.y - from.y) * f
+        val heavy = t.shot.type == DieType.IRON
+        if (!heavy) {
+            shapes.color = tmp2.set(color).also { it.a = 0.5f * t.life }
+            shapes.rectLine(from.x, from.y, x, y, 2f)
+        }
+        shapes.color = tmp2.set(color).mul(0.5f, 0.5f, 0.5f, 1f)
+        shapes.circle(x, y, if (heavy) 11f else 7f, 16)
+        shapes.color = if (heavy) color else Color.WHITE
+        shapes.circle(x, y, if (heavy) 8f else 4f, 16)
     }
 
     private companion object {
