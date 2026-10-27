@@ -8,7 +8,7 @@ import com.iagothz.mergetd.logic.Vec2
 /** The twenty badges, done or not, each with the cosmetic it unlocks; tap an unlocked cosmetic to wear it. */
 class AchievementsScreen(game: MergeTdGame) : BaseScreen(game) {
     private val rows = Achievement.entries.mapIndexed { i, a -> a to Rectangle(24f, 1136f - i * 50f, 672f, 46f) }
-    private val back = Button(Rectangle(160f, 30f, 400f, 90f), "Voltar", color = Skin.PANEL)
+    private val back = Button(Rectangle(160f, 30f, 400f, 90f), S["Voltar"], color = Skin.PANEL)
     private val tap = Tap<Button>()
 
     override fun draw(delta: Float) {
@@ -33,21 +33,21 @@ class AchievementsScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.end()
 
         game.batch.begin()
-        game.batch.textShadowed(game.bigFont, "Conquistas", 360f, 1222f)
+        game.batch.textShadowed(game.bigFont, S["Conquistas"], 360f, 1222f)
         game.smallFont.color = KEY_COLOR
-        game.batch.textCentered(game.smallFont, "$done de ${Achievement.entries.size}", 360f, 1176f)
+        game.batch.textCentered(game.smallFont, S.f("%d de %d", done, Achievement.entries.size), 360f, 1176f)
         game.smallFont.color = Color.WHITE
         for ((a, r) in rows) {
             val has = game.save.hasAchievement(a)
             game.smallFont.color = if (has) Color.WHITE else KEY_COLOR
-            game.batch.textLeft(game.smallFont, a.title, r.x + 44f, r.y + r.height / 2 + 8f)
+            game.batch.textLeft(game.smallFont, S[a.title], r.x + 44f, r.y + r.height / 2 + 8f)
             game.tinyFont.color = KEY_COLOR
-            game.batch.textLeft(game.tinyFont, a.description, r.x + 44f, r.y + r.height / 2 - 12f)
+            game.batch.textLeft(game.tinyFont, S[a.description], r.x + 44f, r.y + r.height / 2 - 12f)
             val c = a.unlocks
             if (c != null) {
                 val equipped = game.save.equipped(c.slot) == c
                 game.tinyFont.color = if (equipped) Color(0.15f, 0.15f, 0.2f, 1f) else Color.WHITE
-                game.batch.textCentered(game.tinyFont, "${c.slot.title}: ${c.title}", r.x + r.width - 80f, r.y + 23f)
+                game.batch.textCentered(game.tinyFont, "${S[c.slot.title]}: ${S[c.title]}", r.x + r.width - 80f, r.y + 23f)
             }
         }
         game.tinyFont.color = Color.WHITE

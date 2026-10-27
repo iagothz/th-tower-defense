@@ -83,19 +83,19 @@ class MatchRenderer(
         }
         if (match.waveCountdown > 0f) {
             val until = WaveSpawner.wavesUntilBoss(match.wave + 1)
-            val boss = if (match.mode == GameMode.BOSS_RUSH || WaveSpawner.isBossWave(match.wave + 1)) "" else "  ·  chefe em $until"
-            batch.textCentered(font, "Próxima onda em ${ceil(match.waveCountdown).toInt()}$boss", 360f, 1106f)
+            val boss = if (match.mode == GameMode.BOSS_RUSH || WaveSpawner.isBossWave(match.wave + 1)) "" else S.f("  ·  chefe em %d", until)
+            batch.textCentered(font, S.f("Próxima onda em %d", ceil(match.waveCountdown).toInt()) + boss, 360f, 1106f)
             batch.textCentered(tinyFont, wavePreview(match.wave + 1, match.bossOrder, match.mode), 360f, 1140f)
         }
         boss(match)?.let { batch.textCentered(smallFont, Skin.enemyName(it.kind), 360f, BOSS_BAR.y + BOSS_BAR.height + 18f) }
         for ((s, r) in synergyChips(match)) {
             tinyFont.color = Skin.GOLD
-            batch.textCentered(tinyFont, s.title, r.x + r.width / 2 + 3f, r.y + r.height / 2)
+            batch.textCentered(tinyFont, S[s.title], r.x + r.width / 2 + 3f, r.y + r.height / 2)
             tinyFont.color = Color.WHITE
         }
         if (match.challengeDay != null) {
             tinyFont.color = Skin.GOLD
-            batch.textCentered(tinyFont, "Desafio do dia", 360f, 1166f)
+            batch.textCentered(tinyFont, S["Desafio do dia"], 360f, 1166f)
             tinyFont.color = Color.WHITE
         }
     }
@@ -105,7 +105,7 @@ class MatchRenderer(
     private fun synergyChips(match: Match): List<Pair<Synergy, Rectangle>> {
         val active = match.synergies().toList()
         if (active.isEmpty()) return emptyList()
-        val widths = active.map { 22f + it.title.length * 9.5f }
+        val widths = active.map { 22f + S[it.title].length * 9.5f }
         var x = 360f - (widths.sum() + 8f * (active.size - 1)) / 2
         return active.mapIndexed { i, s ->
             val r = Rectangle(x, BOARD.y + BOARD.height - 14f, widths[i], 28f)
@@ -117,9 +117,9 @@ class MatchRenderer(
     private fun wavePreview(next: Int, bosses: List<EnemyKind>, mode: GameMode): String {
         val counts = WaveSpawner.preview(next, bosses, mode)
         val boss = counts.keys.firstOrNull { it.isBoss }
-        if (boss != null) return "Chefe: ${Skin.enemyName(boss)}"
-        val special = WaveSpawner.special(next)?.let { "${it.title}! " } ?: ""
-        return special + counts.entries.joinToString(" · ") { (kind, n) -> "$n ${Skin.enemyPlural(kind)}" }
+        if (boss != null) return S.f("Chefe: %s", Skin.enemyName(boss))
+        val special = WaveSpawner.special(next)?.let { S.f("%s!", S[it.title]) + " " } ?: ""
+        return special + counts.entries.joinToString(" · ") { (kind, n) -> S.f("%d %s", n, Skin.enemyPlural(kind)) }
     }
 
     private fun boss(match: Match): Enemy? = match.enemies.firstOrNull { it.kind.isBoss && it.alive }

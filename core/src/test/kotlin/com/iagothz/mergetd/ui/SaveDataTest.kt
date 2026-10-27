@@ -22,7 +22,8 @@ class SaveDataTest {
                 "getInteger" -> values[args[0] as String] ?: args.getOrNull(1) ?: 0
                 "getString" -> values[args[0] as String] ?: args.getOrNull(1)
                 "getBoolean" -> values[args[0] as String] ?: args.getOrNull(1) ?: false
-                "putInteger", "putString", "putBoolean" -> { values[args[0] as String] = args[1]; proxy }
+                "getFloat" -> values[args[0] as String] ?: args.getOrNull(1) ?: 0f
+                "putInteger", "putString", "putBoolean", "putFloat" -> { values[args[0] as String] = args[1]; proxy }
                 "remove" -> { values.remove(args[0] as String); null }
                 "get" -> values.toMap()
                 "flush" -> null
@@ -172,5 +173,26 @@ class SaveDataTest {
         assertEquals(null, h.first().killedBy)
         assertEquals("C25", h.first().code)
         assertEquals(deck, h.first().deck)
+    }
+
+    @Test
+    fun volumesDefaultToFullAndAreClamped() {
+        val prefs = memoryPrefs()
+        assertEquals(1f, SaveData(prefs).soundVolume)
+        assertEquals(1f, SaveData(prefs).musicVolume)
+        SaveData(prefs).soundVolume = 0.4f
+        SaveData(prefs).musicVolume = 1.7f
+        assertEquals(0.4f, SaveData(prefs).soundVolume, 1e-4f)
+        assertEquals(1f, SaveData(prefs).musicVolume, 1e-4f)
+        SaveData(prefs).musicVolume = -1f
+        assertEquals(0f, SaveData(prefs).musicVolume, 1e-4f)
+    }
+
+    @Test
+    fun languageDefaultsToAutoAndPersists() {
+        val prefs = memoryPrefs()
+        assertEquals(Language.AUTO, SaveData(prefs).language)
+        SaveData(prefs).language = Language.EN
+        assertEquals(Language.EN, SaveData(prefs).language)
     }
 }

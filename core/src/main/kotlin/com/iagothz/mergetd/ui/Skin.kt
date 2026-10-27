@@ -150,15 +150,17 @@ object Skin {
 
     fun color(k: EnemyKind): Color = enemyColors.getValue(k)
 
-    fun label(t: DieType): String = labels.getValue(t)
+    fun label(t: DieType): String = S[labels.getValue(t)]
 
     /** Unabbreviated name, for places with room for it. */
-    fun fullName(t: DieType): String = fullNames[t] ?: label(t)
+    fun fullName(t: DieType): String = S[fullNames[t] ?: labels.getValue(t)]
 
-    fun enemyName(k: EnemyKind): String = enemyNames.getValue(k)
+    fun enemyName(k: EnemyKind): String = S[enemyNames.getValue(k)]
 
     /** One line on what a boss does, for its entrance card. */
-    fun bossAbility(k: EnemyKind): String = when (k) {
+    fun bossAbility(k: EnemyKind): String = S[bossAbilityPt(k)]
+
+    private fun bossAbilityPt(k: EnemyKind): String = when (k) {
         EnemyKind.BOSS_SILENCER -> "Cala um dado a cada 6 s"
         EnemyKind.BOSS_SWAPPER -> "Troca dois dados de lugar a cada 6 s"
         EnemyKind.BOSS_REGEN -> "Cura 2% da vida por segundo"
@@ -170,11 +172,11 @@ object Skin {
     }
 
     fun enemyPlural(k: EnemyKind): String = when (k) {
-        EnemyKind.NORMAL -> "soldados"
-        EnemyKind.FAST -> "corredores"
-        EnemyKind.TANK -> "tanques"
-        EnemyKind.HEALER -> "curandeiros"
-        EnemyKind.GHOST -> "fantasmas"
+        EnemyKind.NORMAL -> S["soldados"]
+        EnemyKind.FAST -> S["corredores"]
+        EnemyKind.TANK -> S["tanques"]
+        EnemyKind.HEALER -> S["curandeiros"]
+        EnemyKind.GHOST -> S["fantasmas"]
         else -> enemyName(k)
     }
 

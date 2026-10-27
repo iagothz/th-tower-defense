@@ -63,16 +63,18 @@ class Sfx(private val save: SaveData) {
                 "boss" in names -> Gdx.input.vibrate(40)
             }
         }
-        if (!save.soundOn) return
-        names.forEach { sounds[it]?.play(VOLUME) }
+        if (!save.soundOn || save.soundVolume <= 0f) return
+        names.forEach { sounds[it]?.play(VOLUME * save.soundVolume) }
     }
 
     fun click() = play(setOf("buy"))
 
     /** Keeps the loop in step with the setting; cheap enough to call every frame. */
     fun updateMusic() {
-        if (save.musicOn && !music.isPlaying) music.play()
-        if (!save.musicOn && music.isPlaying) music.pause()
+        val on = save.musicOn && save.musicVolume > 0f
+        if (on && !music.isPlaying) music.play()
+        if (!on && music.isPlaying) music.pause()
+        if (on) music.volume = MUSIC_VOLUME * save.musicVolume
     }
 
     fun dispose() {

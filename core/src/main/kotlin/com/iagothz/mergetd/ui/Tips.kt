@@ -4,7 +4,9 @@ import com.iagothz.mergetd.logic.EnemyKind
 
 /** One sentence of advice for the game-over screen, keyed by whoever took the last life. */
 object Tips {
-    fun forKiller(k: EnemyKind?): String = when (k) {
+    fun forKiller(k: EnemyKind?): String = S[forKillerPt(k)]
+
+    private fun forKillerPt(k: EnemyKind?): String = when (k) {
         null -> "Junte dados cedo: um dado de 3 pips vale mais que três de 1."
         EnemyKind.NORMAL -> "Os soldados passaram em massa. Fogo e Terremoto acertam vários de uma vez; Elétrico salta entre eles."
         EnemyKind.FAST -> "Os corredores escaparam. Gelo, Tempo e Gravidade seguram eles; Vento atira rápido o bastante para acompanhar."

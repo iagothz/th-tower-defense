@@ -21,6 +21,7 @@ Tower defense de merge no estilo Random Dice, para jogar offline no Android. Fei
 - **Modos** na tela Partida: Normal, Boss Rush, Sobrevivência e Rápido, com recorde por mapa e modo.
 - Na tela **Partida**, escolha entre 4 caminhos (Ferradura, Serpente, Anel e Reta), com dificuldade e recorde próprios.
 - Na tela **Deck**, escolha 5 dos 25 tipos de dado. Tocar num dado mostra o que ele faz: alvo, dano, velocidade, efeito e power-up.
+- **Configurações**: volume do som e da música, vibração e idioma (automático, português ou inglês). O jogo funciona sem internet e não coleta nada ([PRIVACY.md](PRIVACY.md)).
 
 ## Requisitos
 
@@ -63,6 +64,8 @@ keyAlias=mergetd
 ```bash
 ./gradlew :android:assembleRelease
 ```
+
+Para a loja, o pacote AAB sai de `./gradlew :android:bundleRelease` (em `android/build/outputs/bundle/release/`). O release passa pelo R8 (código reduzido e ofuscado); as regras que mantêm o que o libGDX usa por reflexão ficam em `android/proguard-rules.pro`, e o `mapping.txt` de cada build em `android/build/outputs/mapping/release/`.
 
 Guarde a chave e as senhas: atualizar um app instalado exige a mesma assinatura. O ícone é gerado por `python tools/make_icons.py` (precisa do Pillow).
 

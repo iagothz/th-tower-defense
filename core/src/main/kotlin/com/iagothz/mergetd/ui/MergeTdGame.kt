@@ -12,6 +12,7 @@ import com.iagothz.mergetd.logic.DailyChallenge
 import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.GameMode
 import com.iagothz.mergetd.logic.Match
+import java.util.Locale
 import com.iagothz.mergetd.logic.MatchSetup
 
 /** [devMode] enables desktop-only cheat keys and disables record saving. */
@@ -43,6 +44,7 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
         save = SaveData(Gdx.app.getPreferences("merge-td"))
         sfx = Sfx(save)
         Cosmetics.load(save)
+        S.language = Language.resolve(save.language, Locale.getDefault().language)
         if (devMode || !resumeSavedMatch()) showMenu()
     }
 
@@ -61,6 +63,8 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
     fun showMap() = switchTo(MapScreen(this))
 
     fun showStats() = switchTo(StatsScreen(this))
+
+    fun showSettings() = switchTo(SettingsScreen(this))
 
     /** Today's challenge: fixed map, deck and seed; its record is per day. */
     fun startDaily() {
@@ -140,6 +144,6 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
     }
 
     companion object {
-        const val VERSION = "0.4.0"
+        const val VERSION = "0.5.0"
     }
 }

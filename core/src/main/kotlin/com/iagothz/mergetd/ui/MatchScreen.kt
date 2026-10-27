@@ -41,7 +41,7 @@ class MatchScreen(
     private val tutorial = Tutorial(active = restored == null && fresh == null && !game.save.tutorialDone)
 
     init {
-        if (fresh != null) effects.announce("Desafio do dia: deck e mapa do dia", 2.5f)
+        if (fresh != null) effects.announce(S["Desafio do dia: deck e mapa do dia"], 2.5f)
     }
     private val sounds = SoundPlanner()
     private var clock = 0f
@@ -51,18 +51,18 @@ class MatchScreen(
     private var speed = 1
 
     private val buy = Button(Rectangle(160f, 320f, 400f, 100f), "")
-    private val undo = Button(Rectangle(572f, 320f, 124f, 100f), "Desfazer", color = Skin.PANEL)
+    private val undo = Button(Rectangle(572f, 320f, 124f, 100f), S["Desfazer"], color = Skin.PANEL)
     private val speedButton = Button(Rectangle(528f, 1182f, 76f, 56f), "1x", color = Skin.PANEL)
     private val pauseButton = Button(Rectangle(616f, 1182f, 84f, 56f), "", color = Skin.PANEL)
     private val powerButtons = match.deck.mapIndexed { i, t ->
         t to Button(Rectangle(26f + i * 136f, 50f, 124f, 120f), "", color = Skin.color(t))
     }
-    private val resume = Button(Rectangle(160f, 720f, 400f, 100f), "Continuar")
-    private val restart = Button(Rectangle(160f, 590f, 400f, 100f), "Reiniciar", color = Skin.PANEL)
-    private val quit = Button(Rectangle(160f, 460f, 400f, 100f), "Sair", color = DANGER)
-    private val yes = Button(Rectangle(160f, 560f, 400f, 100f), "Sim", color = DANGER)
-    private val no = Button(Rectangle(160f, 690f, 400f, 100f), "Não")
-    private val skipTutorial = Button(Rectangle(540f, 1080f, 140f, 56f), "Pular", color = Skin.PANEL)
+    private val resume = Button(Rectangle(160f, 720f, 400f, 100f), S["Continuar"])
+    private val restart = Button(Rectangle(160f, 590f, 400f, 100f), S["Reiniciar"], color = Skin.PANEL)
+    private val quit = Button(Rectangle(160f, 460f, 400f, 100f), S["Sair"], color = DANGER)
+    private val yes = Button(Rectangle(160f, 560f, 400f, 100f), S["Sim"], color = DANGER)
+    private val no = Button(Rectangle(160f, 690f, 400f, 100f), S["Não"])
+    private val skipTutorial = Button(Rectangle(540f, 1080f, 140f, 56f), S["Pular"], color = Skin.PANEL)
     private val allButtons = listOf(buy, undo, speedButton, pauseButton, resume, restart, quit, yes, no, skipTutorial) + powerButtons.map { it.second }
 
     override val skyMap get() = match.map
@@ -148,8 +148,8 @@ class MatchScreen(
             game.smallFont.color = ink
             game.font.color = ink
             batch.textCentered(game.smallFont, Skin.label(t), cx, b.rect.y + 100f)
-            batch.textCentered(game.font, "Nv${match.powerLevel(t)}", cx, b.rect.y + 62f)
-            batch.textCentered(game.smallFont, cost?.toString() ?: "MAX", cx, b.rect.y + 26f)
+            batch.textCentered(game.font, S.f("Nv%d", match.powerLevel(t)), cx, b.rect.y + 62f)
+            batch.textCentered(game.smallFont, cost?.toString() ?: S["MAX"], cx, b.rect.y + 26f)
         }
         game.smallFont.color = Color.WHITE
         game.font.color = Color.WHITE
@@ -196,7 +196,7 @@ class MatchScreen(
 
     private fun drawTutorialText() {
         val step = tutorial.step ?: return
-        game.smallFont.draw(game.batch, step.text, TUTORIAL.x + 24f, TUTORIAL.y + TUTORIAL.height - 30f, TUTORIAL.width - 190f, Align.left, true)
+        game.smallFont.draw(game.batch, S[step.text], TUTORIAL.x + 24f, TUTORIAL.y + TUTORIAL.height - 30f, TUTORIAL.width - 190f, Align.left, true)
         if (step != Tutorial.Step.DONE) skipTutorial.drawText(game.batch, game.smallFont)
     }
 
@@ -215,25 +215,25 @@ class MatchScreen(
         val t = die.type
         val left = INFO.x + 24f
         var y = INFO.y + INFO.height - 36f
-        val stacks = if (t == DieType.HUNTER) " · ${die.stacks} stacks" else ""
-        val pips = if (die.pips == 1) "pip" else "pips"
-        game.font.draw(batch, "${Skin.fullName(t)} · ${die.pips} $pips$stacks", left + 48f, y + 8f)
+        val stacks = if (t == DieType.HUNTER) S.f(" · %d stacks", die.stacks) else ""
+        val pips = S[if (die.pips == 1) "pip" else "pips"]
+        game.font.draw(batch, S.f("%s · %d %s%s", Skin.fullName(t), die.pips, pips, stacks), left + 48f, y + 8f)
         y -= 44f
         if (t.attacks) {
             val dmg = Combat.baseDamage(t, die.pips, match.powerLevel(t))
             val every = Combat.attackInterval(t, die.pips) / match.speedMultiplier(cell)
             game.smallFont.color = Skin.GOLD
-            game.smallFont.draw(batch, "Dano ${fmt(dmg)}  ·  a cada ${fmt(every)} s  ·  Nv${match.powerLevel(t)}", left, y)
+            game.smallFont.draw(batch, S.f("Dano %s  ·  a cada %s s  ·  Nv%d", fmt(dmg), fmt(every), match.powerLevel(t)), left, y)
             game.smallFont.color = Color.WHITE
             y -= 34f
         }
         val info = DieInfo.of(t)
         y -= game.smallFont.draw(batch, info.summary, left, y, INFO.width - 48f, Align.left, true).height + 10f
         game.smallFont.color = KEY_COLOR
-        y -= game.smallFont.draw(batch, info.rows.first { it.first == "Efeito" }.second, left, y, INFO.width - 48f, Align.left, true).height + 8f
+        y -= game.smallFont.draw(batch, info.rows.first { it.first == S["Efeito"] }.second, left, y, INFO.width - 48f, Align.left, true).height + 8f
         if (die.pips >= Balance.MAX_PIPS) {
             game.smallFont.color = Skin.GOLD
-            game.smallFont.draw(batch, "7 pips: " + info.rows.first { it.first == "7 pips" }.second, left, y, INFO.width - 48f, Align.left, true)
+            game.smallFont.draw(batch, S.f("7 pips: %s", info.rows.first { it.first == S["7 pips"] }.second), left, y, INFO.width - 48f, Align.left, true)
         }
         game.smallFont.color = Color.WHITE
     }
@@ -242,7 +242,7 @@ class MatchScreen(
         if (f == f.toInt().toFloat()) "${f.toInt()}" else "%.2f".format(f).trimEnd('0').trimEnd('.', ',').replace('.', ',')
 
     private fun refreshButtons() {
-        buy.text = "Comprar (${match.buyCost})"
+        buy.text = S.f("Comprar (%d)", match.buyCost)
         buy.enabled = match.canBuy()
         speedButton.text = "${speed}x"
         for ((t, b) in powerButtons) {
@@ -262,10 +262,10 @@ class MatchScreen(
         game.batch.begin()
         val c = confirm
         if (c == null) {
-            game.batch.textShadowed(game.bigFont, "Pausa", 360f, 920f)
+            game.batch.textShadowed(game.bigFont, S["Pausa"], 360f, 920f)
         } else {
-            game.batch.textShadowed(game.font, c.question, 360f, 900f)
-            game.batch.textCentered(game.smallFont, "O progresso desta partida será perdido.", 360f, 850f)
+            game.batch.textShadowed(game.font, S[c.question], 360f, 900f)
+            game.batch.textCentered(game.smallFont, S["O progresso desta partida será perdido."], 360f, 850f)
         }
         for (b in pauseButtons()) b.drawText(game.batch, game.font)
         game.batch.end()

@@ -10,7 +10,7 @@ import com.iagothz.mergetd.logic.Vec2
 class HistoryScreen(game: MergeTdGame) : BaseScreen(game) {
     private val records = game.save.history()
     private val rows = records.mapIndexed { i, r -> r to Rectangle(24f, 1120f - i * 50f, 672f, 46f) }
-    private val back = Button(Rectangle(160f, 30f, 400f, 90f), "Voltar", color = Skin.PANEL)
+    private val back = Button(Rectangle(160f, 30f, 400f, 90f), S["Voltar"], color = Skin.PANEL)
     private val tap = Tap<Button>()
 
     override fun draw(delta: Float) {
@@ -26,17 +26,17 @@ class HistoryScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.end()
 
         game.batch.begin()
-        game.batch.textShadowed(game.bigFont, "Histórico", 360f, 1222f)
+        game.batch.textShadowed(game.bigFont, S["Histórico"], 360f, 1222f)
         if (records.isEmpty()) {
             game.smallFont.color = KEY_COLOR
-            game.batch.textCentered(game.smallFont, "Nenhuma partida terminada ainda.", 360f, 1100f)
+            game.batch.textCentered(game.smallFont, S["Nenhuma partida terminada ainda."], 360f, 1100f)
             game.smallFont.color = Color.WHITE
         }
         for ((r, rect) in rows) {
             val cy = rect.y + rect.height / 2
             game.tinyFont.color = KEY_COLOR
             game.batch.textLeft(game.tinyFont, DailyChallenge.of(r.day).dateLabel.dropLast(5), rect.x + 12f, cy + 9f)
-            game.batch.textLeft(game.tinyFont, "${r.map.title} · ${r.mode.title}", rect.x + 12f, cy - 10f)
+            game.batch.textLeft(game.tinyFont, "${S[r.map.title]} · ${S[r.mode.title]}", rect.x + 12f, cy - 10f)
             game.batch.textLeft(game.tinyFont, r.killedBy?.let { Skin.enemyName(it) } ?: "–", rect.x + 430f, cy - 10f)
             game.batch.textLeft(game.tinyFont, r.code, rect.x + 430f, cy + 9f)
             game.tinyFont.color = Color.WHITE

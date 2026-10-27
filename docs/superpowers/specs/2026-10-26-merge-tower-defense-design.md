@@ -154,7 +154,10 @@ O tabuleiro, o HUD e os botões nunca mudam de lugar; cada mapa é um caminho di
 - **Desfazer**: o último merge que consumiu dois dados pode ser desfeito por 3 s (`Match.undoMerge`), desde que o resultado ainda esteja na célula e a origem vazia; clonar não desfaz. Botão Desfazer ao lado de Comprar enquanto vale.
 - **Clima por mapa** (`Weather`): vagalumes na Ferradura, areia na Serpente, neve no Anel, brasas na Reta, atrás de todas as telas. Cartão do chefe no banner (nome e o que ele faz, 2,6 s), corpo encolhendo ao morrer, balanço ao andar e sombra no chão.
 - O tutorial não aparece no Desafio do dia; a partida começa com o aviso "deck e mapa do dia".
-- **Áudio**: som de ataque por família (`SoundPlanner.family`: fogo, gelo, raio, vento, pesado, mágico) e um loop de 19 s (`sounds/music.wav`) gerado por `tools/gen_sounds.py`, com botão Música no menu.
+- **Áudio**: som de ataque por família (`SoundPlanner.family`: fogo, gelo, raio, vento, pesado, mágico) e um loop de 19 s (`sounds/music.wav`) gerado por `tools/gen_sounds.py`.
+- **Configurações** (`SettingsScreen`, botão Configurações no menu): controles deslizantes de volume do som e da música (`soundVolume`/`musicVolume`, 0..1, música desligada em 0), Vibrar e idioma (`language`: automático, português, inglês), mais a linha de privacidade.
+- **Idiomas** (`Strings.kt`): o texto em português é a chave; `S["texto"]` devolve o inglês da tabela `EN` quando o idioma é inglês e o próprio texto caso contrário, e `S.f(formato, args)` formata depois de traduzir. Automático escolhe português quando o aparelho está em `pt` e inglês para o resto. Descrições dos dados e dicas ficam em `DieTextsEn`/`TipsEn`; `StringsTest` garante que toda chave tem tradução.
+- **Loja**: release com R8 (`android/proguard-rules.pro` mantém backend, freetype, utils e os construtores sem argumentos que o `Pools` cria por reflexão), AAB por `bundleRelease` e `PRIVACY.md` (pt/en) como política de privacidade.
 
 ## Inimigos
 
@@ -183,7 +186,7 @@ A ordem dos 7 chefes é sorteada por partida (onda 10, 20, 30... seguem a lista;
 
 ## Telas e controles
 
-**Fluxo:** Menu (Jogar / Deck / Recorde) → Deck → Partida → Game over → Menu.
+**Fluxo:** Menu (Jogar / Deck / Partida / Desafio / Estatísticas / Configurações) → Deck → Partida → Game over → Menu.
 - **Deck:** grade com os 10 tipos; tocar alterna a seleção e mostra, num painel, o que o dado faz: alvo, dano, velocidade de ataque, efeito e power-up (números lidos do `Balance.kt`). O botão Confirmar só fica ativo com 5 tipos escolhidos.
 - **Game over:** mostra a onda alcançada e "Novo recorde!" quando for o caso.
 

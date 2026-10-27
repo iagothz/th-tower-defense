@@ -17,8 +17,8 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         t to Rectangle(24f + (i % COLS) * 98f, 1010f - (i / COLS) * 126f, 84f, 84f)
     }
     private val panel = Rectangle(24f, 150f, 672f, 430f)
-    private val confirm = Button(Rectangle(40f, 30f, 310f, 100f), "Confirmar")
-    private val back = Button(Rectangle(370f, 30f, 310f, 100f), "Voltar", color = Skin.PANEL)
+    private val confirm = Button(Rectangle(40f, 30f, 310f, 100f), S["Confirmar"])
+    private val back = Button(Rectangle(370f, 30f, 310f, 100f), S["Voltar"], color = Skin.PANEL)
     private val tap = Tap<Button>()
     private val slots = List(DeckCodec.SIZE) { Rectangle(186f + it * 72f, 1112f, 60f, 60f) }
 
@@ -64,17 +64,17 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.end()
 
         game.batch.begin()
-        game.batch.textShadowed(game.bigFont, "Deck", 360f, 1222f)
+        game.batch.textShadowed(game.bigFont, S["Deck"], 360f, 1222f)
         if (selected.size < DeckCodec.SIZE) {
             game.smallFont.color = KEY_COLOR
-            game.batch.textLeft(game.smallFont, "escolha ${DeckCodec.SIZE - selected.size}", 556f, 1142f)
+            game.batch.textLeft(game.smallFont, S.f("escolha %d", DeckCodec.SIZE - selected.size), 556f, 1142f)
             game.smallFont.color = Color.WHITE
         }
         for ((t, r) in tiles) game.batch.textCentered(game.tinyFont, Skin.label(t), r.x + r.width / 2, r.y - 16f)
         drawInfo()
         val pairs = Synergy.forDeck(selected)
         game.tinyFont.color = Skin.GOLD
-        val line = if (pairs.isEmpty()) "Sinergias do deck: nenhuma ainda (veja os pares na descrição de cada dado)" else "Sinergias do deck: " + pairs.joinToString(", ") { it.title }
+        val line = if (pairs.isEmpty()) S["Sinergias do deck: nenhuma ainda (veja os pares na descrição de cada dado)"] else S.f("Sinergias do deck: %s", pairs.joinToString(", ") { S[it.title] })
         game.batch.textCentered(game.tinyFont, line, 360f, panel.y + 18f)
         game.tinyFont.color = Color.WHITE
         confirm.drawText(game.batch, game.font)

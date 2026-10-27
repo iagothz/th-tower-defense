@@ -1,0 +1,120 @@
+package com.iagothz.mergetd.ui
+
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.math.Rectangle
+import com.badlogic.gdx.utils.Align
+import com.iagothz.mergetd.logic.Vec2
+import java.util.Locale
+
+/** Volumes, vibration and language, plus the privacy line the store asks for. */
+class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
+    private val soundSlider = Rectangle(60f, 980f, 600f, 40f)
+    private val musicSlider = Rectangle(60f, 860f, 600f, 40f)
+    private val vibration = Button(Rectangle(60f, 700f, 600f, 90f), "", color = Skin.PANEL)
+    private val languages = Language.entries.mapIndexed { i, l -> l to Button(Rectangle(60f + i * 204f, 520f, 192f, 80f), S[l.title], color = Skin.PANEL) }
+    private val back = Button(Rectangle(160f, 30f, 400f, 100f), S["Voltar"], color = Skin.PANEL)
+    private val tap = Tap<Button>()
+    private var dragging: Rectangle? = null
+
+    override fun draw(delta: Float) {
+        back.pressed = tap.current === back
+        vibration.pressed = tap.current === vibration
+        vibration.text = "${S["Vibrar"]}: ${S[if (game.save.vibrationOn) "sim" else "não"]}"
+        val shapes = game.shapes
+        shapes.begin(ShapeRenderer.ShapeType.Filled)
+        drawSlider(soundSlider, game.save.soundVolume)
+        drawSlider(musicSlider, game.save.musicVolume)
+        vibration.drawShape(shapes)
+        for ((l, b) in languages) {
+            b.color = if (l == game.save.language) ON else Skin.PANEL
+            b.pressed = tap.current === b
+            b.drawShape(shapes)
+        }
+        back.drawShape(shapes)
+        shapes.end()
+
+        game.batch.begin()
+        game.batch.textShadowed(game.bigFont, S["Configurações"], 360f, 1222f)
+        label(S["Som"], game.save.soundVolume, soundSlider)
+        label(S["Música"], game.save.musicVolume, musicSlider)
+        vibration.drawText(game.batch, game.font)
+        game.smallFont.color = KEY_COLOR
+        game.batch.textLeft(game.smallFont, S["Idioma"], 60f, 630f)
+        game.smallFont.color = Color.WHITE
+        for ((_, b) in languages) b.drawText(game.batch, game.smallFont)
+        game.tinyFont.color = KEY_COLOR
+        game.tinyFont.draw(game.batch, S["Privacidade: este jogo funciona sem internet, não coleta nem envia nenhum dado."], 60f, 420f, 600f, Align.left, true)
+        game.tinyFont.color = Color.WHITE
+        back.drawText(game.batch, game.font)
+        game.batch.end()
+    }
+
+    private fun drawSlider(r: Rectangle, value: Float) {
+        val shapes = game.shapes
+        shapes.color = Skin.PANEL
+        shapes.roundedRect(r.x, r.y, r.width, r.height, r.height / 2)
+        shapes.color = Skin.GOLD
+        if (value > 0f) shapes.roundedRect(r.x, r.y, maxOf(r.height, r.width * value), r.height, r.height / 2)
+        shapes.color = Color.WHITE
+        shapes.circle(r.x + r.width * value, r.y + r.height / 2, 26f, 24)
+    }
+
+    private fun label(text: String, value: Float, r: Rectangle) {
+        game.smallFont.color = KEY_COLOR
+        game.batch.textLeft(game.smallFont, text, r.x, r.y + r.height + 30f)
+        game.smallFont.color = Color.WHITE
+        game.batch.textRight(game.smallFont, "${(value * 100).toInt()}%", r.x + r.width, r.y + r.height + 30f)
+    }
+
+    private fun sliderAt(p: Vec2): Rectangle? = listOf(soundSlider, musicSlider).firstOrNull {
+        p.x >= it.x - 30f && p.x <= it.x + it.width + 30f && p.y >= it.y - 30f && p.y <= it.y + it.height + 30f
+    }
+
+    private fun setSlider(r: Rectangle, p: Vec2) {
+        val v = ((p.x - r.x) / r.width).coerceIn(0f, 1f)
+        if (r === soundSlider) game.save.soundVolume = v else game.save.musicVolume = v
+    }
+
+    private fun buttonAt(p: Vec2) = (listOf(back, vibration) + languages.map { it.second }).firstOrNull { it.contains(p.x, p.y) }
+
+    override fun onTouchDown(p: Vec2) {
+        dragging = sliderAt(p)?.also { setSlider(it, p) }
+        if (dragging == null) tap.press(buttonAt(p))
+    }
+
+    override fun onDrag(p: Vec2) {
+        dragging?.let { setSlider(it, p) }
+    }
+
+    override fun onTouchCancelled() {
+        dragging = null
+        tap.cancel()
+    }
+
+    override fun onTouchUp(p: Vec2) {
+        if (dragging != null) {
+            dragging = null
+            game.sfx.click()
+            return
+        }
+        when (val b = tap.release(buttonAt(p))) {
+            back -> game.showMenu()
+            vibration -> {
+                game.save.vibrationOn = !game.save.vibrationOn
+                if (game.save.vibrationOn) game.sfx.play(setOf("boss"))
+            }
+            null -> Unit
+            else -> languages.firstOrNull { it.second === b }?.let { (l, _) ->
+                game.save.language = l
+                S.language = Language.resolve(l, Locale.getDefault().language)
+                game.showSettings()
+            }
+        }
+    }
+
+    private companion object {
+        val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
+        val ON = Color(0.55f, 0.30f, 0.75f, 1f)
+    }
+}

@@ -8,140 +8,127 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.roundToInt
 
-/** Player-facing description of a die type. Every number is read from [Balance], so it can't drift. */
+/**
+ * Player-facing description of a die type. Every number is read from [Balance], so it can't drift;
+ * every sentence goes through [S], so it follows the language setting.
+ */
 data class DieInfo(val summary: String, val rows: List<Pair<String, String>>) {
     companion object {
         private const val MAX = Balance.MAX_PIPS
 
         fun of(t: DieType): DieInfo {
-            val rows = mutableListOf("Alvo" to target(t))
+            val rows = mutableListOf(S["Alvo"] to target(t))
             if (t.attacks) {
                 val dmg = Balance.stats(t).baseDamage
-                val what = if (t == DieType.TRAP) "por pip, por mina" else "por pip"
-                rows += "Dano" to "${num(dmg)} $what (${num(dmg)} com 1 pip, ${num(dmg * MAX)} com $MAX)"
-                rows += "Velocidade" to "a cada ${num(Combat.attackInterval(t, 1))} s (1 pip) até " +
-                    "${num(Combat.attackInterval(t, MAX))} s ($MAX pips)"
+                val key = if (t == DieType.TRAP) "%s por pip, por mina (%s com 1 pip, %s com %d)" else "%s por pip (%s com 1 pip, %s com %d)"
+                rows += S["Dano"] to S.f(key, num(dmg), num(dmg), num(dmg * MAX), MAX)
+                rows += S["Velocidade"] to S.f("a cada %s s (1 pip) até %s s (%d pips)", num(Combat.attackInterval(t, 1)), num(Combat.attackInterval(t, MAX)), MAX)
             }
-            rows += "Efeito" to effect(t)
-            rows += "7 pips" to maxed(t)
-            synergy(t)?.let { rows += "Sinergia" to it }
-            rows += "Power-up" to powerUp(t)
+            rows += S["Efeito"] to effect(t)
+            rows += S["7 pips"] to maxed(t)
+            synergy(t)?.let { rows += S["Sinergia"] to it }
+            rows += S["Power-up"] to powerUp(t)
             return DieInfo(summary(t), rows)
         }
 
-        private fun target(t: DieType) = when {
-            !t.attacks -> "Não ataca"
-            t == DieType.SNIPER -> "Inimigo com mais vida"
-            t == DieType.QUAKE -> "Todos os inimigos"
-            t == DieType.TRAP -> "O caminho à frente do primeiro inimigo"
-            else -> "Inimigo mais à frente"
-        }
+        private fun target(t: DieType) = S[
+            when {
+                !t.attacks -> "Não ataca"
+                t == DieType.SNIPER -> "Inimigo com mais vida"
+                t == DieType.QUAKE -> "Todos os inimigos"
+                t == DieType.TRAP -> "O caminho à frente do primeiro inimigo"
+                else -> "Inimigo mais à frente"
+            },
+        ]
 
-        private fun summary(t: DieType) = when (t) {
-            DieType.FIRE -> "Explode no alvo e atinge os inimigos em volta."
-            DieType.ICE -> "Deixa o alvo mais lento."
-            DieType.POISON -> "Envenena o alvo, causando dano contínuo."
-            DieType.ELECTRIC -> "Raio que salta para inimigos próximos."
-            DieType.WIND -> "Ataques fracos, mas muito rápidos."
-            DieType.IRON -> "Especialista em chefes."
-            DieType.MINE -> "Minerador: não ataca, gera SP com o tempo."
-            DieType.SNIPER -> "Tiro forte e lento em quem tem mais vida."
-            DieType.MIRROR -> "Coringa: combina com qualquer dado; o resultado é sorteado."
-            DieType.GROWTH -> "Ganha pips sozinho e vira um dado do deck."
-            DieType.LIGHT -> "Ataque fraco; acelera os dados vizinhos."
-            DieType.CRIT -> "Dá chance de crítico a todo o tabuleiro."
-            DieType.COMBO -> "Fraco sozinho, forte em grupo."
-            DieType.CURSE -> "Amaldiçoa o alvo para receber mais dano."
-            DieType.HUNTER -> "Fica mais forte a cada abate."
-            DieType.GRAVITY -> "Empurra o inimigo para trás."
-            DieType.TIME -> "Congela o alvo por um instante."
-            DieType.TRAP -> "Planta minas no caminho."
-            DieType.QUAKE -> "Atinge todos os inimigos de uma vez."
-            DieType.REAPER -> "Executa inimigos com pouca vida."
-            DieType.NOVA -> "Inimigos mortos por ela explodem."
-            DieType.LUCK -> "Dano sorteado a cada ataque."
-            DieType.VAMPIRE -> "Ganha SP extra ao matar."
-            DieType.CLONE -> "Vira uma cópia de outro dado."
-            DieType.BOOST -> "Coringa garantido: o resultado mantém o tipo do outro dado."
-        }
+        private fun summary(t: DieType) = S[
+            when (t) {
+                DieType.FIRE -> "Explode no alvo e atinge os inimigos em volta."
+                DieType.ICE -> "Deixa o alvo mais lento."
+                DieType.POISON -> "Envenena o alvo, causando dano contínuo."
+                DieType.ELECTRIC -> "Raio que salta para inimigos próximos."
+                DieType.WIND -> "Ataques fracos, mas muito rápidos."
+                DieType.IRON -> "Especialista em chefes."
+                DieType.MINE -> "Minerador: não ataca, gera SP com o tempo."
+                DieType.SNIPER -> "Tiro forte e lento em quem tem mais vida."
+                DieType.MIRROR -> "Coringa: combina com qualquer dado; o resultado é sorteado."
+                DieType.GROWTH -> "Ganha pips sozinho e vira um dado do deck."
+                DieType.LIGHT -> "Ataque fraco; acelera os dados vizinhos."
+                DieType.CRIT -> "Dá chance de crítico a todo o tabuleiro."
+                DieType.COMBO -> "Fraco sozinho, forte em grupo."
+                DieType.CURSE -> "Amaldiçoa o alvo para receber mais dano."
+                DieType.HUNTER -> "Fica mais forte a cada abate."
+                DieType.GRAVITY -> "Empurra o inimigo para trás."
+                DieType.TIME -> "Congela o alvo por um instante."
+                DieType.TRAP -> "Planta minas no caminho."
+                DieType.QUAKE -> "Atinge todos os inimigos de uma vez."
+                DieType.REAPER -> "Executa inimigos com pouca vida."
+                DieType.NOVA -> "Inimigos mortos por ela explodem."
+                DieType.LUCK -> "Dano sorteado a cada ataque."
+                DieType.VAMPIRE -> "Ganha SP extra ao matar."
+                DieType.CLONE -> "Vira uma cópia de outro dado."
+                DieType.BOOST -> "Coringa garantido: o resultado mantém o tipo do outro dado."
+            },
+        ]
 
         private fun effect(t: DieType) = when (t) {
-            DieType.FIRE -> "${pct(Balance.FIRE_SPLASH_FRACTION)} do dano nos inimigos a até " +
-                "${num(Balance.FIRE_SPLASH_RADIUS)} de distância do alvo"
-            DieType.ICE -> "lentidão de ${pct(iceSlow(1))} (1 pip) a ${pct(iceSlow(MAX))} " +
-                "($MAX pips) por ${num(Balance.SLOW_DURATION)} s; não acumula, vale a mais forte"
-            DieType.POISON -> "${num(Balance.POISON_DPS)} de dano/s por pip durante ${num(Balance.POISON_DURATION)} s; " +
-                "acumula até ${Balance.POISON_MAX_STACKS} vezes no mesmo inimigo"
-            DieType.ELECTRIC -> "salta para mais ${Balance.CHAIN_JUMPS} inimigos próximos, " +
-                "com ${pct(Balance.CHAIN_FALLOFF)} do dano a cada salto"
-            DieType.WIND -> "nenhum; compensa com a velocidade"
-            DieType.IRON -> "dano x${num(Balance.IRON_BOSS_MULT)} contra chefes"
-            DieType.MINE -> "gera ${Balance.MINE_SP_PER_PIP} SP por pip a cada ${num(Balance.MINE_INTERVAL)} s"
-            DieType.SNIPER -> "ignora a fila e mira o inimigo mais resistente"
-            DieType.MIRROR -> "faz merge com qualquer dado de mesmos pips; o resultado é sorteado entre os 5 tipos " +
-                "do deck, como num merge normal"
-            DieType.GROWTH -> "a cada ${num(Balance.GROWTH_INTERVAL)} s ganha +1 pip e vira um dos 5 tipos do deck, " +
-                "sorteado (pode continuar Crescimento); para em $MAX pips"
-            DieType.LIGHT -> "os dados de cima, de baixo e dos lados atacam +${pct(Balance.LIGHT_SPEED_PER_PIP)} " +
-                "mais rápido por pip da Luz; várias Luzes somam"
-            DieType.CRIT -> "cada pip dá +${pct(Balance.CRIT_CHANCE_PER_PIP)} de chance de crítico " +
-                "(dano x${num(Balance.CRIT_MULT)}) a todos os dados, até ${pct(Balance.CRIT_MAX)} somando os Críticos"
-            DieType.COMBO -> "+${pct(Balance.COMBO_BONUS)} de dano para cada outro Combo no tabuleiro"
-            DieType.CURSE -> "o alvo recebe ${pct(curse(1))} (1 pip) a ${pct(curse(MAX))} ($MAX pips) a mais " +
-                "de dano de tudo, inclusive veneno, por ${num(Balance.CURSE_DURATION)} s"
-            DieType.HUNTER -> "+1 stack por abate; cada stack dá +${pct(Balance.HUNTER_BONUS_PER_STACK)} de dano; " +
-                "limite de ${Balance.HUNTER_STACKS_PER_PIP} stacks por pip (${Balance.hunterCap(1)} com 1 pip, " +
-                "${Balance.hunterCap(MAX - 1)} com ${MAX - 1}) e sem limite com $MAX pips; " +
-                "merge de Caçadores soma os stacks se o resultado for Caçador"
-            DieType.GRAVITY -> "o alvo volta ${num(push(1))} (1 pip) a ${num(push(MAX))} ($MAX pips) no caminho; " +
-                "chefes voltam ${pct(Balance.GRAVITY_BOSS_FACTOR)} disso"
-            DieType.TIME -> "o alvo fica parado de ${num(stun(1))} s (1 pip) a ${num(stun(MAX))} s ($MAX pips); " +
-                "chefes, ${pct(Balance.TIME_BOSS_FACTOR)} disso"
-            DieType.TRAP -> "a mina fica ${num(Balance.TRAP_AHEAD)} à frente do primeiro inimigo e explode quando " +
-                "alguém pisa, atingindo quem estiver a até ${num(Balance.TRAP_RADIUS)}; " +
-                "máx. ${Balance.TRAP_MAX_PER_DIE} minas por dado"
-            DieType.QUAKE -> "sem alvo único: cada ataque acerta todos os inimigos na tela"
-            DieType.REAPER -> "inimigos comuns que ficarem abaixo de ${pct(reap(1))} (1 pip) a ${pct(reap(MAX))} " +
-                "($MAX pips) da vida morrem na hora; chefes levam só o dano"
-            DieType.NOVA -> "o inimigo morto explode com o dano do dado em quem estiver a até " +
-                "${num(Balance.NOVA_RADIUS)}; quem morrer na explosão também explode"
-            DieType.LUCK -> "cada ataque causa de 0x a ${num(Balance.LUCK_MAX_MULT)}x o dano normal " +
-                "(média ${num(Balance.LUCK_MAX_MULT / 2)}x)"
-            DieType.VAMPIRE -> "+${Balance.VAMPIRE_SP_PER_PIP} SP por pip a cada inimigo que matar, " +
-                "além da recompensa normal"
-            DieType.CLONE -> "arrastado sobre um dado de mesmos pips (ou o contrário), vira uma cópia dele, tipo e pips, " +
-                "e o original continua no lugar; stacks do Caçador não são copiados; dois Clonadores fazem merge normal"
-            DieType.BOOST -> "faz merge com qualquer dado de mesmos pips e o resultado é o tipo do outro dado com +1 pip " +
-                "(dois Reforços sorteiam do deck)"
+            DieType.FIRE -> S.f("%s do dano nos inimigos a até %s de distância do alvo", pct(Balance.FIRE_SPLASH_FRACTION), num(Balance.FIRE_SPLASH_RADIUS))
+            DieType.ICE -> S.f("lentidão de %s (1 pip) a %s (%d pips) por %s s; não acumula, vale a mais forte", pct(iceSlow(1)), pct(iceSlow(MAX)), MAX, num(Balance.SLOW_DURATION))
+            DieType.POISON -> S.f("%s de dano/s por pip durante %s s; acumula até %d vezes no mesmo inimigo", num(Balance.POISON_DPS), num(Balance.POISON_DURATION), Balance.POISON_MAX_STACKS)
+            DieType.ELECTRIC -> S.f("salta para mais %d inimigos próximos, com %s do dano a cada salto", Balance.CHAIN_JUMPS, pct(Balance.CHAIN_FALLOFF))
+            DieType.WIND -> S["nenhum; compensa com a velocidade"]
+            DieType.IRON -> S.f("dano x%s contra chefes", num(Balance.IRON_BOSS_MULT))
+            DieType.MINE -> S.f("gera %d SP por pip a cada %s s", Balance.MINE_SP_PER_PIP, num(Balance.MINE_INTERVAL))
+            DieType.SNIPER -> S["ignora a fila e mira o inimigo mais resistente"]
+            DieType.MIRROR -> S["faz merge com qualquer dado de mesmos pips; o resultado é sorteado entre os 5 tipos do deck, como num merge normal"]
+            DieType.GROWTH -> S.f("a cada %s s ganha +1 pip e vira um dos 5 tipos do deck, sorteado (pode continuar Crescimento); para em %d pips", num(Balance.GROWTH_INTERVAL), MAX)
+            DieType.LIGHT -> S.f("os dados de cima, de baixo e dos lados atacam +%s mais rápido por pip da Luz; várias Luzes somam", pct(Balance.LIGHT_SPEED_PER_PIP))
+            DieType.CRIT -> S.f("cada pip dá +%s de chance de crítico (dano x%s) a todos os dados, até %s somando os Críticos", pct(Balance.CRIT_CHANCE_PER_PIP), num(Balance.CRIT_MULT), pct(Balance.CRIT_MAX))
+            DieType.COMBO -> S.f("+%s de dano para cada outro Combo no tabuleiro", pct(Balance.COMBO_BONUS))
+            DieType.CURSE -> S.f("o alvo recebe %s (1 pip) a %s (%d pips) a mais de dano de tudo, inclusive veneno, por %s s", pct(curse(1)), pct(curse(MAX)), MAX, num(Balance.CURSE_DURATION))
+            DieType.HUNTER -> S.f(
+                "+1 stack por abate; cada stack dá +%s de dano; limite de %d stacks por pip (%d com 1 pip, %d com %d) e sem limite com %d pips; merge de Caçadores soma os stacks se o resultado for Caçador",
+                pct(Balance.HUNTER_BONUS_PER_STACK), Balance.HUNTER_STACKS_PER_PIP, Balance.hunterCap(1), Balance.hunterCap(MAX - 1), MAX - 1, MAX,
+            )
+            DieType.GRAVITY -> S.f("o alvo volta %s (1 pip) a %s (%d pips) no caminho; chefes voltam %s disso", num(push(1)), num(push(MAX)), MAX, pct(Balance.GRAVITY_BOSS_FACTOR))
+            DieType.TIME -> S.f("o alvo fica parado de %s s (1 pip) a %s s (%d pips); chefes, %s disso", num(stun(1)), num(stun(MAX)), MAX, pct(Balance.TIME_BOSS_FACTOR))
+            DieType.TRAP -> S.f("a mina fica %s à frente do primeiro inimigo e explode quando alguém pisa, atingindo quem estiver a até %s; máx. %d minas por dado", num(Balance.TRAP_AHEAD), num(Balance.TRAP_RADIUS), Balance.TRAP_MAX_PER_DIE)
+            DieType.QUAKE -> S["sem alvo único: cada ataque acerta todos os inimigos na tela"]
+            DieType.REAPER -> S.f("inimigos comuns que ficarem abaixo de %s (1 pip) a %s (%d pips) da vida morrem na hora; chefes levam só o dano", pct(reap(1)), pct(reap(MAX)), MAX)
+            DieType.NOVA -> S.f("o inimigo morto explode com o dano do dado em quem estiver a até %s; quem morrer na explosão também explode", num(Balance.NOVA_RADIUS))
+            DieType.LUCK -> S.f("cada ataque causa de 0x a %sx o dano normal (média %sx)", num(Balance.LUCK_MAX_MULT), num(Balance.LUCK_MAX_MULT / 2))
+            DieType.VAMPIRE -> S.f("+%d SP por pip a cada inimigo que matar, além da recompensa normal", Balance.VAMPIRE_SP_PER_PIP)
+            DieType.CLONE -> S["arrastado sobre um dado de mesmos pips (ou o contrário), vira uma cópia dele, tipo e pips, e o original continua no lugar; stacks do Caçador não são copiados; dois Clonadores fazem merge normal"]
+            DieType.BOOST -> S["faz merge com qualquer dado de mesmos pips e o resultado é o tipo do outro dado com +1 pip (dois Reforços sorteiam do deck)"]
         }
 
         /** What the die gains at the pip cap. */
         fun maxed(t: DieType): String = when (t) {
-            DieType.FIRE -> "explosão com raio ×${num(Balance.FIRE_MAX_RADIUS)} e dano cheio nos vizinhos"
-            DieType.ICE -> "além da lentidão, congela o alvo por ${num(Balance.ICE_FREEZE)} s"
-            DieType.POISON -> "o veneno dura o dobro (${num(Balance.POISON_DURATION * 2)} s)"
-            DieType.ELECTRIC -> "o raio salta para ${Balance.CHAIN_JUMPS_MAX} inimigos"
-            DieType.WIND -> "ataca duas vezes mais rápido"
-            DieType.IRON -> "dano x${num(Balance.IRON_BOSS_MULT_MAX)} contra chefes"
-            DieType.MINE -> "gera o dobro de SP"
-            DieType.SNIPER -> "acerta também o segundo inimigo mais resistente"
-            DieType.MIRROR -> "ataca com o dano do dado mais forte do tabuleiro"
-            DieType.GROWTH -> "a cada ${num(Balance.GROWTH_INTERVAL)} s planta um dado de 1 pip do deck numa célula vazia"
-            DieType.LIGHT -> "acelera também os vizinhos das diagonais"
-            DieType.CRIT -> "os críticos de todo o tabuleiro dão x${num(Balance.CRIT_MULT_MAX)}"
-            DieType.COMBO -> "conta como dois Combos"
-            DieType.CURSE -> "maldição ${pct(Balance.CURSE_MAX_MULT - 1)} mais forte e durando o dobro"
-            DieType.HUNTER -> "cada stack dá +${pct(Balance.HUNTER_BONUS_PER_STACK_MAX)} (e os stacks não têm limite)"
-            DieType.GRAVITY -> "empurra inimigos comuns sem limite"
-            DieType.TIME -> "congela também quem está a até ${num(Balance.TIME_AREA)} do alvo"
-            DieType.TRAP -> "${Balance.TRAP_MAX_PER_DIE_MAX} minas por dado, com raio ×${num(Balance.TRAP_MAX_RADIUS)}"
-            DieType.QUAKE -> "cada tremor deixa todos ${pct(Balance.QUAKE_SLOW)} mais lentos por ${num(Balance.QUAKE_SLOW_TIME)} s"
-            DieType.REAPER -> "executa chefes também, abaixo de metade do limite"
-            DieType.NOVA -> "explosões com raio e dano ×${num(Balance.NOVA_MAX)}, inclusive em cadeia"
-            DieType.LUCK -> "sorteia de ${num(Balance.LUCK_MIN_MULT_MAX)}x a ${num(Balance.LUCK_MIN_MULT_MAX + Balance.LUCK_MAX_MULT)}x: nunca erra"
-            DieType.VAMPIRE -> "SP em dobro e +1 vida a cada ${Balance.VAMPIRE_LIFE_KILLS} abates (máx. ${Balance.MAX_LIVES})"
-            DieType.CLONE -> "clona qualquer dado, de qualquer quantidade de pips"
-            DieType.BOOST -> "a cada ${num(Balance.BOOST_INTERVAL)} s sobe de graça um nível de power-up de um tipo do deck"
+            DieType.FIRE -> S.f("explosão com raio ×%s e dano cheio nos vizinhos", num(Balance.FIRE_MAX_RADIUS))
+            DieType.ICE -> S.f("além da lentidão, congela o alvo por %s s", num(Balance.ICE_FREEZE))
+            DieType.POISON -> S.f("o veneno dura o dobro (%s s)", num(Balance.POISON_DURATION * 2))
+            DieType.ELECTRIC -> S.f("o raio salta para %d inimigos", Balance.CHAIN_JUMPS_MAX)
+            DieType.WIND -> S["ataca duas vezes mais rápido"]
+            DieType.IRON -> S.f("dano x%s contra chefes", num(Balance.IRON_BOSS_MULT_MAX))
+            DieType.MINE -> S["gera o dobro de SP"]
+            DieType.SNIPER -> S["acerta também o segundo inimigo mais resistente"]
+            DieType.MIRROR -> S["ataca com o dano do dado mais forte do tabuleiro"]
+            DieType.GROWTH -> S.f("a cada %s s planta um dado de 1 pip do deck numa célula vazia", num(Balance.GROWTH_INTERVAL))
+            DieType.LIGHT -> S["acelera também os vizinhos das diagonais"]
+            DieType.CRIT -> S.f("os críticos de todo o tabuleiro dão x%s", num(Balance.CRIT_MULT_MAX))
+            DieType.COMBO -> S["conta como dois Combos"]
+            DieType.CURSE -> S.f("maldição %s mais forte e durando o dobro", pct(Balance.CURSE_MAX_MULT - 1))
+            DieType.HUNTER -> S.f("cada stack dá +%s (e os stacks não têm limite)", pct(Balance.HUNTER_BONUS_PER_STACK_MAX))
+            DieType.GRAVITY -> S["empurra inimigos comuns sem limite"]
+            DieType.TIME -> S.f("congela também quem está a até %s do alvo", num(Balance.TIME_AREA))
+            DieType.TRAP -> S.f("%d minas por dado, com raio ×%s", Balance.TRAP_MAX_PER_DIE_MAX, num(Balance.TRAP_MAX_RADIUS))
+            DieType.QUAKE -> S.f("cada tremor deixa todos %s mais lentos por %s s", pct(Balance.QUAKE_SLOW), num(Balance.QUAKE_SLOW_TIME))
+            DieType.REAPER -> S["executa chefes também, abaixo de metade do limite"]
+            DieType.NOVA -> S.f("explosões com raio e dano ×%s, inclusive em cadeia", num(Balance.NOVA_MAX))
+            DieType.LUCK -> S.f("sorteia de %sx a %sx: nunca erra", num(Balance.LUCK_MIN_MULT_MAX), num(Balance.LUCK_MIN_MULT_MAX + Balance.LUCK_MAX_MULT))
+            DieType.VAMPIRE -> S.f("SP em dobro e +1 vida a cada %d abates (máx. %d)", Balance.VAMPIRE_LIFE_KILLS, Balance.MAX_LIVES)
+            DieType.CLONE -> S["clona qualquer dado, de qualquer quantidade de pips"]
+            DieType.BOOST -> S.f("a cada %s s sobe de graça um nível de power-up de um tipo do deck", num(Balance.BOOST_INTERVAL))
         }
 
         /** The synergies this type takes part in, each with its partner. */
@@ -150,17 +137,17 @@ data class DieInfo(val summary: String, val rows: List<Pair<String, String>>) {
             if (mine.isEmpty()) return null
             return mine.joinToString("; ") { s ->
                 val other = if (s.a == t) s.b else s.a
-                "${s.title} (com ${Skin.fullName(other)}): ${s.description}"
+                S.f("%s (com %s): %s", S[s.title], Skin.fullName(other), S[s.description])
             }
         }
 
         private fun powerUp(t: DieType): String {
             val bonus = Balance.POWER_MULT.drop(1).joinToString("/") { "+${pct(it - 1f)}" }
             return when (t) {
-                DieType.MINE -> "$bonus de SP gerado (níveis 2 a 5)"
-                DieType.POISON -> "$bonus no dano e no veneno (níveis 2 a 5)"
-                DieType.TRAP, DieType.NOVA -> "$bonus no dano das explosões (níveis 2 a 5)"
-                else -> "$bonus de dano (níveis 2 a 5)"
+                DieType.MINE -> S.f("%s de SP gerado (níveis 2 a 5)", bonus)
+                DieType.POISON -> S.f("%s no dano e no veneno (níveis 2 a 5)", bonus)
+                DieType.TRAP, DieType.NOVA -> S.f("%s no dano das explosões (níveis 2 a 5)", bonus)
+                else -> S.f("%s de dano (níveis 2 a 5)", bonus)
             }
         }
 
@@ -177,8 +164,10 @@ data class DieInfo(val summary: String, val rows: List<Pair<String, String>>) {
 
         private fun pct(f: Float) = "${(f * 100).roundToInt()}%"
 
-        /** Up to two decimals, decimal comma, no trailing zeros: 1 → "1", 0.35 → "0,35", 0.526 → "0,53". */
-        private fun num(f: Float): String =
-            BigDecimal(f.toDouble()).setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString().replace('.', ',')
+        /** Up to two decimals, decimal comma in Portuguese, no trailing zeros: 1 → "1", 0.35 → "0,35". */
+        private fun num(f: Float): String {
+            val plain = BigDecimal(f.toDouble()).setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+            return if (S.language == Language.EN) plain else plain.replace('.', ',')
+        }
     }
 }

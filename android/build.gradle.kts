@@ -22,8 +22,8 @@ android {
         applicationId = "com.iagothz.mergetd"
         minSdk = 24
         targetSdk = 36
-        versionCode = 4
-        versionName = "0.4.0"
+        versionCode = 5
+        versionName = "0.5.0"
     }
 
     sourceSets["main"].apply {
@@ -47,8 +47,10 @@ android {
 
     buildTypes {
         release {
-            // No shrinking: libGDX loads natives and classes reflectively, and the APK is small anyway.
-            isMinifyEnabled = false
+            // R8 with the libGDX keep rules in proguard-rules.pro.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             if (keystoreProps.isNotEmpty()) signingConfig = signingConfigs.getByName("release")
         }
     }

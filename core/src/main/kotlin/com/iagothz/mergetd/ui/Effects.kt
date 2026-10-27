@@ -99,16 +99,16 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
                 }
                 is GameEvent.Leaked -> shake(LEAK_SHAKE, 0.25f)
                 is GameEvent.Stolen -> if (texts.size < MAX_TEXTS) {
-                    texts += FloatingText("-${e.amount} SP", Layout.WORLD_W / 2, 1150f, bad = true)
+                    texts += FloatingText(S.f("-%d SP", e.amount), Layout.WORLD_W / 2, 1150f, bad = true)
                 }
                 is GameEvent.WaveStarted -> {
                     val boss = e.bossKind
                     show(
                         when {
-                            boss != null -> "Chefe: ${Skin.enemyName(boss)}"
-                            e.boss -> "Chefe!"
-                            e.special != null -> "${e.special.title}!"
-                            else -> "Onda ${e.wave}"
+                            boss != null -> S.f("Chefe: %s", Skin.enemyName(boss))
+                            e.boss -> S["Chefe!"]
+                            e.special != null -> S.f("%s!", S[e.special.title])
+                            else -> S.f("Onda %d", e.wave)
                         },
                         note = boss?.let { Skin.bossAbility(it) },
                         seconds = if (e.boss) BOSS_BANNER_TIME else BANNER_TIME,

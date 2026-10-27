@@ -20,9 +20,9 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
         m to Rectangle(24f + (i % 2) * 340f, 870f - (i / 2) * 300f, 332f, 280f)
     }
     private val modes = GameMode.entries.mapIndexed { i, m -> m to Rectangle(24f + i * 170f, 440f, 162f, 64f) }
-    private val confirm = Button(Rectangle(40f, 30f, 310f, 100f), "Confirmar")
-    private val back = Button(Rectangle(370f, 30f, 310f, 100f), "Voltar", color = Skin.PANEL)
-    private val playCode = Button(Rectangle(190f, 300f, 340f, 72f), "Jogar código", color = Color(0.55f, 0.30f, 0.75f, 1f))
+    private val confirm = Button(Rectangle(40f, 30f, 310f, 100f), S["Confirmar"])
+    private val back = Button(Rectangle(370f, 30f, 310f, 100f), S["Voltar"], color = Skin.PANEL)
+    private val playCode = Button(Rectangle(190f, 300f, 340f, 72f), S["Jogar código"], color = Color(0.55f, 0.30f, 0.75f, 1f))
     private var codeError = 0f
     private val tap = Tap<Button>()
 
@@ -60,28 +60,28 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.end()
 
         game.batch.begin()
-        game.batch.textShadowed(game.bigFont, "Partida", 360f, 1222f)
+        game.batch.textShadowed(game.bigFont, S["Partida"], 360f, 1222f)
         for ((m, r) in cards) {
-            game.batch.textCentered(game.font, m.title, r.x + r.width / 2, r.y + r.height - 30f)
+            game.batch.textCentered(game.font, S[m.title], r.x + r.width / 2, r.y + r.height - 30f)
             game.smallFont.color = Skin.difficultyColor(m.difficulty)
-            game.batch.textCentered(game.smallFont, m.difficulty.label, r.x + r.width / 2 - 70f, r.y + r.height - 62f)
+            game.batch.textCentered(game.smallFont, S[m.difficulty.label], r.x + r.width / 2 - 70f, r.y + r.height - 62f)
             game.smallFont.color = KEY_COLOR
-            game.batch.textCentered(game.smallFont, "recorde ${game.save.bestWave(m, mode)}", r.x + r.width / 2 + 60f, r.y + r.height - 62f)
+            game.batch.textCentered(game.smallFont, S.f("recorde %d", game.save.bestWave(m, mode)), r.x + r.width / 2 + 60f, r.y + r.height - 62f)
             game.smallFont.color = Color.WHITE
         }
         game.smallFont.color = KEY_COLOR
-        game.batch.textLeft(game.smallFont, "Modo", 24f, 532f)
+        game.batch.textLeft(game.smallFont, S["Modo"], 24f, 532f)
         game.smallFont.color = Color.WHITE
-        for ((m, r) in modes) game.batch.textCentered(game.smallFont, m.title, r.x + r.width / 2, r.y + r.height / 2 + 2f)
+        for ((m, r) in modes) game.batch.textCentered(game.smallFont, S[m.title], r.x + r.width / 2, r.y + r.height / 2 + 2f)
         game.tinyFont.color = Skin.GOLD
-        game.batch.textCentered(game.tinyFont, mode.description, 360f, 410f)
+        game.batch.textCentered(game.tinyFont, S[mode.description], 360f, 410f)
         game.tinyFont.color = Color.WHITE
         confirm.drawText(game.batch, game.font)
         back.drawText(game.batch, game.font)
         playCode.drawText(game.batch, game.smallFont)
         if (codeError > 0f) {
             game.smallFont.color = Skin.HEART
-            game.batch.textCentered(game.smallFont, "Código inválido", 360f, 270f)
+            game.batch.textCentered(game.smallFont, S["Código inválido"], 360f, 270f)
             game.smallFont.color = Color.WHITE
         }
         game.batch.end()
@@ -123,7 +123,7 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
 
                 override fun canceled() = Unit
             },
-            "Código da partida", "", "XXXX-XXXX-XXXX-XX",
+            S["Código da partida"], "", "XXXX-XXXX-XXXX-XX",
         )
     }
 

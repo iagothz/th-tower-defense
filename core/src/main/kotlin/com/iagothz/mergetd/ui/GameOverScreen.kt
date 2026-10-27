@@ -27,7 +27,7 @@ class GameOverScreen(
 ) : BaseScreen(game) {
     private class Confetto(var x: Float, var y: Float, val speed: Float, val sway: Float, val color: Color, val w: Float, val h: Float)
 
-    private val menu = Button(Rectangle(160f, 160f, 400f, 110f), "Menu")
+    private val menu = Button(Rectangle(160f, 160f, 400f, 110f), S["Menu"])
     private val tap = Tap<Button>()
     private val panel = Rectangle(70f, 300f, 580f, 540f)
     private val rng = Random(System.nanoTime())
@@ -40,14 +40,14 @@ class GameOverScreen(
     )
 
     private val rows: List<Pair<String, String>> = listOf(
-        (if (challengeDay != null) "Desafio do dia" else "Mapa") to
-            (if (challengeDay != null) DailyChallenge.of(challengeDay).dateLabel else "${map.title} · ${mode.title}"),
-        "Onda alcançada" to "$wave",
-        "Inimigos derrotados" to "${stats.kills}",
-        "Chefes derrotados" to "${stats.bosses}",
-        "Merges" to "${stats.merges}",
-        "Dados comprados" to "${stats.bought}",
-        "Recorde" to "onda ${if (challengeDay != null) game.save.dailyBest(challengeDay) else game.save.bestWave(map, mode)}",
+        S[if (challengeDay != null) "Desafio do dia" else "Mapa"] to
+            (if (challengeDay != null) DailyChallenge.of(challengeDay).dateLabel else "${S[map.title]} · ${S[mode.title]}"),
+        S["Onda alcançada"] to "$wave",
+        S["Inimigos derrotados"] to "${stats.kills}",
+        S["Chefes derrotados"] to "${stats.bosses}",
+        S["Merges"] to "${stats.merges}",
+        S["Dados comprados"] to "${stats.bought}",
+        S["Recorde"] to S.f("onda %d", if (challengeDay != null) game.save.dailyBest(challengeDay) else game.save.bestWave(map, mode)),
     )
 
     override fun draw(delta: Float) {
@@ -79,17 +79,17 @@ class GameOverScreen(
         shapes.end()
 
         game.batch.begin()
-        game.batch.textShadowed(game.bigFont, "Fim de jogo", 360f, 1020f)
+        game.batch.textShadowed(game.bigFont, S["Fim de jogo"], 360f, 1020f)
         if (isRecord) {
             val pulse = 0.8f + 0.2f * sin(time * 4f)
-            game.batch.textShadowed(game.font, "Novo recorde!", 360f, 920f, Color(1f, 0.85f * pulse + 0.1f, 0.3f, 1f))
+            game.batch.textShadowed(game.font, S["Novo recorde!"], 360f, 920f, Color(1f, 0.85f * pulse + 0.1f, 0.3f, 1f))
         }
         var y = panel.y + panel.height - 44f
         for ((key, value) in rows) {
             game.smallFont.color = KEY_COLOR
             game.batch.textLeft(game.smallFont, key, panel.x + 32f, y)
             game.smallFont.color = Color.WHITE
-            game.font.color = if (key == "Onda alcançada") Skin.GOLD else Color.WHITE
+            game.font.color = if (key == S["Onda alcançada"]) Skin.GOLD else Color.WHITE
             game.batch.textRight(game.font, value, panel.x + panel.width - 32f, y)
             game.font.color = Color.WHITE
             y -= 58f
@@ -98,12 +98,12 @@ class GameOverScreen(
         game.smallFont.draw(game.batch, Tips.forKiller(stats.killedBy), panel.x + 32f, y + 10f, panel.width - 64f, Align.left, true)
         game.smallFont.color = Color.WHITE
         if (unlocked.isNotEmpty()) {
-            val names = unlocked.joinToString(", ") { it.title }
-            game.batch.textShadowed(game.smallFont, "Conquista: $names", 360f, panel.y - 24f, Skin.GOLD)
+            val names = unlocked.joinToString(", ") { S[it.title] }
+            game.batch.textShadowed(game.smallFont, S.f("Conquista: %s", names), 360f, panel.y - 24f, Skin.GOLD)
         }
         if (code != null) {
             game.tinyFont.color = KEY_COLOR
-            game.batch.textCentered(game.tinyFont, "Código da partida: $code", 360f, 1080f)
+            game.batch.textCentered(game.tinyFont, S.f("Código da partida: %s", code), 360f, 1080f)
             game.tinyFont.color = Color.WHITE
         }
         menu.drawText(game.batch, game.font)

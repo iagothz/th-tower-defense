@@ -14,15 +14,13 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
     /** A decorative die drifting down behind the menu. */
     private class Drop(var type: DieType, var pips: Int, var x: Float, var y: Float, var size: Float, var speed: Float, val sway: Float)
 
-    private val play = Button(Rectangle(160f, 650f, 400f, 100f), "Jogar")
-    private val deck = Button(Rectangle(160f, 540f, 195f, 96f), "Deck")
-    private val map = Button(Rectangle(365f, 540f, 195f, 96f), "Partida")
-    private val daily = Button(Rectangle(160f, 434f, 195f, 96f), "Desafio", color = Color(0.55f, 0.30f, 0.75f, 1f))
-    private val stats = Button(Rectangle(365f, 434f, 195f, 96f), "Estatísticas", color = Skin.PANEL)
-    private val sound = Button(Rectangle(160f, 330f, 126f, 90f), "", color = Skin.PANEL)
-    private val vibration = Button(Rectangle(297f, 330f, 126f, 90f), "", color = Skin.PANEL)
-    private val music = Button(Rectangle(434f, 330f, 126f, 90f), "", color = Skin.PANEL)
-    private val buttons = listOf(play, deck, map, daily, stats, sound, vibration, music)
+    private val play = Button(Rectangle(160f, 650f, 400f, 100f), S["Jogar"])
+    private val deck = Button(Rectangle(160f, 540f, 195f, 96f), S["Deck"])
+    private val map = Button(Rectangle(365f, 540f, 195f, 96f), S["Partida"])
+    private val daily = Button(Rectangle(160f, 434f, 195f, 96f), S["Desafio"], color = Color(0.55f, 0.30f, 0.75f, 1f))
+    private val stats = Button(Rectangle(365f, 434f, 195f, 96f), S["Estatísticas"], color = Skin.PANEL)
+    private val settings = Button(Rectangle(160f, 330f, 400f, 90f), S["Configurações"], color = Skin.PANEL)
+    private val buttons = listOf(play, deck, map, daily, stats, settings)
     private val tap = Tap<Button>()
     private val rng = Random(System.nanoTime())
     private val drops = List(DROPS) { newDrop(rng.nextFloat() * Layout.WORLD_H) }
@@ -41,9 +39,6 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
 
     override fun draw(delta: Float) {
         time += delta
-        sound.text = if (game.save.soundOn) "Som: sim" else "Som: não"
-        vibration.text = if (game.save.vibrationOn) "Vibrar: sim" else "Vibrar: não"
-        music.text = if (game.save.musicOn) "Música: sim" else "Música: não"
         buttons.forEach { it.pressed = tap.current === it }
         for (d in drops) {
             d.y -= d.speed * delta
@@ -75,13 +70,13 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
 
         game.batch.begin()
         game.batch.textShadowed(game.bigFont, "Merge TD", 360f, 960f)
-        game.batch.textCentered(game.smallFont, "Junte dados iguais, segure as ondas", 360f, 900f)
+        game.batch.textCentered(game.smallFont, S["Junte dados iguais, segure as ondas"], 360f, 900f)
         val chosen = game.save.map
         val mode = game.save.mode
-        game.batch.textLeft(game.font, "${chosen.title} · ${mode.title}: recorde ${game.save.bestWave(chosen, mode)}", 212f, 840f)
+        game.batch.textLeft(game.font, S.f("%s · %s: recorde %d", S[chosen.title], S[mode.title], game.save.bestWave(chosen, mode)), 212f, 840f)
         for (b in buttons) b.drawText(game.batch, if (b === play || b === deck || b === map) game.font else game.smallFont)
         game.tinyFont.color = Color(1f, 1f, 1f, 0.75f)
-        game.batch.textCentered(game.tinyFont, "${today.dateLabel} · ${today.map.title}", daily.rect.x + daily.rect.width / 2, daily.rect.y + 18f)
+        game.batch.textCentered(game.tinyFont, "${today.dateLabel} · ${S[today.map.title]}", daily.rect.x + daily.rect.width / 2, daily.rect.y + 18f)
         game.tinyFont.color = Color.WHITE
         game.smallFont.color = Color(1f, 1f, 1f, 0.4f)
         game.batch.textCentered(game.smallFont, "v${MergeTdGame.VERSION}", 360f, 40f)
@@ -102,15 +97,7 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
             map -> game.showMap()
             daily -> game.startDaily()
             stats -> game.showStats()
-            sound -> {
-                game.save.soundOn = !game.save.soundOn
-                game.sfx.click()
-            }
-            vibration -> {
-                game.save.vibrationOn = !game.save.vibrationOn
-                if (game.save.vibrationOn) game.sfx.play(setOf("boss"))
-            }
-            music -> game.save.musicOn = !game.save.musicOn
+            settings -> game.showSettings()
         }
     }
 

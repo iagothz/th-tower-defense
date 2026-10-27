@@ -176,6 +176,28 @@ class SaveData(private val prefs: Preferences) {
             prefs.flush()
         }
 
+    /** 0..1 multipliers on the effect and music volumes. */
+    var soundVolume: Float
+        get() = prefs.getFloat("soundVolume", 1f)
+        set(value) {
+            prefs.putFloat("soundVolume", value.coerceIn(0f, 1f))
+            prefs.flush()
+        }
+
+    var musicVolume: Float
+        get() = prefs.getFloat("musicVolume", 1f)
+        set(value) {
+            prefs.putFloat("musicVolume", value.coerceIn(0f, 1f))
+            prefs.flush()
+        }
+
+    var language: Language
+        get() = prefs.getString("language", null)?.let { Language.byId(it) } ?: Language.AUTO
+        set(value) {
+            prefs.putString("language", value.id)
+            prefs.flush()
+        }
+
     var musicOn: Boolean
         get() = prefs.getBoolean("music", true)
         set(value) {
