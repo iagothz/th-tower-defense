@@ -89,4 +89,20 @@ class DragControllerTest {
         assertNull(drag.dragging)
         assertFalse(drag.up(Layout.cellCenter(a)))
     }
+
+    @Test
+    fun dragFollowsDieMovedBySwapper() {
+        val (match, drag) = setup()
+        val fire = match.board[a]
+        val ice = match.board[c]
+        drag.down(Layout.cellCenter(a))
+        match.board.swap(a, c)
+        assertEquals(c, drag.dragging)
+        assertEquals(listOf(b), drag.highlights())
+        assertTrue(drag.up(Layout.cellCenter(b)))
+        assertNull(match.board[c])
+        assertSame(ice, match.board[a])
+        assertEquals(2, match.board[b]!!.pips)
+        assertFalse(fire === match.board[b])
+    }
 }

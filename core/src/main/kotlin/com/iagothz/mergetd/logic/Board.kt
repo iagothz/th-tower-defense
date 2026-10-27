@@ -39,7 +39,8 @@ class Board {
             else -> deck.random(rng)
         }
         this[from] = null
-        this[to] = Die(type, a.pips + 1)
+        // A merge can't be used to shake off a Silencer.
+        this[to] = Die(type, a.pips + 1).apply { disabledFor = maxOf(a.disabledFor, b.disabledFor) }
         return true
     }
 

@@ -81,10 +81,13 @@ class BoardTest {
     }
 
     @Test
-    fun mergeResultIsFresh() {
-        val board = board(Die(DieType.FIRE, 2).apply { disabledFor = 5f }, Die(DieType.FIRE, 2))
+    fun mergeKeepsSilenceButResetsTimers() {
+        val silenced = Die(DieType.FIRE, 2).apply { disabledFor = 5f; cooldown = 1f; timer = 3f }
+        val board = board(Die(DieType.FIRE, 2).apply { disabledFor = 2f }, silenced)
         assertTrue(board.merge(a, b, deck, rng))
-        assertFalse(board[b]!!.disabled)
+        assertEquals(5f, board[b]!!.disabledFor)
+        assertEquals(0f, board[b]!!.cooldown)
+        assertEquals(0f, board[b]!!.timer)
     }
 
     @Test
