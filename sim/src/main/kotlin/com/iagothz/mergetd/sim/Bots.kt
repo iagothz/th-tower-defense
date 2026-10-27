@@ -46,9 +46,10 @@ class SmartBot : Bot {
             return
         }
 
+        // Power-ups go to a real attacker: wildcards and the Clone hit too softly to be worth the SP.
         val strongest = m.board.occupied()
             .map { it.second }
-            .filter { it.type.attacks }
+            .filter { it.type.attacks && !it.type.wildcard && it.type != DieType.CLONE }
             .groupBy { it.type }
             .maxByOrNull { (_, dice) -> dice.sumOf { it.pips } }
             ?.key ?: return
