@@ -22,12 +22,16 @@ class Backdrop {
         }
     }
     private val tmp = Color()
+    private val tmp2 = Color()
 
     /** Call inside a Filled batch with blending on. [time] is the clock in seconds; the sky covers the whole visible world. */
     fun draw(shapes: ShapeRenderer, time: Float, theme: MapTheme, worldWidth: Float, worldHeight: Float) {
         val x = (Layout.WORLD_W - worldWidth) / 2
         val y = (Layout.WORLD_H - worldHeight) / 2
-        shapes.rect(x, y, worldWidth, worldHeight, theme.skyBottom, theme.skyBottom, theme.skyTop, theme.skyTop)
+        val tint = Cosmetics.sky.color
+        val top = tmp.set(theme.skyTop).mul(tint.r, tint.g, tint.b, 1f)
+        val bottom = tmp2.set(theme.skyBottom).mul(tint.r, tint.g, tint.b, 1f)
+        shapes.rect(x, y, worldWidth, worldHeight, bottom, bottom, top, top)
         for (s in stars) {
             val twinkle = 0.35f + 0.65f * (0.5f + 0.5f * sin(time * s.speed + s.phase))
             shapes.color = tmp.set(0.75f, 0.8f, 0.95f, 0.55f * twinkle)

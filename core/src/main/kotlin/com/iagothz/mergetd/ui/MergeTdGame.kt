@@ -41,6 +41,7 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
         generator.dispose()
         save = SaveData(Gdx.app.getPreferences("merge-td"))
         sfx = Sfx(save)
+        Cosmetics.load(save)
         if (devMode || !resumeSavedMatch()) showMenu()
     }
 
@@ -84,8 +85,12 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
         return true
     }
 
-    fun showGameOver(map: GameMap, wave: Int, isRecord: Boolean, stats: MatchStats, challengeDay: Int? = null, mode: GameMode = GameMode.NORMAL) =
-        switchTo(GameOverScreen(this, map, wave, isRecord, stats, challengeDay, mode))
+    fun showGameOver(
+        map: GameMap, wave: Int, isRecord: Boolean, stats: MatchStats, challengeDay: Int? = null,
+        mode: GameMode = GameMode.NORMAL, unlocked: Set<Achievement> = emptySet(),
+    ) = switchTo(GameOverScreen(this, map, wave, isRecord, stats, challengeDay, mode, unlocked))
+
+    fun showAchievements() = switchTo(AchievementsScreen(this))
 
     /** Fades to black, swaps the screen, fades back in. The first screen, or one requested mid-fade, swaps at once. */
     private fun switchTo(screen: Screen) {

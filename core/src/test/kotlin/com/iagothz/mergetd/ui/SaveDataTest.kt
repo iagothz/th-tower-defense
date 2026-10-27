@@ -12,8 +12,9 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SaveDataTest {
+    companion object {
     /** In-memory Preferences covering the calls SaveData makes. */
-    private fun memoryPrefs(): Preferences {
+    fun memoryPrefs(): Preferences {
         val values = mutableMapOf<String, Any?>()
         return Proxy.newProxyInstance(Preferences::class.java.classLoader, arrayOf(Preferences::class.java)) { proxy, method, args ->
             when (method.name) {
@@ -27,6 +28,7 @@ class SaveDataTest {
                 else -> throw UnsupportedOperationException(method.name)
             }
         } as Preferences
+    }
     }
 
     @Test

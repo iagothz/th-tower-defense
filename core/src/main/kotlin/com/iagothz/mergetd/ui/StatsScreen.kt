@@ -9,7 +9,8 @@ import com.iagothz.mergetd.logic.Vec2
 
 /** Lifetime totals, the record on each map, the best decks and the last daily challenges. */
 class StatsScreen(game: MergeTdGame) : BaseScreen(game) {
-    private val back = Button(Rectangle(160f, 30f, 400f, 100f), "Voltar", color = Skin.PANEL)
+    private val back = Button(Rectangle(370f, 30f, 310f, 100f), "Voltar", color = Skin.PANEL)
+    private val achievements = Button(Rectangle(40f, 30f, 310f, 100f), "Conquistas")
     private val tap = Tap<Button>()
     private val totalsPanel = Rectangle(24f, 1010f, 672f, 170f)
     private val mapsPanel = Rectangle(24f, 840f, 672f, 150f)
@@ -21,6 +22,7 @@ class StatsScreen(game: MergeTdGame) : BaseScreen(game) {
 
     override fun draw(delta: Float) {
         back.pressed = tap.current === back
+        achievements.pressed = tap.current === achievements
         val shapes = game.shapes
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         for (p in listOf(totalsPanel, mapsPanel, decksPanel, dailyPanel)) {
@@ -34,6 +36,7 @@ class StatsScreen(game: MergeTdGame) : BaseScreen(game) {
             for ((j, t) in entry.first.withIndex()) shapes.die(t, 1, decksPanel.x + 52f + j * 50f, y, 40f)
         }
         back.drawShape(shapes)
+        achievements.drawShape(shapes)
         shapes.end()
 
         game.batch.begin()
@@ -77,6 +80,7 @@ class StatsScreen(game: MergeTdGame) : BaseScreen(game) {
             game.batch.textRight(game.font, "onda ${entry.second}", dailyPanel.x + dailyPanel.width - 28f, y)
         }
         back.drawText(game.batch, game.font)
+        achievements.drawText(game.batch, game.font)
         game.batch.end()
     }
 
@@ -92,12 +96,17 @@ class StatsScreen(game: MergeTdGame) : BaseScreen(game) {
         game.smallFont.color = Color.WHITE
     }
 
-    override fun onTouchDown(p: Vec2) = tap.press(back.takeIf { it.contains(p.x, p.y) })
+    private fun buttonAt(p: Vec2) = listOf(back, achievements).firstOrNull { it.contains(p.x, p.y) }
+
+    override fun onTouchDown(p: Vec2) = tap.press(buttonAt(p))
 
     override fun onTouchCancelled() = tap.cancel()
 
     override fun onTouchUp(p: Vec2) {
-        if (tap.release(back.takeIf { it.contains(p.x, p.y) }) === back) game.showMenu()
+        when (tap.release(buttonAt(p))) {
+            back -> game.showMenu()
+            achievements -> game.showAchievements()
+        }
     }
 
     private companion object {

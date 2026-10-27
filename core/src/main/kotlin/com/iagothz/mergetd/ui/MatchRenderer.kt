@@ -199,7 +199,7 @@ class MatchRenderer(
         val highlights = drag.highlights().toSet()
         shapes.color = Skin.SHADOW
         shapes.roundedRect(BOARD.x + 3f, BOARD.y - 8f, BOARD.width, BOARD.height, 26f)
-        shapes.color = Skin.BOARD_RIM
+        shapes.color = Cosmetics.frameColor
         shapes.roundedRect(BOARD.x, BOARD.y, BOARD.width, BOARD.height, 26f)
         shapes.color = Skin.BOARD
         shapes.roundedRect(BOARD.x + 4f, BOARD.y + 4f, BOARD.width - 8f, BOARD.height - 8f, 22f)

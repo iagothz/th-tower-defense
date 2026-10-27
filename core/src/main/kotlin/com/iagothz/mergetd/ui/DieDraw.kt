@@ -47,5 +47,18 @@ fun ShapeRenderer.die(type: DieType, pips: Int, cx: Float, cy: Float, size: Floa
     color = ink.set(Skin.pipColor(type)).mul(brightness, brightness, brightness, 1f).also { it.a = alpha }
     val step = size * 0.25f
     val r = size * 0.0885f
-    for ((dx, dy) in PIPS[pips - 1]) circle(cx + dx * step, fy + dy * step, r, 14)
+    for ((dx, dy) in PIPS[pips - 1]) pip(cx + dx * step, fy + dy * step, r)
+}
+
+/** One pip in the equipped shape. */
+private fun ShapeRenderer.pip(x: Float, y: Float, r: Float) {
+    when (Cosmetics.pips) {
+        Cosmetic.PIPS_SQUARE -> rect(x - r * 0.85f, y - r * 0.85f, r * 1.7f, r * 1.7f)
+        Cosmetic.PIPS_DIAMOND -> polygon(x, y, r * 1.15f, 4, 0.785f)
+        Cosmetic.PIPS_STAR -> {
+            polygon(x, y, r * 1.1f, 3, 1.571f)
+            polygon(x, y, r * 1.1f, 3, -1.571f)
+        }
+        else -> circle(x, y, r, 14)
+    }
 }

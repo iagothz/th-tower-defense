@@ -29,4 +29,21 @@ class MatchStatsTest {
         assertEquals(1, stats.merges)
         assertEquals(2, stats.bought)
     }
+
+    @Test
+    fun observingTheBoardTracksPipsStacksSynergiesAndRiches() {
+        val m = com.iagothz.mergetd.logic.Match(com.iagothz.mergetd.logic.DeckCodec.DEFAULT, kotlin.random.Random(1))
+        val stats = MatchStats()
+        m.board[Cell(0, 0)] = com.iagothz.mergetd.logic.Die(DieType.HUNTER, 6).apply { stacks = 42 }
+        m.board[Cell(0, 1)] = com.iagothz.mergetd.logic.Die(DieType.FIRE, 1)
+        m.board[Cell(0, 2)] = com.iagothz.mergetd.logic.Die(DieType.WIND, 1)
+        m.sp = 1200
+        stats.observe(m)
+        assertEquals(6, stats.maxPips)
+        assertEquals(42, stats.hunterStacks)
+        assertEquals(true, stats.synergyUsed)
+        assertEquals(true, stats.rich)
+        stats.consume(listOf(GameEvent.Unmerged(Cell(0, 0), Cell(0, 1))))
+        assertEquals(true, stats.undoUsed)
+    }
 }

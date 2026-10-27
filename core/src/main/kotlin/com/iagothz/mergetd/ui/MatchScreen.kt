@@ -83,6 +83,7 @@ class MatchScreen(
             val events = match.drainEvents()
             effects.consume(events)
             stats.consume(events)
+            stats.observe(match)
             tutorial.consume(events)
             tutorial.update(delta)
             if (tutorial.finished && !game.save.tutorialDone) game.save.tutorialDone = true
@@ -352,16 +353,23 @@ class MatchScreen(
         }
     }
 
-    /** Clears the saved match and, outside dev mode, books the result (totals plus the relevant record). */
-    private fun book() {
+    /** Clears the saved match and, outside dev mode, books the result (totals, the relevant record, achievements). */
+    private fun book(): Set<Achievement> {
         game.save.clearMatch()
-        if (game.devMode) return
+        if (game.devMode) return emptySet()
         game.save.recordMatch(match.map, match.deck, match.wave, stats.kills, stats.bosses, stats.merges, match.challengeDay, match.mode)
+        val t = game.save.totals
+        val progress = AchievementProgress(
+            wave = match.wave, mode = match.mode, kills = t.kills, bosses = t.bosses, merges = t.merges, games = t.games,
+            maxPips = stats.maxPips, synergy = stats.synergyUsed, hunterStacks = stats.hunterStacks,
+            daily = match.challengeDay != null, undo = stats.undoUsed, rich = stats.rich, mapsAtTen = game.save.mapsAt(10),
+        )
+        return game.save.unlock(Achievements.earned(progress))
     }
 
     private fun finish() {
-        book()
-        game.showGameOver(match.map, match.wave, !game.devMode && match.wave > previousBest, stats, match.challengeDay, match.mode)
+        val fresh = book()
+        game.showGameOver(match.map, match.wave, !game.devMode && match.wave > previousBest, stats, match.challengeDay, match.mode, fresh)
     }
 
     private companion object {

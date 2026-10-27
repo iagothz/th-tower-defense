@@ -22,6 +22,7 @@ class GameOverScreen(
     private val stats: MatchStats,
     private val challengeDay: Int? = null,
     private val mode: GameMode = GameMode.NORMAL,
+    private val unlocked: Set<Achievement> = emptySet(),
 ) : BaseScreen(game) {
     private class Confetto(var x: Float, var y: Float, val speed: Float, val sway: Float, val color: Color, val w: Float, val h: Float)
 
@@ -95,6 +96,10 @@ class GameOverScreen(
         game.smallFont.color = Skin.GOLD
         game.smallFont.draw(game.batch, Tips.forKiller(stats.killedBy), panel.x + 32f, y + 10f, panel.width - 64f, Align.left, true)
         game.smallFont.color = Color.WHITE
+        if (unlocked.isNotEmpty()) {
+            val names = unlocked.joinToString(", ") { it.title }
+            game.batch.textShadowed(game.smallFont, "Conquista: $names", 360f, panel.y - 24f, Skin.GOLD)
+        }
         menu.drawText(game.batch, game.font)
         game.batch.end()
     }

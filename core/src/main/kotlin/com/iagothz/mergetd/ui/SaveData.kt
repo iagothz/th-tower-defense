@@ -86,6 +86,33 @@ class SaveData(private val prefs: Preferences) {
         .filter { it.key.startsWith(prefix) }
         .mapNotNull { e -> e.value?.toString()?.toIntOrNull()?.let { e.key.removePrefix(prefix) to it } }
 
+    // --- Achievements and cosmetics ---
+
+    fun hasAchievement(a: Achievement): Boolean = prefs.getBoolean("ach.${a.id}", false)
+
+    /** Marks [earned] as done; returns the ones that weren't before. */
+    fun unlock(earned: List<Achievement>): Set<Achievement> {
+        val fresh = earned.filter { !hasAchievement(it) }.toSet()
+        for (a in fresh) prefs.putBoolean("ach.${a.id}", true)
+        if (fresh.isNotEmpty()) prefs.flush()
+        return fresh
+    }
+
+    fun hasCosmetic(c: Cosmetic): Boolean = c.unlockedByDefault || Achievement.entries.any { it.unlocks == c && hasAchievement(it) }
+
+    fun equipped(slot: Cosmetic.Slot): Cosmetic =
+        prefs.getString("cosmetic.${slot.name.lowercase()}", null)?.let { Cosmetic.byId(it) }?.takeIf { hasCosmetic(it) }
+            ?: Cosmetic.default(slot)
+
+    fun equip(c: Cosmetic) {
+        if (!hasCosmetic(c)) return
+        prefs.putString("cosmetic.${c.slot.name.lowercase()}", c.id)
+        prefs.flush()
+    }
+
+    /** How many maps have a normal-mode record of at least [wave]. */
+    fun mapsAt(wave: Int): Int = GameMap.entries.count { bestWave(it) >= wave }
+
     var map: GameMap
         get() = prefs.getString("map", null)?.let { GameMap.byId(it) } ?: GameMap.DEFAULT
         set(value) {

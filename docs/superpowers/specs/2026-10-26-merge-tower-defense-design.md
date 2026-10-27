@@ -134,6 +134,11 @@ O tabuleiro, o HUD e os botões nunca mudam de lugar; cada mapa é um caminho di
 - **7 pips**: cada tipo ganha uma habilidade própria (anel dourado no dado; linha "7 pips" em `DieInfo.maxed`). Constantes em `Balance` (`*_MAX`, `ICE_FREEZE`, `TIME_AREA`, `BOOST_INTERVAL`...).
 - **Modos** (`GameMode`), escolhidos na tela Partida e guardados no save: Normal; Boss Rush (um chefe por onda, 35% da vida); Sobrevivência (1 vida, SP ×2); Rápido (intervalo 1 s, spawn 2× mais rápido, inimigos ×1,3 de velocidade e ×0,6 de vida). Recorde por mapa e modo (`best.<mapa>.<modo>`). Simulador com deck padrão: Normal 20, Boss Rush 14, Sobrevivência 20, Rápido 21.
 
+## Conquistas e cosméticos
+
+- 20 conquistas (`Achievement`), avaliadas no fim de cada partida a partir de `AchievementProgress` (resultado, modo, flags observadas no tabuleiro por `MatchStats.observe`, totais do save). Guardadas como `ach.<id>`.
+- 13 delas destravam um cosmético só visual (`Cosmetic`): 6 molduras do tabuleiro, 4 tons de céu (tinta multiplicada no gradiente), 3 formas de pip. Equipado por slot em `cosmetic.<slot>`, lido pelos renderers via `Cosmetics`. Tela Conquistas (botão em Estatísticas): toque numa linha destravada para equipar; de novo para voltar ao padrão.
+
 ## Meta, tutorial e áudio
 
 - **Tutorial** na primeira partida (`Tutorial`): Comprar → juntar → power-up, cada balão some ao fazer; Pular; `tutorialDone` no save.
