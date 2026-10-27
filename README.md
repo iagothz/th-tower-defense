@@ -1,5 +1,7 @@
 # Merge TD
 
+[![CI](https://github.com/iagothz/th-tower-defense/actions/workflows/ci.yml/badge.svg)](https://github.com/iagothz/th-tower-defense/actions/workflows/ci.yml)
+
 Tower defense de merge no estilo Random Dice, para jogar offline no Android. Feito em Kotlin + libGDX.
 
 ## Como jogar
@@ -7,6 +9,8 @@ Tower defense de merge no estilo Random Dice, para jogar offline no Android. Fei
 - Compre dados com SP. Cada dado comprado é um tipo aleatório do seu deck, com 1 pip.
 - Arraste um dado sobre outro do **mesmo tipo e mesmo número de pips** para gerar um dado com +1 pip de tipo aleatório. O Espelho combina com qualquer tipo (resultado sorteado), o Reforço também, mas garante o tipo do outro dado, e o Clonador vira uma cópia do dado em que for solto.
 - Gaste SP nos botões de baixo para aumentar o dano de um tipo (níveis 1 a 5).
+- **Segure** um dado no tabuleiro para ver o que ele faz e quanto está batendo agora. O botão **2x** acelera a partida; o de pausa tem Continuar, Reiniciar e Sair (os dois últimos pedem confirmação).
+- Entre as ondas, o topo mostra o que vem na próxima (quantos de cada inimigo) e em quantas ondas chega o chefe.
 - As ondas são infinitas, com um chefe a cada 10 ondas. Você tem 3 vidas; o recorde é a maior onda alcançada.
 - Se você trocar de app no meio da partida, o jogo pausa e salva. Mesmo que o Android feche o jogo, ao abrir de novo a partida volta de onde parou.
 - Na tela **Mapa**, escolha entre 4 caminhos (Ferradura, Serpente, Anel e Reta), com dificuldade e recorde próprios.
@@ -26,8 +30,35 @@ Tower defense de merge no estilo Random Dice, para jogar offline no Android. Fei
 ## Testes
 
 ```bash
-./gradlew :core:test
+./gradlew :core:test :sim:test
 ```
+
+O GitHub Actions (`.github/workflows/ci.yml`) roda os testes e gera o APK de debug a cada push em `main`; o APK fica nos artefatos da execução.
+
+## APK
+
+```bash
+./gradlew :android:assembleDebug
+```
+
+Para o APK de release assinado, crie uma chave uma única vez e aponte para ela em `android/keystore.properties` (os dois ficam fora do git):
+
+```bash
+keytool -genkeypair -keystore android/keystore/merge-td.jks -alias mergetd -keyalg RSA -keysize 2048 -validity 10000
+```
+
+```properties
+storeFile=keystore/merge-td.jks
+storePassword=...
+keyPassword=...
+keyAlias=mergetd
+```
+
+```bash
+./gradlew :android:assembleRelease
+```
+
+Guarde a chave e as senhas: atualizar um app instalado exige a mesma assinatura. O ícone é gerado por `python tools/make_icons.py` (precisa do Pillow).
 
 ## Modo de teste (só no PC)
 

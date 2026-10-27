@@ -1,6 +1,7 @@
 package com.iagothz.mergetd.ui
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.Input
 import com.badlogic.gdx.audio.Sound
 import com.iagothz.mergetd.logic.GameEvent
 
@@ -38,6 +39,12 @@ class Sfx(private val save: SaveData) {
     private val sounds = NAMES.associateWith { Gdx.audio.newSound(Gdx.files.internal("sounds/$it.wav")) }
 
     fun play(names: Set<String>) {
+        if (save.vibrationOn && Gdx.input.isPeripheralAvailable(Input.Peripheral.Vibrator)) {
+            when {
+                "leak" in names -> Gdx.input.vibrate(80)
+                "boss" in names -> Gdx.input.vibrate(40)
+            }
+        }
         if (!save.soundOn) return
         names.forEach { sounds[it]?.play(VOLUME) }
     }

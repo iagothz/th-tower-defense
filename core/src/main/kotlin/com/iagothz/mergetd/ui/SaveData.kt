@@ -27,6 +27,13 @@ class SaveData(private val prefs: Preferences) {
             prefs.flush()
         }
 
+    var vibrationOn: Boolean
+        get() = prefs.getBoolean("vibration", true)
+        set(value) {
+            prefs.putBoolean("vibration", value)
+            prefs.flush()
+        }
+
     var soundOn: Boolean
         get() = prefs.getBoolean("sound", true)
         set(value) {

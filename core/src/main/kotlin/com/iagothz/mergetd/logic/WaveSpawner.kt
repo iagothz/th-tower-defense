@@ -9,6 +9,12 @@ object WaveSpawner {
 
     fun waveSize(n: Int): Int = minOf(Balance.MAX_WAVE_SIZE, 8 + 2 * n)
 
+    /** Waves from [current] until the next boss wave (10 right after a boss). */
+    fun wavesUntilBoss(current: Int): Int = Balance.BOSS_EVERY - current % Balance.BOSS_EVERY
+
+    /** How many of each kind wave [n] brings, in order of first appearance; what the HUD previews. */
+    fun preview(n: Int): Map<EnemyKind, Int> = composition(n).groupingBy { it }.eachCount()
+
     fun composition(n: Int): List<EnemyKind> {
         if (isBossWave(n)) return listOf(BOSSES[(n / Balance.BOSS_EVERY - 1) % BOSSES.size])
         return List(waveSize(n)) { i ->

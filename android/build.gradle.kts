@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     kotlin("android")
@@ -5,6 +7,12 @@ plugins {
 
 val gdxVersion: String by project
 val natives: Configuration by configurations.creating
+
+// Release signing comes from android/keystore.properties (not in git); without it, release builds are unsigned.
+val keystoreProps = Properties().apply {
+    val f = rootProject.file("android/keystore.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
 
 android {
     namespace = "com.iagothz.mergetd"
@@ -14,8 +22,8 @@ android {
         applicationId = "com.iagothz.mergetd"
         minSdk = 24
         targetSdk = 36
-        versionCode = 2
-        versionName = "0.2.0"
+        versionCode = 3
+        versionName = "0.3.0"
     }
 
     sourceSets["main"].apply {
@@ -24,6 +32,25 @@ android {
         res.srcDirs("res")
         jniLibs.srcDirs("libs")
         assets.srcDirs("../assets")
+    }
+
+    signingConfigs {
+        if (keystoreProps.isNotEmpty()) {
+            create("release") {
+                storeFile = file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            // No shrinking: libGDX loads natives and classes reflectively, and the APK is small anyway.
+            isMinifyEnabled = false
+            if (keystoreProps.isNotEmpty()) signingConfig = signingConfigs.getByName("release")
+        }
     }
 
     compileOptions {

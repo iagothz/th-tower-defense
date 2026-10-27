@@ -145,6 +145,13 @@ object Skin {
 
     fun enemyName(k: EnemyKind): String = enemyNames.getValue(k)
 
+    fun enemyPlural(k: EnemyKind): String = when (k) {
+        EnemyKind.NORMAL -> "soldados"
+        EnemyKind.FAST -> "corredores"
+        EnemyKind.TANK -> "tanques"
+        else -> enemyName(k)
+    }
+
     fun enemyRadius(k: EnemyKind): Float = when {
         k.isBoss -> 28f
         k == EnemyKind.TANK -> 22f

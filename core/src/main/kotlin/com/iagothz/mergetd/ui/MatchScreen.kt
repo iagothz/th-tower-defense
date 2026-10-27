@@ -6,6 +6,12 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
+import com.badlogic.gdx.utils.Align
+import com.iagothz.mergetd.logic.Cell
+import com.iagothz.mergetd.logic.Combat
+import com.iagothz.mergetd.logic.Die
+import com.iagothz.mergetd.logic.DieType
+import com.iagothz.mergetd.logic.Layout
 import com.iagothz.mergetd.logic.Match
 import com.iagothz.mergetd.logic.Vec2
 
@@ -18,8 +24,11 @@ class MatchScreen(
     restored: Match? = null,
     private val previousBest: Int = game.save.bestWave(game.save.map),
 ) : BaseScreen(game) {
+    private enum class Confirm(val question: String) { RESTART("Reiniciar a partida?"), QUIT("Sair da partida?") }
+
     private val match = restored ?: Match(game.save.deck, map = game.save.map)
     private val drag = DragController(match)
+    private val hold = LongPress()
     private val renderer = MatchRenderer(game.shapes, game.batch, game.font, game.smallFont)
     private val buttonTap = Tap<Button>()
     private val effects = Effects(path = match.path)
@@ -27,17 +36,22 @@ class MatchScreen(
     private val sounds = SoundPlanner()
     private var clock = 0f
     private var paused = restored != null
-    /** Simulation speed multiplier; only changed by dev-mode keys. */
+    private var confirm: Confirm? = null
+    /** Simulation speed multiplier: the 2x button, or dev keys up to 4x. */
     private var speed = 1
 
     private val buy = Button(Rectangle(160f, 320f, 400f, 100f), "")
-    private val pauseButton = Button(Rectangle(620f, 1182f, 80f, 56f), "", color = Skin.PANEL)
+    private val speedButton = Button(Rectangle(528f, 1182f, 76f, 56f), "1x", color = Skin.PANEL)
+    private val pauseButton = Button(Rectangle(616f, 1182f, 84f, 56f), "", color = Skin.PANEL)
     private val powerButtons = match.deck.mapIndexed { i, t ->
         t to Button(Rectangle(26f + i * 136f, 50f, 124f, 120f), "", color = Skin.color(t))
     }
-    private val resume = Button(Rectangle(160f, 700f, 400f, 110f), "Continuar")
-    private val quit = Button(Rectangle(160f, 540f, 400f, 110f), "Sair", color = Color(0.7f, 0.25f, 0.25f, 1f))
-    private val allButtons = listOf(buy, pauseButton, resume, quit) + powerButtons.map { it.second }
+    private val resume = Button(Rectangle(160f, 720f, 400f, 100f), "Continuar")
+    private val restart = Button(Rectangle(160f, 590f, 400f, 100f), "Reiniciar", color = Skin.PANEL)
+    private val quit = Button(Rectangle(160f, 460f, 400f, 100f), "Sair", color = DANGER)
+    private val yes = Button(Rectangle(160f, 560f, 400f, 100f), "Sim", color = DANGER)
+    private val no = Button(Rectangle(160f, 690f, 400f, 100f), "Não")
+    private val allButtons = listOf(buy, speedButton, pauseButton, resume, restart, quit, yes, no) + powerButtons.map { it.second }
 
     override val theme get() = Skin.theme(match.map)
 
@@ -73,6 +87,7 @@ class MatchScreen(
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         renderer.drawShapes(match, drag, effects)
         buy.drawShape(shapes)
+        speedButton.drawShape(shapes)
         pauseButton.drawShape(shapes)
         shapes.color = Color.WHITE
         val pc = pauseButton.rect
@@ -82,6 +97,17 @@ class MatchScreen(
             b.drawShape(shapes)
             val base = if (b.enabled) Skin.color(t) else Color(0.3f, 0.3f, 0.34f, 1f)
             shapes.glyph(t, b.rect.x + b.rect.width / 2, b.rect.y + 62f, 30f, Skin.glyphColor(t, 0.25f), base)
+        }
+        val info = heldDie()
+        if (info != null) {
+            val t = info.second.type
+            shapes.color = Skin.SHADOW
+            shapes.roundedRect(INFO.x + 3f, INFO.y - 8f, INFO.width, INFO.height, 20f)
+            shapes.color = Skin.PANEL
+            shapes.roundedRect(INFO.x, INFO.y, INFO.width, INFO.height, 20f)
+            shapes.color = Skin.color(t)
+            shapes.roundedRect(INFO.x, INFO.y + INFO.height - 10f, INFO.width, 10f, 5f)
+            shapes.glyph(t, INFO.x + 44f, INFO.y + INFO.height - 44f, 18f, Skin.color(t), Skin.PANEL)
         }
         shapes.end()
 
@@ -95,7 +121,7 @@ class MatchScreen(
             game.smallFont.color = Color.WHITE
         }
         buy.drawText(batch, game.font)
-        pauseButton.drawText(batch, game.font)
+        speedButton.drawText(batch, game.font)
         for ((t, b) in powerButtons) {
             val cx = b.rect.x + b.rect.width / 2
             val cost = match.powerUpCost(t)
@@ -108,6 +134,7 @@ class MatchScreen(
         }
         game.smallFont.color = Color.WHITE
         game.font.color = Color.WHITE
+        if (info != null) drawDieInfo(info.first, info.second)
         batch.end()
 
         if (paused) drawPauseOverlay()
@@ -115,9 +142,45 @@ class MatchScreen(
 
     override fun cameraShake(): Vec2 = if (paused) super.cameraShake() else effects.shakeOffset()
 
+    /** The die under a finger held still on the board, with its cell. */
+    private fun heldDie(): Pair<Cell, Die>? {
+        if (!hold.isHeld(game.clock)) return null
+        val cell = drag.dragging ?: return null
+        return cell to (match.board[cell] ?: return null)
+    }
+
+    /** Name, pips, the numbers this very die hits for right now, and what it does. */
+    private fun drawDieInfo(cell: Cell, die: Die) {
+        val batch = game.batch
+        val t = die.type
+        val left = INFO.x + 24f
+        var y = INFO.y + INFO.height - 36f
+        val stacks = if (t == DieType.HUNTER) " · ${die.stacks} stacks" else ""
+        val pips = if (die.pips == 1) "pip" else "pips"
+        game.font.draw(batch, "${Skin.fullName(t)} · ${die.pips} $pips$stacks", left + 48f, y + 8f)
+        y -= 44f
+        if (t.attacks) {
+            val dmg = Combat.baseDamage(t, die.pips, match.powerLevel(t))
+            val every = Combat.attackInterval(t, die.pips) / match.speedMultiplier(cell)
+            game.smallFont.color = Skin.GOLD
+            game.smallFont.draw(batch, "Dano ${fmt(dmg)}  ·  a cada ${fmt(every)} s  ·  Nv${match.powerLevel(t)}", left, y)
+            game.smallFont.color = Color.WHITE
+            y -= 34f
+        }
+        val info = DieInfo.of(t)
+        y -= game.smallFont.draw(batch, info.summary, left, y, INFO.width - 48f, Align.left, true).height + 10f
+        game.smallFont.color = KEY_COLOR
+        game.smallFont.draw(batch, info.rows.first { it.first == "Efeito" }.second, left, y, INFO.width - 48f, Align.left, true)
+        game.smallFont.color = Color.WHITE
+    }
+
+    private fun fmt(f: Float): String =
+        if (f == f.toInt().toFloat()) "${f.toInt()}" else "%.2f".format(f).trimEnd('0').trimEnd('.', ',').replace('.', ',')
+
     private fun refreshButtons() {
         buy.text = "Comprar (${match.buyCost})"
         buy.enabled = match.canBuy()
+        speedButton.text = "${speed}x"
         for ((t, b) in powerButtons) {
             val cost = match.powerUpCost(t)
             b.enabled = cost != null && match.sp >= cost
@@ -129,31 +192,43 @@ class MatchScreen(
         val shapes = game.shapes
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         shapes.color = Color(0f, 0f, 0f, 0.7f)
-        shapes.rect(0f, 0f, 720f, 1280f)
-        resume.drawShape(shapes)
-        quit.drawShape(shapes)
+        shapes.rect(-400f, -400f, Layout.WORLD_W + 800f, Layout.WORLD_H + 800f)
+        for (b in pauseButtons()) b.drawShape(shapes)
         shapes.end()
         game.batch.begin()
-        game.batch.textCentered(game.bigFont, "Pausa", 360f, 920f)
-        resume.drawText(game.batch, game.font)
-        quit.drawText(game.batch, game.font)
+        val c = confirm
+        if (c == null) {
+            game.batch.textShadowed(game.bigFont, "Pausa", 360f, 920f)
+        } else {
+            game.batch.textShadowed(game.font, c.question, 360f, 900f)
+            game.batch.textCentered(game.smallFont, "O progresso desta partida será perdido.", 360f, 850f)
+        }
+        for (b in pauseButtons()) b.drawText(game.batch, game.font)
         game.batch.end()
     }
 
+    private fun pauseButtons(): List<Button> = if (confirm != null) listOf(no, yes) else listOf(resume, restart, quit)
+
     private fun buttonAt(p: Vec2): Button? {
-        val visible = if (paused) listOf(resume, quit) else listOf(buy, pauseButton) + powerButtons.map { it.second }
+        val visible = if (paused) pauseButtons() else listOf(buy, speedButton, pauseButton) + powerButtons.map { it.second }
         return visible.firstOrNull { it.contains(p.x, p.y) }
     }
 
     override fun onTouchDown(p: Vec2) {
-        if (paused || !drag.down(p)) buttonTap.press(buttonAt(p))
+        if (!paused && drag.down(p)) {
+            hold.down(p, game.clock)
+            return
+        }
+        buttonTap.press(buttonAt(p))
     }
 
     override fun onDrag(p: Vec2) {
         drag.move(p)
+        hold.move(p)
     }
 
     override fun onTouchUp(p: Vec2) {
+        hold.up()
         if (drag.dragging != null) {
             drag.up(p)
             return
@@ -161,15 +236,27 @@ class MatchScreen(
         when (val b = buttonTap.release(buttonAt(p))) {
             null -> Unit
             resume -> paused = false
-            quit -> finish()
+            restart -> confirm = Confirm.RESTART
+            quit -> confirm = Confirm.QUIT
+            no -> confirm = null
+            yes -> when (confirm) {
+                Confirm.RESTART -> abandon(restartAfter = true)
+                Confirm.QUIT -> abandon(restartAfter = false)
+                null -> Unit
+            }
             buy -> match.buyDie()
-            pauseButton -> paused = true
+            speedButton -> speed = if (speed == 1) 2 else 1
+            pauseButton -> {
+                paused = true
+                confirm = null
+            }
             else -> powerButtons.firstOrNull { it.second === b }?.let { match.powerUp(it.first) }
         }
     }
 
     override fun onTouchCancelled() {
         drag.cancel()
+        hold.up()
         buttonTap.cancel()
     }
 
@@ -186,9 +273,27 @@ class MatchScreen(
         }
     }
 
+    /** Leaves the match on purpose: the wave reached still counts for the record. */
+    private fun abandon(restartAfter: Boolean) {
+        if (restartAfter) {
+            game.save.clearMatch()
+            if (!game.devMode) game.save.recordWave(match.map, match.wave)
+            game.startMatch()
+        } else {
+            finish()
+        }
+    }
+
     private fun finish() {
         game.save.clearMatch()
         if (!game.devMode) game.save.recordWave(match.map, match.wave)
         game.showGameOver(match.map, match.wave, !game.devMode && match.wave > previousBest, stats)
+    }
+
+    private companion object {
+        val DANGER = Color(0.7f, 0.25f, 0.25f, 1f)
+        val KEY_COLOR = Color(0.75f, 0.77f, 0.85f, 1f)
+        /** Die info card, in the sky above the board. */
+        val INFO = Rectangle(24f, 840f, 672f, 270f)
     }
 }

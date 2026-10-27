@@ -16,8 +16,9 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
     private val play = Button(Rectangle(160f, 640f, 400f, 100f), "Jogar")
     private val deck = Button(Rectangle(160f, 520f, 400f, 100f), "Deck")
     private val map = Button(Rectangle(160f, 400f, 400f, 100f), "Mapa")
-    private val sound = Button(Rectangle(160f, 280f, 400f, 100f), "", color = Skin.PANEL)
-    private val buttons = listOf(play, deck, map, sound)
+    private val sound = Button(Rectangle(160f, 280f, 195f, 100f), "", color = Skin.PANEL)
+    private val vibration = Button(Rectangle(365f, 280f, 195f, 100f), "", color = Skin.PANEL)
+    private val buttons = listOf(play, deck, map, sound, vibration)
     private val tap = Tap<Button>()
     private val rng = Random(System.nanoTime())
     private val drops = List(DROPS) { newDrop(rng.nextFloat() * Layout.WORLD_H) }
@@ -35,7 +36,8 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
 
     override fun draw(delta: Float) {
         time += delta
-        sound.text = if (game.save.soundOn) "Som: ligado" else "Som: desligado"
+        sound.text = if (game.save.soundOn) "Som: sim" else "Som: não"
+        vibration.text = if (game.save.vibrationOn) "Vibrar: sim" else "Vibrar: não"
         buttons.forEach { it.pressed = tap.current === it }
         for (d in drops) {
             d.y -= d.speed * delta
@@ -62,6 +64,7 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         deck.drawShape(shapes)
         map.drawShape(shapes)
         sound.drawShape(shapes)
+        vibration.drawShape(shapes)
         // Three little dice sitting on the title line.
         shapes.die(DieType.FIRE, 3, 236f, 1046f, 44f)
         shapes.die(DieType.ELECTRIC, 5, 360f, 1058f, 52f)
@@ -77,6 +80,7 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         deck.drawText(game.batch, game.font)
         map.drawText(game.batch, game.font)
         sound.drawText(game.batch, game.font)
+        vibration.drawText(game.batch, game.font)
         game.smallFont.color = Color(1f, 1f, 1f, 0.4f)
         game.batch.textCentered(game.smallFont, "v${MergeTdGame.VERSION}", 360f, 40f)
         game.smallFont.color = Color.WHITE
@@ -97,6 +101,10 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
             sound -> {
                 game.save.soundOn = !game.save.soundOn
                 game.sfx.click()
+            }
+            vibration -> {
+                game.save.vibrationOn = !game.save.vibrationOn
+                if (game.save.vibrationOn) game.sfx.play(setOf("boss"))
             }
         }
     }

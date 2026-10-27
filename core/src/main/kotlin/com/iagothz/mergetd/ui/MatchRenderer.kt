@@ -13,6 +13,7 @@ import com.iagothz.mergetd.logic.Layout
 import com.iagothz.mergetd.logic.Match
 import com.iagothz.mergetd.logic.ShotEvent
 import com.iagothz.mergetd.logic.Vec2
+import com.iagothz.mergetd.logic.WaveSpawner
 import kotlin.math.atan2
 import kotlin.math.ceil
 
@@ -74,9 +75,20 @@ class MatchRenderer(
             batch.textShadowed(smallFont, "${die.stacks}", c.x + 34f, c.y - 36f)
         }
         if (match.waveCountdown > 0f) {
-            batch.textCentered(font, "Próxima onda em ${ceil(match.waveCountdown).toInt()}", 360f, 1110f)
+            batch.textCentered(font, "Próxima onda em ${ceil(match.waveCountdown).toInt()}", 360f, 1106f)
+            batch.textCentered(smallFont, wavePreview(match.wave + 1), 360f, 1142f)
         }
         boss(match)?.let { batch.textCentered(smallFont, Skin.enemyName(it.kind), 360f, BOSS_BAR.y + BOSS_BAR.height + 18f) }
+    }
+
+    /** "12 soldados · 4 corredores · chefe em 3 ondas", or "Chefe: Trocador" on a boss wave. */
+    private fun wavePreview(next: Int): String {
+        val counts = WaveSpawner.preview(next)
+        val boss = counts.keys.firstOrNull { it.isBoss }
+        if (boss != null) return "Chefe: ${Skin.enemyName(boss)}"
+        val parts = counts.entries.joinToString(" · ") { (kind, n) -> "$n ${Skin.enemyPlural(kind)}" }
+        val until = WaveSpawner.wavesUntilBoss(next)
+        return "$parts · chefe em $until ${if (until == 1) "onda" else "ondas"}"
     }
 
     private fun boss(match: Match): Enemy? = match.enemies.firstOrNull { it.kind.isBoss && it.alive }
@@ -335,9 +347,9 @@ class MatchRenderer(
         )
 
         const val HUD_Y = 1210f
-        val WAVE_PILL = Rectangle(16f, HUD_Y - 28f, 180f, 56f)
-        val LIVES_PILL = Rectangle(212f, HUD_Y - 28f, 180f, 56f)
-        val SP_PILL = Rectangle(408f, HUD_Y - 28f, 196f, 56f)
+        val WAVE_PILL = Rectangle(16f, HUD_Y - 28f, 150f, 56f)
+        val LIVES_PILL = Rectangle(176f, HUD_Y - 28f, 150f, 56f)
+        val SP_PILL = Rectangle(336f, HUD_Y - 28f, 180f, 56f)
         val COUNTDOWN_BAR = Rectangle(160f, 1072f, 400f, 12f)
         val BOSS_BAR = Rectangle(80f, 1120f, 560f, 22f)
     }

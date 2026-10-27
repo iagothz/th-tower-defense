@@ -7,13 +7,16 @@ import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.ScreenUtils
-import com.badlogic.gdx.utils.viewport.FitViewport
+import com.badlogic.gdx.utils.viewport.ExtendViewport
 import com.iagothz.mergetd.logic.Layout
 import com.iagothz.mergetd.logic.Vec2
 
-/** Screen with a 720×1280 FitViewport; subclasses draw in world units and get touches in world units. */
+/**
+ * Screen on a 720×1280 world that extends (never crops) to the device's aspect: taller phones get more sky above
+ * and below, with the HUD and board exactly where they are on 9:16. Subclasses draw and get touches in world units.
+ */
 abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
-    protected val viewport = FitViewport(Layout.WORLD_W, Layout.WORLD_H)
+    protected val viewport = ExtendViewport(Layout.WORLD_W, Layout.WORLD_H)
     private val tmp = Vector2()
     /** Ignores releases of touches that began on a previous screen. */
     private val gesture = Tap<Unit>()
@@ -69,7 +72,7 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
         game.batch.projectionMatrix = viewport.camera.combined
         Gdx.gl.glEnable(GL20.GL_BLEND)
         game.shapes.begin(ShapeRenderer.ShapeType.Filled)
-        game.backdrop.draw(game.shapes, game.clock, theme)
+        game.backdrop.draw(game.shapes, game.clock, theme, viewport.worldWidth, viewport.worldHeight)
         game.shapes.end()
         draw(delta)
         val fade = game.fader.alpha
@@ -77,7 +80,7 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
             Gdx.gl.glEnable(GL20.GL_BLEND)
             game.shapes.begin(ShapeRenderer.ShapeType.Filled)
             game.shapes.setColor(0f, 0f, 0f, fade)
-            game.shapes.rect(-20f, -20f, Layout.WORLD_W + 40f, Layout.WORLD_H + 40f)
+            game.shapes.rect(-400f, -400f, Layout.WORLD_W + 800f, Layout.WORLD_H + 800f)
             game.shapes.end()
         }
     }

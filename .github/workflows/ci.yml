@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # gradle.properties pins org.gradle.java.home to a Windows path for local builds; the runner's JDK wins here.
+      - name: Tests
+        run: |
+          chmod +x gradlew
+          ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" :core:test :sim:test --console=plain
+
+      - name: Debug APK
+        run: ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" :android:assembleDebug --console=plain
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: merge-td-debug-apk
+          path: android/build/outputs/apk/debug/android-debug.apk
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: |
+            core/build/reports/tests/test
+            sim/build/reports/tests/test

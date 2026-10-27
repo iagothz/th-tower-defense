@@ -13,8 +13,8 @@ class Backdrop {
     private val stars = Random(42).let { rng ->
         List(STARS) {
             Star(
-                rng.nextFloat() * Layout.WORLD_W,
-                rng.nextFloat() * Layout.WORLD_H,
+                -MARGIN + rng.nextFloat() * (Layout.WORLD_W + 2 * MARGIN),
+                -MARGIN + rng.nextFloat() * (Layout.WORLD_H + 2 * MARGIN),
                 1.2f + rng.nextFloat() * 1.8f,
                 rng.nextFloat() * 6.28f,
                 0.6f + rng.nextFloat() * 1.2f,
@@ -23,9 +23,11 @@ class Backdrop {
     }
     private val tmp = Color()
 
-    /** Call inside a Filled batch with blending on. [time] is the clock in seconds. */
-    fun draw(shapes: ShapeRenderer, time: Float, theme: MapTheme) {
-        shapes.rect(0f, 0f, Layout.WORLD_W, Layout.WORLD_H, theme.skyBottom, theme.skyBottom, theme.skyTop, theme.skyTop)
+    /** Call inside a Filled batch with blending on. [time] is the clock in seconds; the sky covers the whole visible world. */
+    fun draw(shapes: ShapeRenderer, time: Float, theme: MapTheme, worldWidth: Float, worldHeight: Float) {
+        val x = (Layout.WORLD_W - worldWidth) / 2
+        val y = (Layout.WORLD_H - worldHeight) / 2
+        shapes.rect(x, y, worldWidth, worldHeight, theme.skyBottom, theme.skyBottom, theme.skyTop, theme.skyTop)
         for (s in stars) {
             val twinkle = 0.35f + 0.65f * (0.5f + 0.5f * sin(time * s.speed + s.phase))
             shapes.color = tmp.set(0.75f, 0.8f, 0.95f, 0.55f * twinkle)
@@ -34,6 +36,8 @@ class Backdrop {
     }
 
     private companion object {
-        const val STARS = 70
+        const val STARS = 90
+        /** Stars reach this far outside the 720×1280 world, for taller or wider screens. */
+        const val MARGIN = 240f
     }
 }

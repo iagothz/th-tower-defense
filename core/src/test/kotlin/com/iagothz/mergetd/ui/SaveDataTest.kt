@@ -77,4 +77,12 @@ class SaveDataTest {
         save.clearMatch()
         assertNull(SaveData(prefs).savedMatch)
     }
+
+    @Test
+    fun vibrationIsOnByDefaultAndPersists() {
+        val prefs = memoryPrefs()
+        assertTrue(SaveData(prefs).vibrationOn)
+        SaveData(prefs).vibrationOn = false
+        assertFalse(SaveData(prefs).vibrationOn)
+    }
 }

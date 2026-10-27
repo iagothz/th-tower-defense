@@ -161,6 +161,10 @@ O tabuleiro, o HUD e os botões nunca mudam de lugar; cada mapa é um caminho di
 **Arrasto**
 - Arrastar um dado destaca os alvos compatíveis.
 - Soltar sobre um alvo válido faz o merge; soltar em qualquer outro lugar devolve o dado.
+- Segurar um dado parado por 0,45 s abre um cartão com nome, pips, dano e intervalo atuais (com power-up e Luz) e o efeito; mexer o dedo vira arraste e fecha o cartão.
+- HUD: botão 2x (velocidade da simulação), pausa com Continuar / Reiniciar / Sair, e os dois últimos pedem confirmação. Entre ondas, a prévia da próxima (quantos de cada tipo) e em quantas ondas vem o chefe.
+- Vibração curta ao vazar (80 ms) e no início de um chefe (40 ms), desligável no menu.
+- O mundo 720×1280 usa `ExtendViewport`: telas mais altas ganham céu acima e abaixo em vez de barras pretas; HUD e tabuleiro ficam onde estão.
 
 ## Testes
 

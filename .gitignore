@@ -6,3 +6,7 @@ local.properties
 .idea/
 android/libs/
 .superpowers/
+
+# Release signing: keep the keystore and its passwords out of git (see README).
+android/keystore/
+android/keystore.properties
