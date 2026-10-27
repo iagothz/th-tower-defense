@@ -114,6 +114,7 @@ class MatchScreen(
             if (tutorial.finished && !game.save.tutorialDone) game.save.tutorialDone = true
             effects.update(delta)
             effects.lastLife = match.lives == 1 && match.mode != GameMode.SURVIVAL && !match.isGameOver
+            game.sfx.mood(boss = match.enemies.any { it.kind.isBoss && it.alive }, fast = match.mode == GameMode.RUSH)
             spCounter.update(delta, match.sp)
             val names = sounds.plan(events, clock).toMutableSet()
             sounds.countdown(countdownBefore, match.waveCountdown)?.let {
@@ -343,6 +344,7 @@ class MatchScreen(
     override fun onTouchDown(p: Vec2) {
         if (ending != null) return
         if (!paused && drag.down(p)) {
+            game.sfx.play(setOf("pick"))
             hold.down(p, game.clock)
             return
         }
@@ -370,7 +372,9 @@ class MatchScreen(
             val die = match.board[from]
             val to = drag.dropTarget(p)
             val result = if (to != null && match.canMerge(from, to)) match.board.resultCell(from, to) else null
-            if (drag.up(p) && die != null && result != null && result != from) effects.slide(from, result, die.type, die.pips)
+            val merged = drag.up(p)
+            if (merged && die != null && result != null && result != from) effects.slide(from, result, die.type, die.pips)
+            if (!merged) game.sfx.play(setOf("drop"))
             return
         }
         when (val b = buttonTap.release(buttonAt(p))) {

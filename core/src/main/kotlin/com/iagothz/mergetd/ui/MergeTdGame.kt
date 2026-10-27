@@ -116,6 +116,7 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
 
     private fun apply(screen: Screen) {
         val old = this.screen
+        sfx.calm()
         setScreen(screen)
         old?.dispose()
         next = null

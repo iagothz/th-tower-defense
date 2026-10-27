@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.audio.Music
 import com.badlogic.gdx.audio.Sound
+import kotlin.math.abs
 import com.iagothz.mergetd.logic.Balance
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.GameEvent
@@ -65,23 +66,30 @@ class SoundPlanner {
 
 class Sfx(private val save: SaveData, private val rng: kotlin.random.Random = kotlin.random.Random.Default) {
     private val sounds = NAMES.associateWith { Gdx.audio.newSound(Gdx.files.internal("sounds/$it.wav")) }
-    private val music: Music = Gdx.audio.newMusic(Gdx.files.internal("sounds/music.wav")).apply {
-        isLooping = true
-        volume = MUSIC_VOLUME
+    private val tracks: Map<String, Music> = MusicMix.TRACKS.associateWith {
+        Gdx.audio.newMusic(Gdx.files.internal("sounds/$it.wav")).apply {
+            isLooping = true
+            volume = 0f
+        }
     }
+    private val mix = MusicMix()
 
     private var duck = 1f
+
+    /** What the music should feel like right now; the match calls this every frame. */
+    fun mood(boss: Boolean, fast: Boolean) {
+        mix.boss = boss
+        mix.fast = fast
+    }
+
+    /** Back to the plain loop, for every screen that isn't a match. */
+    fun calm() = mood(boss = false, fast = false)
 
     fun play(names: Set<String>) {
         if ("boss" in names) duck = DUCK
         if (save.vibrationOn && Gdx.input.isPeripheralAvailable(Input.Peripheral.Vibrator)) {
-            when {
-                "leak" in names -> Gdx.input.vibrate(80)
-                "bosskill" in names -> Gdx.input.vibrate(60)
-                "boss" in names -> Gdx.input.vibrate(40)
-                "max" in names -> Gdx.input.vibrate(30)
-                names.any { it in SoundPlanner.MERGES } -> Gdx.input.vibrate(12)
-            }
+            // Amplitude where the device supports it (Android 8+); plain duration elsewhere.
+            Haptics.pulse(names)?.let { Gdx.input.vibrate(it.millis, it.amplitude, true) }
         }
         if (!save.soundOn || save.soundVolume <= 0f) return
         names.forEach { sounds[it]?.play(VOLUME * save.soundVolume, pitchFor(it), 0f) }
@@ -93,26 +101,47 @@ class Sfx(private val save: SaveData, private val rng: kotlin.random.Random = ko
 
     fun click() = play(setOf("buy"))
 
-    /** Keeps the loop in step with the setting and lets a boss entrance duck it; call every frame. */
+    /**
+     * Keeps the loops in step with the setting and the mood: the base track and its drum layer play together,
+     * the drums at the mix's volume, re-synced whenever they drift; a boss entrance ducks everything for a moment.
+     */
     fun updateMusic(dt: Float) {
         duck += (1f - duck) * minOf(1f, dt * DUCK_RECOVERY)
+        mix.update(dt)
+        val base = tracks.getValue(mix.base)
+        val drums = tracks.getValue(mix.drumsTrack)
+        for ((name, t) in tracks) if (name != mix.base && name != mix.drumsTrack && t.isPlaying) t.stop()
         val on = save.musicOn && save.musicVolume > 0f
-        if (on && !music.isPlaying) music.play()
-        if (!on && music.isPlaying) music.pause()
-        if (on) music.volume = MUSIC_VOLUME * save.musicVolume * duck
+        if (!on) {
+            if (base.isPlaying) base.pause()
+            if (drums.isPlaying) drums.pause()
+            return
+        }
+        if (!base.isPlaying) {
+            base.play()
+            drums.play()
+            drums.position = base.position
+        } else if (abs(base.position - drums.position) > SYNC_SLACK) {
+            drums.position = base.position
+        }
+        val volume = MUSIC_VOLUME * save.musicVolume * duck
+        base.volume = volume
+        drums.volume = volume * mix.drums
     }
 
     fun dispose() {
         sounds.values.forEach(Sound::dispose)
-        music.dispose()
+        tracks.values.forEach(Music::dispose)
     }
 
     private companion object {
-        val NAMES = listOf("buy", "power", "hit", "kill", "bosskill", "leak", "wave", "boss", "deny", "clear", "record", "gameover") +
+        val NAMES = listOf("buy", "power", "hit", "kill", "bosskill", "leak", "wave", "boss", "deny", "clear", "record", "gameover", "pick", "drop") +
             SoundPlanner.FAMILIES.map { "hit_$it" } + SoundPlanner.MERGES + SoundPlanner.TICKS
         const val VOLUME = 0.6f
         const val DUCK = 0.2f
         const val DUCK_RECOVERY = 1.2f
+        /** Seconds the drum layer may drift from the base before it is snapped back. */
+        const val SYNC_SLACK = 0.08f
         const val PITCH_SPREAD = 0.1f
         const val MUSIC_VOLUME = 0.35f
     }

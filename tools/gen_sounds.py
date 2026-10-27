@@ -105,8 +105,7 @@ def note_hz(semitones_from_a4):
     return 440.0 * 2 ** (semitones_from_a4 / 12)
 
 
-def music():
-    eighth = 0.3
+def music(eighth=0.3):
     # Chord tones as semitones from A4: Am, F, C, G (roots an octave down for the bass).
     chords = [(-12, -9, -5), (-16, -12, -9), (-21, -17, -14), (-14, -10, -7)]
     out = []
@@ -132,5 +131,32 @@ def music():
     return out
 
 
+# Drum layer for the same loop: kick on 1 and 3, snare on 2 and 4, faded in by the game while a boss is alive.
+def drums(eighth=0.3):
+    out = []
+    kick = tone(0.11, 150, 48, shape=triangle, volume=0.55, attack=0.002, release=0.06)
+    snare = mix(noise(0.07, volume=0.28, release=0.05), tone(0.05, 210, 160, shape=triangle, volume=0.2))
+    for rep in range(2):
+        for ci in range(4):
+            bar = [0.0] * int(8 * eighth * RATE)
+            for step in range(8):
+                hit = kick if step in (0, 4) else snare if step in (2, 6) else None
+                if hit is None:
+                    continue
+                start = int(step * eighth * RATE)
+                for i, s in enumerate(hit):
+                    if start + i < len(bar):
+                        bar[start + i] += s
+            out.extend(bar)
+    return out
+
+
+FAST = 0.3 * 100 / 118  # Rápido: 118 BPM instead of 100.
 save("music", music())
+save("music_drums", drums())
+save("music_fast", music(FAST))
+save("music_drums_fast", drums(FAST))
+# Picking a die up and putting it back down without a merge.
+save("pick", tone(0.025, 1500, 1800, shape=triangle, volume=0.22, release=0.015))
+save("drop", mix(noise(0.07, volume=0.12, release=0.05), tone(0.07, 700, 260, shape=triangle, volume=0.2, release=0.05)))
 print("wrote", sorted(p.name for p in OUT.glob("*.wav")))
