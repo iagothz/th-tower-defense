@@ -55,6 +55,9 @@ object Skin {
 
     fun label(t: DieType): String = labels.getValue(t)
 
+    /** Unabbreviated name, for places with room for it. */
+    fun fullName(t: DieType): String = if (t == DieType.GROWTH) "Crescimento" else label(t)
+
     fun enemyRadius(k: EnemyKind): Float = when {
         k.isBoss -> 32f
         k == EnemyKind.TANK -> 22f

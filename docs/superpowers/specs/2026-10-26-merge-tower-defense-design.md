@@ -55,7 +55,6 @@ th-tower-defense/
 **Compra**
 - Custa 10 SP na primeira compra e sobe +10 a cada compra.
 - Gera um dado de tipo aleatório do deck, com 1 pip, numa casa vazia aleatória.
-- Enquanto o tabuleiro tiver menos de 3 dados que atacam, a compra só sorteia tipos que atacam (evita decks com Mina começarem sem defesa).
 - Fica desabilitada se não houver SP suficiente ou casa vazia.
 
 **Merge**
@@ -123,7 +122,7 @@ Os valores base (dano e intervalo) ficam em `Balance.kt`.
 ## Telas e controles
 
 **Fluxo:** Menu (Jogar / Deck / Recorde) → Deck → Partida → Game over → Menu.
-- **Deck:** grade com os 10 tipos; tocar alterna a seleção. O botão Confirmar só fica ativo com 5 tipos escolhidos.
+- **Deck:** grade com os 10 tipos; tocar alterna a seleção e mostra, num painel, o que o dado faz: alvo, dano, velocidade de ataque, efeito e power-up (números lidos do `Balance.kt`). O botão Confirmar só fica ativo com 5 tipos escolhidos.
 - **Game over:** mostra a onda alcançada e "Novo recorde!" quando for o caso.
 
 **Partida**

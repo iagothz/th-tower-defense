@@ -9,8 +9,6 @@ object Balance {
     const val MAX_PIPS = 7
 
     const val START_SP = 150
-    /** Until the board has this many attacking dice, purchases only roll attacking types. */
-    const val MIN_ATTACKERS = 3
     const val START_LIVES = 3
     const val BUY_BASE = 10
     const val BUY_STEP = 10

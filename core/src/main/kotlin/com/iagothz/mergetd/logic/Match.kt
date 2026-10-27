@@ -44,17 +44,11 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
     fun buyDie(): Boolean {
         if (!canBuy()) return false
         val cell = board.emptyCells().random(rng)
-        board[cell] = Die(buyPool().random(rng), 1)
+        board[cell] = Die(deck.random(rng), 1)
         sp -= buyCost
         purchases++
         events += GameEvent.DieBought(cell)
         return true
-    }
-
-    /** Keeps a deck with Mine/Mirror from opening with too few dice that shoot. */
-    private fun buyPool(): List<DieType> {
-        val attackers = board.occupied().count { it.second.type.attacks }
-        return if (attackers < Balance.MIN_ATTACKERS) deck.filter { it.attacks }.ifEmpty { deck } else deck
     }
 
     fun canMerge(from: Cell, to: Cell): Boolean = !isGameOver && board.canMerge(from, to)
