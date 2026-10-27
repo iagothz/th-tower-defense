@@ -80,8 +80,13 @@ class MatchScreen(
     override fun draw(delta: Float) {
         if (!paused) {
             clock += delta
-            match.update(delta * speed)
+            match.update(delta * speed * effects.timeScale())
             renderer.update(match, delta)
+            for (s in match.lastShots) {
+                val cell = Layout.cellAt(s.from) ?: continue
+                val target = s.to.firstOrNull() ?: continue
+                effects.kick(cell, Vec2(target.x - s.from.x, target.y - s.from.y))
+            }
             val events = match.drainEvents()
             effects.consume(events)
             stats.consume(events)
@@ -298,7 +303,7 @@ class MatchScreen(
         val from = drag.dragging
         if (from != null) {
             val die = match.board[from]
-            val to = Layout.cellAt(p)
+            val to = drag.dropTarget(p)
             val result = if (to != null && match.canMerge(from, to)) match.board.resultCell(from, to) else null
             if (drag.up(p) && die != null && result != null && result != from) effects.slide(from, result, die.type, die.pips)
             return

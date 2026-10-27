@@ -30,24 +30,39 @@ private val PIPS = listOf(
 /**
  * A die of [type] with [pips], [size] wide and centred on (cx, cy): bevelled body, glyph watermark, pips.
  * [brightness] below 1 dims it (silenced dice, drag ghosts); [alpha] fades it (menu decoration).
+ * [scaleX]/[scaleY] squash and stretch the body; the face keeps its proportions.
  */
-fun ShapeRenderer.die(type: DieType, pips: Int, cx: Float, cy: Float, size: Float, brightness: Float = 1f, alpha: Float = 1f) {
-    val half = size / 2
+fun ShapeRenderer.die(
+    type: DieType,
+    pips: Int,
+    cx: Float,
+    cy: Float,
+    size: Float,
+    brightness: Float = 1f,
+    alpha: Float = 1f,
+    scaleX: Float = 1f,
+    scaleY: Float = 1f,
+) {
+    val w = size * scaleX
+    val h = size * scaleY
+    val hw = w / 2
+    val hh = h / 2
+    val face = minOf(scaleX, scaleY)
     val lip = size * 0.052f
     if (pips >= Balance.MAX_PIPS) {
         color = ink.set(Skin.GOLD).also { it.a = alpha }
-        roundedRect(cx - half - 4f, cy - half - 4f, size + 8f, size + 8f, size * 0.19f + 4f)
+        roundedRect(cx - hw - 4f, cy - hh - 4f, w + 8f, h + 8f, size * 0.19f * face + 4f)
     }
     base.set(Skin.color(type)).mul(brightness, brightness, brightness, 1f).also { it.a = alpha }
-    bevelRect(cx - half, cy - half, size, size, size * 0.19f, base, lip)
+    bevelRect(cx - hw, cy - hh, w, h, size * 0.19f * face, base, lip)
     // The body sits on top of the lip, so everything on its face is centred a little higher.
     val fy = cy + lip / 2
     ink.set(Skin.glyphColor(type)).mul(brightness, brightness, brightness, 1f).also { it.a = alpha }
-    glyph(type, cx, fy, half * 0.62f, ink, base)
+    glyph(type, cx, fy, size / 2 * 0.62f * face, ink, base)
     color = ink.set(Skin.pipColor(type)).mul(brightness, brightness, brightness, 1f).also { it.a = alpha }
     val step = size * 0.25f
-    val r = size * 0.0885f
-    for ((dx, dy) in PIPS[pips - 1]) pip(cx + dx * step, fy + dy * step, r)
+    val r = size * 0.0885f * face
+    for ((dx, dy) in PIPS[pips - 1]) pip(cx + dx * step * scaleX, fy + dy * step * scaleY, r)
 }
 
 /** One pip in the equipped shape. */

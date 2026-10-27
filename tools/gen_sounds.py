@@ -53,7 +53,13 @@ def save(name, samples):
 
 
 save("buy", tone(0.05, 880, volume=0.35) + tone(0.07, 1320, volume=0.35))
-save("merge", sum((tone(0.055, f, shape=triangle, volume=0.6) for f in (523, 659, 784, 1047)), []))
+# One merge chime per result size: the same arpeggio, two semitones higher per pip, so a big merge sounds bigger.
+for pips in range(2, 7):
+    k = 2 ** ((pips - 2) * 2 / 12)
+    save(f"merge_{pips}", sum((tone(0.055, f * k, shape=triangle, volume=0.6) for f in (523, 659, 784, 1047)), []))
+# Seven pips: a short fanfare with a held top note.
+save("max", sum((tone(0.07, f, shape=triangle, volume=0.55) for f in (523, 659, 784, 1047, 1319)), [])
+     + [a + b for a, b in zip(tone(0.3, 1568, shape=triangle, volume=0.3, release=0.2), tone(0.3, 1047, shape=triangle, volume=0.25, release=0.2))])
 save("power", tone(0.22, 400, 1200, shape=lambda p: square(p, 0.25), volume=0.3))
 save("hit", noise(0.03, volume=0.18))
 save("kill", tone(0.12, 620, 180, volume=0.3))
@@ -76,6 +82,8 @@ save("hit_zap", tone(0.045, 1400, 500, shape=lambda p: square(p, 0.2), volume=0.
 save("hit_wind", noise(0.035, volume=0.10, release=0.03))
 save("hit_heavy", tone(0.09, 130, 55, shape=triangle, volume=0.55, release=0.05))
 save("hit_magic", tone(0.03, 660, shape=triangle, volume=0.25) + tone(0.035, 990, shape=triangle, volume=0.25))
+# A boss going down: a rumble under a burst of noise.
+save("bosskill", mix(noise(0.4, volume=0.45, release=0.3), tone(0.45, 170, 35, shape=triangle, volume=0.7, release=0.25)))
 
 
 # --- Background loop: a calm minor arpeggio, four chords, 19.2 s at 100 BPM ---

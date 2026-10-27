@@ -18,14 +18,14 @@ class SoundPlannerTest {
         val planner = SoundPlanner()
         val events = listOf(
             GameEvent.DieBought(Cell(0, 0)),
-            GameEvent.Merged(Cell(0, 1)),
+            GameEvent.Merged(Cell(0, 1), pips = 2),
             GameEvent.PoweredUp(DieType.FIRE),
             GameEvent.Hit(enemy, 3f),
             GameEvent.Killed(EnemyKind.NORMAL, Vec2(0f, 0f)),
             GameEvent.Leaked(EnemyKind.FAST),
             GameEvent.WaveStarted(2, boss = false),
         )
-        assertEquals(setOf("buy", "merge", "power", "hit", "kill", "leak", "wave"), planner.plan(events, 0f))
+        assertEquals(setOf("buy", "merge_2", "power", "hit", "kill", "leak", "wave"), planner.plan(events, 0f))
     }
 
     @Test
@@ -59,5 +59,14 @@ class SoundPlannerTest {
         for (t in DieType.entries.filter { it.attacks }) {
             assertTrue(SoundPlanner.family(t) in SoundPlanner.FAMILIES, "$t")
         }
+    }
+
+    @Test
+    fun mergesRiseInPitchWithPipsAndSevenHasItsOwn() {
+        assertEquals(setOf("merge_5"), SoundPlanner().plan(listOf(GameEvent.Merged(Cell(0, 0), pips = 5)), 0f))
+        assertEquals(setOf("max"), SoundPlanner().plan(listOf(GameEvent.Merged(Cell(0, 0), pips = 7)), 0f))
+        assertEquals(setOf("merge_2"), SoundPlanner().plan(listOf(GameEvent.Merged(Cell(0, 0))), 0f), "unknown pips sound like a small merge")
+        for (p in 2..6) assertTrue("merge_$p" in SoundPlanner.MERGES)
+        assertTrue("max" in SoundPlanner.MERGES)
     }
 }

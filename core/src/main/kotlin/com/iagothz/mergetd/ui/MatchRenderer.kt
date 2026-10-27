@@ -19,6 +19,7 @@ import com.iagothz.mergetd.logic.Vec2
 import com.iagothz.mergetd.logic.WaveSpawner
 import kotlin.math.atan2
 import kotlin.math.ceil
+import kotlin.math.sin
 
 /** Draws the path, board, enemies, shot traces and HUD of a [Match]. */
 class MatchRenderer(
@@ -66,7 +67,14 @@ class MatchRenderer(
         effects.drawShapes(shapes)
         val from = drag.dragging
         val at = drag.pointer
-        if (from != null && at != null) match.board[from]?.let { drawDie(it, at, 1f) }
+        if (from != null && at != null) match.board[from]?.let { die ->
+            // Lifted: bigger, with a shadow further below, and pulled onto a compatible cell when close.
+            val p = drag.snapTarget()?.let { Layout.cellCenter(it) } ?: at
+            val s = DIE * DRAG_SCALE
+            shapes.color = tmp2.set(0f, 0f, 0f, 0.35f)
+            shapes.roundedRect(p.x - s / 2 + 8f, p.y - s / 2 - 16f, s, s, 20f)
+            drawDie(die, p, 1f, DRAG_SCALE)
+        }
         drawHudShapes(match)
     }
 
@@ -197,6 +205,8 @@ class MatchRenderer(
 
     private fun drawBoard(match: Match, drag: DragController, effects: Effects) {
         val highlights = drag.highlights().toSet()
+        val snap = drag.snapTarget()
+        val pulse = 0.55f + 0.45f * sin(clock * 9f)
         shapes.color = Skin.SHADOW
         shapes.roundedRect(BOARD.x + 3f, BOARD.y - 8f, BOARD.width, BOARD.height, 26f)
         shapes.color = Cosmetics.frameColor
@@ -207,17 +217,25 @@ class MatchRenderer(
             val c = Layout.cellCenter(cell)
             val half = Layout.CELL / 2
             if (cell in highlights) {
-                shapes.color = Color.WHITE
+                shapes.color = if (cell == snap) tmp2.set(Skin.GOLD) else tmp2.set(1f, 1f, 1f, pulse)
                 shapes.roundedRect(c.x - half - 4, c.y - half - 4, Layout.CELL + 8, Layout.CELL + 8, 20f)
             }
             shapes.color = Skin.CELL
             shapes.roundedRect(c.x - half, c.y - half, Layout.CELL, Layout.CELL, 16f)
+            val flash = effects.cellFlash(cell)
+            if (flash > 0f) {
+                shapes.color = tmp2.set(1f, 1f, 1f, 0.85f * flash)
+                shapes.roundedRect(c.x - half, c.y - half, Layout.CELL, Layout.CELL, 16f)
+            }
             val die = match.board[cell] ?: continue
             if (effects.slidingTo(cell)) continue
-            val lifted = Vec2(c.x, c.y + effects.dropOffset(cell))
-            when {
-                cell == drag.dragging -> drawDie(die, c, 0.35f)
-                else -> drawDie(die, lifted, if (die.disabled) 0.4f else 1f, effects.popScale(cell))
+            val kick = effects.kickOffset(cell)
+            val lifted = Vec2(c.x + kick.x, c.y + effects.dropOffset(cell) + kick.y)
+            if (cell == drag.dragging) {
+                drawDie(die, c, 0.35f)
+            } else {
+                val s = effects.dieScale(cell)
+                shapes.die(die.type, die.pips, lifted.x, lifted.y, DIE, if (die.disabled) 0.4f else 1f, 1f, s.x, s.y)
             }
         }
     }
@@ -228,8 +246,10 @@ class MatchRenderer(
 
     private fun drawEnemies(match: Match, effects: Effects) {
         for ((i, e) in match.enemies.withIndex()) {
-            val ground = match.path.positionAt(e.distance)
-            val r = Skin.enemyRadius(e.kind)
+            // A heavy hit throws the body back a step and puffs it up for an instant.
+            val jolt = effects.jolt(e)
+            val ground = match.path.positionAt(e.distance - jolt)
+            val r = Skin.enemyRadius(e.kind) * (1f + 0.18f * jolt / Effects.JOLT_AMP)
             val sides = Skin.enemySides(e.kind)
             val ahead = match.path.positionAt(e.distance + 4f)
             val heading = atan2(ahead.y - ground.y, ahead.x - ground.x)
@@ -342,9 +362,10 @@ class MatchRenderer(
         }
     }
 
-    /** A jagged bolt with a white core; the jitter is fixed per trace so it doesn't shimmer. */
+    /** A jagged bolt with a white core; the jitter is fixed per trace so it doesn't shimmer, but it flickers. */
     private fun drawLightning(t: Trace, color: Color) {
         val rng = kotlin.random.Random(t.seed)
+        val flicker = t.life * (0.7f + 0.3f * sin(clock * 90f + t.seed))
         var from = t.shot.from
         for (to in t.shot.to) {
             val dx = to.x - from.x
@@ -361,9 +382,9 @@ class MatchRenderer(
                 pts += Vec2(from.x + dx * f + nx * off, from.y + dy * f + ny * off)
             }
             pts += to
-            shapes.color = tmp2.set(color).also { it.a = t.life }
+            shapes.color = tmp2.set(color).also { it.a = flicker }
             for ((a, b) in pts.zipWithNext()) shapes.rectLine(a.x, a.y, b.x, b.y, 5f)
-            shapes.color = tmp2.set(1f, 1f, 1f, t.life)
+            shapes.color = tmp2.set(1f, 1f, 1f, flicker)
             for ((a, b) in pts.zipWithNext()) shapes.rectLine(a.x, a.y, b.x, b.y, 1.5f)
             from = to
         }
@@ -380,6 +401,14 @@ class MatchRenderer(
         if (!heavy) {
             shapes.color = tmp2.set(color).also { it.a = 0.5f * t.life }
             shapes.rectLine(from.x, from.y, x, y, 2f)
+        } else {
+            // Ghosts of where the ball just was.
+            for (i in 1..3) {
+                val g = f - i * 0.09f
+                if (g <= 0f) break
+                shapes.color = tmp2.set(color).also { it.a = (0.35f - i * 0.1f) * t.life }
+                shapes.circle(from.x + (to.x - from.x) * g, from.y + (to.y - from.y) * g, 9f - i * 1.5f, 12)
+            }
         }
         shapes.color = tmp2.set(color).mul(0.5f, 0.5f, 0.5f, 1f)
         shapes.circle(x, y, if (heavy) 11f else 7f, 16)
@@ -389,6 +418,7 @@ class MatchRenderer(
 
     companion object {
         private const val SHOT_TTL = 0.1f
+        private const val DRAG_SCALE = 1.12f
         const val PATH_WIDTH = 40f
         const val DIE = Layout.CELL - 8f
         private const val BOARD_PAD = 18f

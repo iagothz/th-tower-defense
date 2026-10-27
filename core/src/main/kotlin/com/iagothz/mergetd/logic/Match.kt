@@ -125,7 +125,7 @@ class Match(
         val a = board[from]
         val b = board[to]
         if (!board.merge(from, to, deck, rng)) return false
-        events += GameEvent.Merged(result)
+        events += GameEvent.Merged(result, board[result]?.pips ?: 0)
         // A clone leaves both dice in place; only a consuming merge can be undone.
         undo = if (result == to && a != null && b != null && board[from] == null) {
             Undo(from, to, a, b, board[to]!!, Balance.UNDO_WINDOW)

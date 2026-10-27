@@ -1,5 +1,6 @@
 package com.iagothz.mergetd.ui
 
+import kotlin.test.assertNotNull
 import com.iagothz.mergetd.logic.Cell
 import com.iagothz.mergetd.logic.DeckCodec
 import com.iagothz.mergetd.logic.Die
@@ -104,5 +105,31 @@ class DragControllerTest {
         assertSame(ice, match.board[a])
         assertEquals(2, match.board[b]!!.pips)
         assertFalse(fire === match.board[b])
+    }
+
+    @Test
+    fun nearbyCompatibleCellSnapsTheDrag() {
+        val (match, drag) = setup()
+        drag.down(Layout.cellCenter(a))
+        val near = Layout.cellCenter(b).let { Vec2(it.x + DragController.SNAP_RADIUS * 0.8f, it.y) }
+        drag.move(near)
+        assertEquals(b, drag.snapTarget())
+        val far = Layout.cellCenter(b).let { Vec2(it.x + Layout.CELL, it.y) }
+        drag.move(far)
+        assertNull(drag.snapTarget())
+        drag.move(Layout.cellCenter(c))
+        assertNull(drag.snapTarget(), "Ice is not compatible, no snap")
+        assertNotNull(match)
+    }
+
+    @Test
+    fun droppingNextToACompatibleCellStillMerges() {
+        val (match, drag) = setup()
+        drag.down(Layout.cellCenter(a))
+        val gapPoint = Layout.cellCenter(b).let { Vec2(it.x - Layout.CELL / 2 - Layout.GAP / 2, it.y) }
+        assertNull(Layout.cellAt(gapPoint), "the point is in the gap between cells")
+        assertTrue(drag.up(gapPoint))
+        assertNull(match.board[a])
+        assertEquals(2, match.board[b]?.pips)
     }
 }

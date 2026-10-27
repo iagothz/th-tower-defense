@@ -41,7 +41,7 @@ class MatchEventsTest {
         m.board[Cell(0, 0)] = Die(DieType.FIRE, 1)
         m.board[Cell(0, 1)] = Die(DieType.FIRE, 1)
         m.merge(Cell(0, 0), Cell(0, 1))
-        assertEquals(listOf<GameEvent>(GameEvent.Merged(Cell(0, 1))), m.drainEvents())
+        assertEquals(listOf<GameEvent>(GameEvent.Merged(Cell(0, 1), pips = 2)), m.drainEvents())
     }
 
     @Test

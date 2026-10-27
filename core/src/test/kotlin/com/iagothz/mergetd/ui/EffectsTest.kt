@@ -183,4 +183,114 @@ class EffectsTest {
         fx.announce("Desafio do dia")
         assertEquals("Desafio do dia", fx.banner)
     }
+
+    @Test
+    fun mergeFreezesTheSimulationForAnInstant() {
+        assertEquals(1f, fx.timeScale())
+        fx.consume(listOf(GameEvent.Merged(Cell(0, 0), pips = 3)))
+        assertEquals(0f, fx.timeScale())
+        fx.update(Effects.HIT_STOP + 0.01f)
+        assertEquals(1f, fx.timeScale())
+    }
+
+    @Test
+    fun mergedCellFlashesWhiteThenFades() {
+        val cell = Cell(1, 1)
+        assertEquals(0f, fx.cellFlash(cell))
+        fx.consume(listOf(GameEvent.Merged(cell, pips = 2)))
+        assertEquals(1f, fx.cellFlash(cell))
+        fx.update(Effects.CELL_FLASH_TIME / 2)
+        assertTrue(fx.cellFlash(cell) in 0.01f..0.99f)
+        fx.update(Effects.CELL_FLASH_TIME)
+        assertEquals(0f, fx.cellFlash(cell))
+    }
+
+    @Test
+    fun landingDiceSquashWideThenSettle() {
+        val cell = Cell(2, 2)
+        assertEquals(Vec2(1f, 1f), fx.dieScale(cell))
+        fx.consume(listOf(GameEvent.DieBought(cell)))
+        fx.update(Effects.DROP_TIME + 0.02f)
+        val s = fx.dieScale(cell)
+        assertTrue(s.x > 1f && s.y < 1f, "squash $s")
+        fx.update(Effects.SQUASH_TIME)
+        assertEquals(Vec2(1f, 1f), fx.dieScale(cell))
+    }
+
+    @Test
+    fun boughtDiceBounceOnLanding() {
+        val cell = Cell(1, 1)
+        fx.consume(listOf(GameEvent.DieBought(cell)))
+        var minSeen = Float.MAX_VALUE
+        var rose = false
+        repeat(25) {
+            fx.update(Effects.DROP_TIME / 25)
+            val o = fx.dropOffset(cell)
+            if (o > minSeen + 0.5f) rose = true
+            minSeen = minOf(minSeen, o)
+        }
+        assertTrue(rose, "the die should bounce back up once")
+        fx.update(0.01f)
+        assertEquals(0f, fx.dropOffset(cell))
+    }
+
+    @Test
+    fun sevenPipsCelebrateWithShakeAndMoreSparkles() {
+        fx.consume(listOf(GameEvent.Merged(Cell(0, 0), pips = 7)))
+        assertTrue(fx.particles.size > Effects.PARTICLES_PER_MERGE)
+        assertTrue(fx.rings.isNotEmpty())
+        fx.update(0.01f)
+        assertTrue(fx.shakeOffset() != Vec2(0f, 0f))
+    }
+
+    @Test
+    fun firingDiceKickBackThenReturn() {
+        val cell = Cell(0, 0)
+        assertEquals(Vec2(0f, 0f), fx.kickOffset(cell))
+        fx.kick(cell, Vec2(1f, 0f))
+        val k = fx.kickOffset(cell)
+        assertTrue(k.x < 0f && k.y == 0f, "kick $k")
+        fx.update(Effects.KICK_TIME + 0.01f)
+        assertEquals(Vec2(0f, 0f), fx.kickOffset(cell))
+    }
+
+    @Test
+    fun heavyHitsJoltTheEnemyBackwards() {
+        fx.consume(listOf(GameEvent.Hit(enemy, 5f, type = DieType.FIRE)))
+        assertEquals(0f, fx.jolt(enemy))
+        fx.consume(listOf(GameEvent.Hit(enemy, 5f, type = DieType.IRON)))
+        assertTrue(fx.jolt(enemy) > 0f)
+        fx.update(Effects.JOLT_TIME + 0.01f)
+        assertEquals(0f, fx.jolt(enemy))
+        fx.consume(listOf(GameEvent.Hit(enemy, 5f, crit = true)))
+        assertTrue(fx.jolt(enemy) > 0f)
+    }
+
+    @Test
+    fun fireBlastsLeaveEmbersThatOutliveSparks() {
+        fx.consume(listOf(GameEvent.Blast(Vec2(50f, 50f), 90f, DieType.FIRE)))
+        assertTrue(fx.particles.isNotEmpty())
+        fx.update(Effects.PARTICLE_TIME + 0.01f)
+        assertTrue(fx.particles.isNotEmpty(), "embers last longer than sparks")
+        fx.update(Effects.EMBER_TIME)
+        assertTrue(fx.particles.isEmpty())
+    }
+
+    @Test
+    fun bossDeathGoesSlowMotionWithABigBurst() {
+        fx.consume(listOf(GameEvent.Killed(EnemyKind.BOSS_REGEN, Vec2(100f, 100f))))
+        assertTrue(fx.particles.size > Effects.PARTICLES_PER_KILL * 2)
+        assertTrue(fx.timeScale() < 1f && fx.timeScale() > 0f, "slow motion: ${fx.timeScale()}")
+        fx.update(Effects.SLOWMO_TIME + 0.01f)
+        assertEquals(1f, fx.timeScale())
+    }
+
+    @Test
+    fun critNumbersPopInBig() {
+        fx.consume(listOf(GameEvent.Hit(enemy, 30f, crit = true)))
+        val t = fx.texts.single()
+        assertTrue(t.scale > 1.2f)
+        fx.update(Effects.TEXT_POP_TIME + 0.01f)
+        assertEquals(1f, t.scale)
+    }
 }

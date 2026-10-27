@@ -3,7 +3,8 @@ package com.iagothz.mergetd.logic
 /** Something that happened in a [Match], for effects and sound. Drained with [Match.drainEvents]. */
 sealed interface GameEvent {
     data class DieBought(val cell: Cell) : GameEvent
-    data class Merged(val cell: Cell) : GameEvent
+    /** [pips] of the die that came out of it (0 when unknown). */
+    data class Merged(val cell: Cell, val pips: Int = 0) : GameEvent
     /** A merge was undone: the two dice are back in [from] and [to]. */
     data class Unmerged(val from: Cell, val to: Cell) : GameEvent
     data class PoweredUp(val type: DieType) : GameEvent
