@@ -44,4 +44,9 @@ class SkinTest {
             assertTrue(Skin.enemyRadius(k) > 0f, "$k")
         }
     }
+
+    @Test
+    fun everyBossExplainsItself() {
+        for (k in EnemyKind.entries.filter { it.isBoss }) assertTrue(Skin.bossAbility(k).isNotBlank(), "$k")
+    }
 }

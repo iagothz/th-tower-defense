@@ -135,6 +135,9 @@ O tabuleiro, o HUD e os botões nunca mudam de lugar; cada mapa é um caminho di
 - **Estatísticas** (`StatsScreen`): totais (`total.*`), recorde por mapa, melhores decks (`deckbest.<deck>`) e últimos desafios.
 - **Desafio do dia** (`DailyChallenge.of(dia)`): o dia desde 1970 sorteia mapa e 5 dados e fixa a seed (`dia × 1 000 003`); `Match.challengeDay` vai no save (`daily`), e o resultado conta só para `daily.<dia>` e os totais.
 - **Animações**: o dado comprado cai de 90 unidades acima (`Effects.dropOffset`); no merge o dado arrastado desliza até o alvo por 0,14 s e o resultado só aparece depois (`Effects.slide`).
+- **Desfazer**: o último merge que consumiu dois dados pode ser desfeito por 3 s (`Match.undoMerge`), desde que o resultado ainda esteja na célula e a origem vazia; clonar não desfaz. Botão Desfazer ao lado de Comprar enquanto vale.
+- **Clima por mapa** (`Weather`): vagalumes na Ferradura, areia na Serpente, neve no Anel, brasas na Reta, atrás de todas as telas. Cartão do chefe no banner (nome e o que ele faz, 2,6 s), corpo encolhendo ao morrer, balanço ao andar e sombra no chão.
+- O tutorial não aparece no Desafio do dia; a partida começa com o aviso "deck e mapa do dia".
 - **Áudio**: som de ataque por família (`SoundPlanner.family`: fogo, gelo, raio, vento, pesado, mágico) e um loop de 19 s (`sounds/music.wav`) gerado por `tools/gen_sounds.py`, com botão Música no menu.
 
 ## Inimigos

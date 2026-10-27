@@ -36,9 +36,11 @@ class MatchRenderer(
     private val tmp = Color()
     private val tmp2 = Color()
     private var seedCounter = 0
+    private var clock = 0f
 
     /** Collects the shots of the last update and ages old traces. */
     fun update(match: Match, delta: Float) {
+        clock += delta
         traces.forEach { it.left -= delta }
         traces.removeAll { it.left <= 0f }
         match.lastShots.forEach { traces += Trace(it, traceTtl(it.type), seedCounter++) }
@@ -198,12 +200,17 @@ class MatchRenderer(
     }
 
     private fun drawEnemies(match: Match, effects: Effects) {
-        for (e in match.enemies) {
-            val p = match.path.positionAt(e.distance)
+        for ((i, e) in match.enemies.withIndex()) {
+            val ground = match.path.positionAt(e.distance)
             val r = Skin.enemyRadius(e.kind)
             val sides = Skin.enemySides(e.kind)
             val ahead = match.path.positionAt(e.distance + 4f)
-            val heading = atan2(ahead.y - p.y, ahead.x - p.x)
+            val heading = atan2(ahead.y - ground.y, ahead.x - ground.x)
+            // A little bob while walking, and a shadow that stays on the ground.
+            val bob = if (e.speed() > 0f && !e.kind.isBoss) kotlin.math.abs(kotlin.math.sin(clock * 9f + i)) * 4f else 0f
+            shapes.color = tmp2.set(0f, 0f, 0f, 0.3f)
+            shapes.ellipse(ground.x - r * 0.9f, ground.y - r * 0.85f - 4f, r * 1.8f, r * 0.55f)
+            val p = Vec2(ground.x, ground.y + bob)
             if (e.curse > 0f) {
                 shapes.color = Skin.color(DieType.CURSE)
                 shapes.circle(p.x, p.y, r + 9f, 24)

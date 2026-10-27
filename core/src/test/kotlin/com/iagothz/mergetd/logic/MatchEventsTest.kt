@@ -97,7 +97,10 @@ class MatchEventsTest {
         m.advance(3.1f)
         assertTrue(GameEvent.WaveStarted(1, boss = false) in m.drainEvents())
         m.debugStartWave(10)
-        assertEquals(listOf<GameEvent>(GameEvent.WaveStarted(10, boss = true)), m.drainEvents())
+        val started = m.drainEvents().single() as GameEvent.WaveStarted
+        assertEquals(10, started.wave)
+        assertTrue(started.boss)
+        assertEquals(m.bossOrder[0], started.bossKind)
     }
 
     @Test

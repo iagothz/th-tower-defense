@@ -5,6 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class MatchTest {
@@ -280,5 +281,66 @@ class MatchTest {
         m.update(Balance.STEP)
         assertEquals(Balance.START_LIVES - 1, m.lives)
         assertTrue(m.enemies.isEmpty())
+    }
+
+    // --- Undo ---
+
+    @Test
+    fun undoWithinTheWindowPutsBothDiceBack() {
+        val m = match()
+        val a = Die(DieType.FIRE, 2).apply { disabledFor = 1.5f }
+        val b = Die(DieType.FIRE, 2)
+        m.board[Cell(0, 0)] = a
+        m.board[Cell(0, 1)] = b
+        assertTrue(m.merge(Cell(0, 0), Cell(0, 1)))
+        assertTrue(m.canUndo)
+        m.advance(Balance.UNDO_WINDOW - 0.2f)
+        assertTrue(m.undoMerge())
+        assertSame(a, m.board[Cell(0, 0)])
+        assertSame(b, m.board[Cell(0, 1)])
+        assertFalse(m.canUndo)
+        assertTrue(m.drainEvents().any { it == GameEvent.Unmerged(Cell(0, 0), Cell(0, 1)) })
+    }
+
+    @Test
+    fun undoExpiresAndIsRefusedAfterTheResultWasUsed() {
+        val m = match()
+        m.board[Cell(0, 0)] = Die(DieType.FIRE, 2)
+        m.board[Cell(0, 1)] = Die(DieType.FIRE, 2)
+        assertTrue(m.merge(Cell(0, 0), Cell(0, 1)))
+        m.advance(Balance.UNDO_WINDOW + 0.1f)
+        assertFalse(m.canUndo)
+        assertFalse(m.undoMerge())
+
+        val n = match()
+        n.board[Cell(0, 0)] = Die(DieType.FIRE, 2)
+        n.board[Cell(0, 1)] = Die(DieType.FIRE, 2)
+        n.board[Cell(0, 2)] = Die(DieType.MIRROR, 3)
+        assertTrue(n.merge(Cell(0, 0), Cell(0, 1)))
+        assertTrue(n.merge(Cell(0, 2), Cell(0, 1)), "mirror merges with the 3-pip result")
+        assertTrue(n.canUndo, "the latest merge can still be undone")
+        assertTrue(n.undoMerge())
+        assertEquals(3, n.board[Cell(0, 1)]!!.pips)
+        assertEquals(DieType.MIRROR, n.board[Cell(0, 2)]!!.type)
+        assertFalse(n.undoMerge(), "only the last merge is undoable")
+    }
+
+    @Test
+    fun cloningCannotBeUndone() {
+        val m = match()
+        m.board[Cell(0, 0)] = Die(DieType.CLONE, 2)
+        m.board[Cell(0, 1)] = Die(DieType.FIRE, 2)
+        assertTrue(m.merge(Cell(0, 0), Cell(0, 1)))
+        assertFalse(m.canUndo)
+    }
+
+    @Test
+    fun undoIsRefusedIfTheSwapperMovedTheResult() {
+        val m = match()
+        m.board[Cell(0, 0)] = Die(DieType.FIRE, 2)
+        m.board[Cell(0, 1)] = Die(DieType.FIRE, 2)
+        assertTrue(m.merge(Cell(0, 0), Cell(0, 1)))
+        m.board.swap(Cell(0, 1), Cell(2, 4))
+        assertFalse(m.undoMerge())
     }
 }

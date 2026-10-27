@@ -35,7 +35,11 @@ class MatchScreen(
     private val buttonTap = Tap<Button>()
     private val effects = Effects(path = match.path)
     private val stats = MatchStats()
-    private val tutorial = Tutorial(active = restored == null && !game.save.tutorialDone)
+    private val tutorial = Tutorial(active = restored == null && fresh == null && !game.save.tutorialDone)
+
+    init {
+        if (fresh != null) effects.announce("Desafio do dia: deck e mapa do dia", 2.5f)
+    }
     private val sounds = SoundPlanner()
     private var clock = 0f
     private var paused = restored != null
@@ -44,6 +48,7 @@ class MatchScreen(
     private var speed = 1
 
     private val buy = Button(Rectangle(160f, 320f, 400f, 100f), "")
+    private val undo = Button(Rectangle(572f, 320f, 124f, 100f), "Desfazer", color = Skin.PANEL)
     private val speedButton = Button(Rectangle(528f, 1182f, 76f, 56f), "1x", color = Skin.PANEL)
     private val pauseButton = Button(Rectangle(616f, 1182f, 84f, 56f), "", color = Skin.PANEL)
     private val powerButtons = match.deck.mapIndexed { i, t ->
@@ -55,9 +60,9 @@ class MatchScreen(
     private val yes = Button(Rectangle(160f, 560f, 400f, 100f), "Sim", color = DANGER)
     private val no = Button(Rectangle(160f, 690f, 400f, 100f), "Não")
     private val skipTutorial = Button(Rectangle(540f, 1080f, 140f, 56f), "Pular", color = Skin.PANEL)
-    private val allButtons = listOf(buy, speedButton, pauseButton, resume, restart, quit, yes, no, skipTutorial) + powerButtons.map { it.second }
+    private val allButtons = listOf(buy, undo, speedButton, pauseButton, resume, restart, quit, yes, no, skipTutorial) + powerButtons.map { it.second }
 
-    override val theme get() = Skin.theme(match.map)
+    override val skyMap get() = match.map
 
     /** App going to the background: stop, drop any gesture, and save the match and record in case we're killed. */
     override fun pause() {
@@ -95,6 +100,7 @@ class MatchScreen(
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         renderer.drawShapes(match, drag, effects)
         buy.drawShape(shapes)
+        if (match.canUndo) undo.drawShape(shapes)
         speedButton.drawShape(shapes)
         pauseButton.drawShape(shapes)
         shapes.color = Color.WHITE
@@ -129,6 +135,7 @@ class MatchScreen(
             game.smallFont.color = Color.WHITE
         }
         buy.drawText(batch, game.font)
+        if (match.canUndo) undo.drawText(batch, game.smallFont)
         speedButton.drawText(batch, game.font)
         for ((t, b) in powerButtons) {
             val cx = b.rect.x + b.rect.width / 2
@@ -260,6 +267,7 @@ class MatchScreen(
 
     private fun buttonAt(p: Vec2): Button? {
         val visible = if (paused) pauseButtons() else listOf(buy, speedButton, pauseButton) + powerButtons.map { it.second } +
+            listOfNotNull(undo.takeIf { match.canUndo }) +
             listOfNotNull(skipTutorial.takeIf { tutorial.step != null && tutorial.step != Tutorial.Step.DONE })
         return visible.firstOrNull { it.contains(p.x, p.y) }
     }
@@ -299,6 +307,7 @@ class MatchScreen(
                 null -> Unit
             }
             buy -> match.buyDie()
+            undo -> match.undoMerge()
             speedButton -> speed = if (speed == 1) 2 else 1
             skipTutorial -> tutorial.skip()
             pauseButton -> {

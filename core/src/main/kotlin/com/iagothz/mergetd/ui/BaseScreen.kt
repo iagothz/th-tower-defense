@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.ScreenUtils
 import com.badlogic.gdx.utils.viewport.ExtendViewport
+import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.Layout
 import com.iagothz.mergetd.logic.Vec2
 
@@ -73,6 +74,9 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
         Gdx.gl.glEnable(GL20.GL_BLEND)
         game.shapes.begin(ShapeRenderer.ShapeType.Filled)
         game.backdrop.draw(game.shapes, game.clock, theme, viewport.worldWidth, viewport.worldHeight)
+        val w = weather?.takeIf { it.kind == Weather.kindFor(skyMap) } ?: Weather(skyMap).also { weather = it }
+        w.update(delta)
+        w.draw(game.shapes)
         game.shapes.end()
         draw(delta)
         val fade = game.fader.alpha
@@ -87,8 +91,12 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
 
     abstract fun draw(delta: Float)
 
-    /** Sky colours behind this screen: the chosen map's, unless the screen knows better. */
-    open val theme: MapTheme get() = Skin.theme(game.save.map)
+    /** The map whose sky and weather sit behind this screen: the chosen one, unless the screen knows better. */
+    open val skyMap: GameMap get() = game.save.map
+
+    val theme: MapTheme get() = Skin.theme(skyMap)
+
+    private var weather: Weather? = null
 
     /** Camera offset for this frame, in world units. */
     open fun cameraShake(): Vec2 = NO_SHAKE

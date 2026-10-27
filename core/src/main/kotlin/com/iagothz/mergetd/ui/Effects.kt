@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.iagothz.mergetd.logic.Cell
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.Enemy
+import com.iagothz.mergetd.logic.EnemyKind
 import com.iagothz.mergetd.logic.EnemyPath
 import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.GameEvent
@@ -38,6 +39,11 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
         val y: Float get() = from.y + (target.y - from.y) * t
     }
 
+    /** A dead enemy shrinking away where it fell. */
+    class Dying(val kind: EnemyKind, val x: Float, val y: Float, var age: Float = 0f) {
+        val scale: Float get() = 1f - (age / DYING_TIME).coerceIn(0f, 1f)
+    }
+
     /** An explosion ring that grows from a third of [max] to [max] while fading. */
     class Ring(val x: Float, val y: Float, val max: Float, val color: Color, var age: Float = 0f) {
         val radius: Float get() = max * (0.33f + 0.67f * (age / RING_TIME).coerceIn(0f, 1f))
@@ -47,6 +53,7 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
     val particles = mutableListOf<Particle>()
     val rings = mutableListOf<Ring>()
     val slides = mutableListOf<Slide>()
+    val dying = mutableListOf<Dying>()
     private val drops = mutableMapOf<Cell, Float>()
     private val flashes = mutableMapOf<Enemy, Float>()
     private val pops = mutableMapOf<Cell, Float>()
@@ -55,7 +62,11 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
     private var shakeAmp = 0f
     var banner: String? = null
         private set
+    /** Second line under the banner: what the boss does. */
+    var bannerNote: String? = null
+        private set
     private var bannerAge = 0f
+    private var bannerTime = BANNER_TIME
     private val tmp = Color()
 
     fun consume(events: List<GameEvent>) {
@@ -69,12 +80,17 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
                 }
                 is GameEvent.Killed -> {
                     burst(e.at, Skin.color(e.kind), PARTICLES_PER_KILL)
+                    dying += Dying(e.kind, e.at.x, e.at.y)
                     if (texts.size < MAX_TEXTS) texts += FloatingText("+${e.kind.reward}", e.at.x, e.at.y + 10f, reward = true)
                 }
                 is GameEvent.Blast -> rings += Ring(e.at.x, e.at.y, e.radius, Skin.color(e.type))
                 is GameEvent.DieBought -> {
                     pops[e.cell] = 0f
                     drops[e.cell] = 0f
+                }
+                is GameEvent.Unmerged -> {
+                    pops[e.from] = 0f
+                    pops[e.to] = 0f
                 }
                 is GameEvent.Merged -> {
                     pops[e.cell] = 0f
@@ -86,12 +102,17 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
                     texts += FloatingText("-${e.amount} SP", Layout.WORLD_W / 2, 1150f, bad = true)
                 }
                 is GameEvent.WaveStarted -> {
-                    banner = when {
-                        e.boss -> "Chefe!"
-                        e.special != null -> "${e.special.title}!"
-                        else -> "Onda ${e.wave}"
-                    }
-                    bannerAge = 0f
+                    val boss = e.bossKind
+                    show(
+                        when {
+                            boss != null -> "Chefe: ${Skin.enemyName(boss)}"
+                            e.boss -> "Chefe!"
+                            e.special != null -> "${e.special.title}!"
+                            else -> "Onda ${e.wave}"
+                        },
+                        note = boss?.let { Skin.bossAbility(it) },
+                        seconds = if (e.boss) BOSS_BANNER_TIME else BANNER_TIME,
+                    )
                     if (e.boss) shake(6f, 0.4f)
                 }
                 is GameEvent.PoweredUp -> Unit
@@ -128,13 +149,28 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
         pops.replaceAll { _, t -> t + dt }
         pops.values.removeAll { it >= POP_TIME }
         shakeLeft = maxOf(0f, shakeLeft - dt)
+        dying.forEach { it.age += dt }
+        dying.removeAll { it.age >= DYING_TIME }
         if (banner != null) {
             bannerAge += dt
-            if (bannerAge >= BANNER_TIME) banner = null
+            if (bannerAge >= bannerTime) {
+                banner = null
+                bannerNote = null
+            }
         }
     }
 
     fun isFlashing(enemy: Enemy): Boolean = enemy in flashes
+
+    /** Puts [text] on the banner, like a wave start. */
+    fun announce(text: String, seconds: Float = BANNER_TIME) = show(text, null, seconds)
+
+    private fun show(text: String, note: String?, seconds: Float) {
+        banner = text
+        bannerNote = note
+        bannerAge = 0f
+        bannerTime = seconds
+    }
 
     fun slide(from: Cell, to: Cell, type: DieType, pips: Int) {
         slides += Slide(Layout.cellCenter(from), Layout.cellCenter(to), to, type, pips)
@@ -166,7 +202,7 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
     }
 
     /** Banner opacity: snaps in, holds, fades over the last 0.4 s. 0 when there is none. */
-    fun bannerAlpha(): Float = if (banner == null) 0f else minOf(1f, (BANNER_TIME - bannerAge) / 0.4f)
+    fun bannerAlpha(): Float = if (banner == null) 0f else minOf(1f, (bannerTime - bannerAge) / 0.4f)
 
     /** Call inside a Filled ShapeRenderer batch, with GL blending enabled. */
     fun drawShapes(shapes: ShapeRenderer) {
@@ -176,6 +212,11 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
             shapes.circle(r.x, r.y, r.radius, 32)
             shapes.color = tmp.set(r.color).also { it.a = life }
             shapes.ring(r.x, r.y, r.radius, 3f + 3f * life)
+        }
+        for (d in dying) {
+            val r = Skin.enemyRadius(d.kind) * d.scale
+            shapes.color = tmp.set(Skin.color(d.kind)).also { it.a = 0.8f * d.scale }
+            shapes.polygon(d.x, d.y, r, Skin.enemySides(d.kind))
         }
         for (p in particles) {
             val life = 1f - p.age / PARTICLE_TIME
@@ -206,8 +247,13 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
         banner?.let {
             val a = bannerAlpha()
             big.setColor(1f, 0.9f, 0.5f, a)
-            batch.textCentered(big, it, Layout.WORLD_W / 2, BANNER_Y)
+            batch.textCentered(big, it, Layout.WORLD_W / 2, BANNER_Y + if (bannerNote != null) 14f else 0f)
             big.setColor(1f, 1f, 1f, 1f)
+            bannerNote?.let { note ->
+                small.setColor(1f, 1f, 1f, a)
+                batch.textCentered(small, note, Layout.WORLD_W / 2, BANNER_Y - 34f)
+                small.setColor(1f, 1f, 1f, 1f)
+            }
         }
     }
 
@@ -242,6 +288,8 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
         const val POP_TIME = 0.25f
         const val LEAK_SHAKE = 10f
         const val BANNER_TIME = 1.5f
+        const val BOSS_BANNER_TIME = 2.6f
+        const val DYING_TIME = 0.3f
         const val BANNER_Y = 1010f
     }
 }

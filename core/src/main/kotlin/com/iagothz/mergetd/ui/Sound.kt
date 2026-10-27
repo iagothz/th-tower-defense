@@ -17,6 +17,7 @@ class SoundPlanner {
             when (e) {
                 is GameEvent.DieBought -> names += "buy"
                 is GameEvent.Merged -> names += "merge"
+                is GameEvent.Unmerged -> names += "buy"
                 is GameEvent.PoweredUp -> names += "power"
                 is GameEvent.Killed -> names += "kill"
                 is GameEvent.Leaked -> names += "leak"

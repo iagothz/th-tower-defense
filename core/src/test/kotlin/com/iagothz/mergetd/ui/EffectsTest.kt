@@ -79,7 +79,7 @@ class EffectsTest {
         assertEquals("Onda 3", fx.banner)
         fx.consume(listOf(GameEvent.WaveStarted(10, boss = true)))
         assertEquals("Chefe!", fx.banner)
-        fx.update(Effects.BANNER_TIME + 0.1f)
+        fx.update(Effects.BOSS_BANNER_TIME + 0.1f)
         assertNull(fx.banner)
     }
 
@@ -148,5 +148,39 @@ class EffectsTest {
         fx.update(Effects.SLIDE_TIME)
         assertFalse(fx.slidingTo(to))
         assertTrue(fx.slides.isEmpty())
+    }
+
+    @Test
+    fun bossWaveShowsTheBossNameAndWhatItDoes() {
+        fx.consume(listOf(GameEvent.WaveStarted(10, boss = true, bossKind = EnemyKind.BOSS_THIEF)))
+        assertEquals("Chefe: Ladrão", fx.banner)
+        assertEquals(Skin.bossAbility(EnemyKind.BOSS_THIEF), fx.bannerNote)
+        fx.update(Effects.BOSS_BANNER_TIME + 0.1f)
+        assertNull(fx.banner)
+        assertNull(fx.bannerNote)
+    }
+
+    @Test
+    fun killedEnemiesLeaveAShrinkingBody() {
+        fx.consume(listOf(GameEvent.Killed(EnemyKind.TANK, Vec2(100f, 100f))))
+        assertEquals(1, fx.dying.size)
+        val r0 = fx.dying.single().scale
+        fx.update(Effects.DYING_TIME / 2)
+        assertTrue(fx.dying.single().scale < r0)
+        fx.update(Effects.DYING_TIME)
+        assertTrue(fx.dying.isEmpty())
+    }
+
+    @Test
+    fun unmergePopsBothCells() {
+        fx.consume(listOf(GameEvent.Unmerged(Cell(0, 0), Cell(0, 1))))
+        assertTrue(fx.popScale(Cell(0, 0)) < 1f)
+        assertTrue(fx.popScale(Cell(0, 1)) < 1f)
+    }
+
+    @Test
+    fun announcementsUseTheBanner() {
+        fx.announce("Desafio do dia")
+        assertEquals("Desafio do dia", fx.banner)
     }
 }

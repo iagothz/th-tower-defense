@@ -157,6 +157,18 @@ object Skin {
 
     fun enemyName(k: EnemyKind): String = enemyNames.getValue(k)
 
+    /** One line on what a boss does, for its entrance card. */
+    fun bossAbility(k: EnemyKind): String = when (k) {
+        EnemyKind.BOSS_SILENCER -> "Cala um dado a cada 6 s"
+        EnemyKind.BOSS_SWAPPER -> "Troca dois dados de lugar a cada 6 s"
+        EnemyKind.BOSS_REGEN -> "Cura 2% da vida por segundo"
+        EnemyKind.BOSS_SPLITTER -> "Vira dois tanques ao morrer"
+        EnemyKind.BOSS_ARMORED -> "Ignora golpes fracos; veneno passa"
+        EnemyKind.BOSS_THIEF -> "Rouba SP a cada 6 s; devolve ao morrer"
+        EnemyKind.BOSS_COMMANDER -> "Acelera os inimigos perto dele"
+        else -> ""
+    }
+
     fun enemyPlural(k: EnemyKind): String = when (k) {
         EnemyKind.NORMAL -> "soldados"
         EnemyKind.FAST -> "corredores"

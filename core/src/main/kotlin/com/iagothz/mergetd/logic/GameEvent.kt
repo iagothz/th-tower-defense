@@ -4,6 +4,8 @@ package com.iagothz.mergetd.logic
 sealed interface GameEvent {
     data class DieBought(val cell: Cell) : GameEvent
     data class Merged(val cell: Cell) : GameEvent
+    /** A merge was undone: the two dice are back in [from] and [to]. */
+    data class Unmerged(val from: Cell, val to: Cell) : GameEvent
     data class PoweredUp(val type: DieType) : GameEvent
     /** Direct damage from one shot (splash and chain included, poison ticks not). */
     data class Hit(val enemy: Enemy, val damage: Float, val crit: Boolean = false, val type: DieType? = null) : GameEvent
@@ -11,7 +13,7 @@ sealed interface GameEvent {
     data class Blast(val at: Vec2, val radius: Float, val type: DieType) : GameEvent
     data class Killed(val kind: EnemyKind, val at: Vec2) : GameEvent
     data class Leaked(val kind: EnemyKind) : GameEvent
-    data class WaveStarted(val wave: Int, val boss: Boolean, val special: SpecialWave? = null) : GameEvent
+    data class WaveStarted(val wave: Int, val boss: Boolean, val special: SpecialWave? = null, val bossKind: EnemyKind? = null) : GameEvent
     /** A Thief boss took [amount] SP. */
     data class Stolen(val amount: Int) : GameEvent
 }

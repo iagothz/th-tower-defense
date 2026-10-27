@@ -29,6 +29,8 @@ object Balance {
     const val WAVE_DELAY = 3f
     const val MAX_WAVE_SIZE = 40
     const val BOSS_EVERY = 10
+    /** Seconds after a merge during which it can be undone. */
+    const val UNDO_WINDOW = 3f
 
     const val SLOW_DURATION = 2f
     const val POISON_DURATION = 3f

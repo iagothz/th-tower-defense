@@ -20,7 +20,7 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
     private val tap = Tap<Button>()
 
     /** The menu behind the cards already shows the chosen map's sky. */
-    override val theme get() = Skin.theme(selected)
+    override val skyMap get() = selected
 
     override fun draw(delta: Float) {
         confirm.pressed = tap.current === confirm
