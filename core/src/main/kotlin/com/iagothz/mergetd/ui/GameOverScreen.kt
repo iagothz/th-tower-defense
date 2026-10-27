@@ -28,7 +28,9 @@ class GameOverScreen(
 ) : BaseScreen(game) {
     private class Confetto(var x: Float, var y: Float, val speed: Float, val sway: Float, val color: Color, val w: Float, val h: Float)
 
-    private val menu = Button(Rectangle(160f, 160f, 400f, 110f), S["Menu"])
+    private val menu = Button(Rectangle(370f, 160f, 310f, 110f), S["Menu"])
+    private val share = Button(Rectangle(40f, 160f, 310f, 110f), S["Compartilhar"], color = Skin.PANEL)
+    private var copied = 0f
     private val tap = Tap<Button>()
     private val panel = Rectangle(70f, 300f, 580f, 540f)
     private val rng = Random(System.nanoTime())
@@ -59,7 +61,9 @@ class GameOverScreen(
 
     override fun draw(delta: Float) {
         time += delta
+        copied = maxOf(0f, copied - delta)
         menu.pressed = tap.current === menu
+        share.pressed = tap.current === share
         for ((i, c) in counters.withIndex()) if (time > COUNT_FROM + i * COUNT_STAGGER) c.first.update(delta, c.second)
         for (c in confetti) {
             c.y -= c.speed * delta
@@ -84,6 +88,7 @@ class GameOverScreen(
         shapes.color = if (isRecord) Skin.GOLD else Skin.HEART
         shapes.roundedRect(panel.x, panel.y + panel.height - 10f, panel.width, 10f, 5f)
         menu.drawShape(shapes)
+        share.drawShape(shapes)
         shapes.end()
 
         game.batch.begin()
@@ -130,17 +135,23 @@ class GameOverScreen(
             }
         }
         menu.drawText(game.batch, game.font)
+        share.drawText(game.batch, game.smallFont)
+        if (copied > 0f) game.batch.textShadowed(game.smallFont, S["Copiado!"], 195f, 130f, Skin.GOLD)
         game.batch.end()
     }
 
-    private fun buttonAt(p: Vec2) = menu.takeIf { it.contains(p.x, p.y) }
+    private fun buttonAt(p: Vec2) = listOf(menu, share).firstOrNull { it.contains(p.x, p.y) }
 
     override fun onTouchDown(p: Vec2) = tap.press(buttonAt(p))
 
     override fun onTouchCancelled() = tap.cancel()
 
     override fun onTouchUp(p: Vec2) {
-        if (tap.release(buttonAt(p)) === menu) game.showMenu()
+        when (tap.release(buttonAt(p))) {
+            menu -> game.showMenu()
+            share -> if (!game.share(Share.text(wave, map, mode, code))) copied = 2f
+            else -> Unit
+        }
     }
 
     private companion object {

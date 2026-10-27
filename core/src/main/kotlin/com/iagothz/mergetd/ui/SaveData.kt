@@ -277,6 +277,14 @@ class SaveData(private val prefs: Preferences) {
             prefs.flush()
         }
 
+    /** One of the three saved deck presets, or null when the slot is empty. */
+    fun deckSlot(i: Int): List<DieType>? = prefs.getString("deckslot.$i", null)?.let { DeckCodec.decode(it) }?.takeIf { it.size == DeckCodec.SIZE }
+
+    fun saveDeckSlot(i: Int, deck: List<DieType>) {
+        prefs.putString("deckslot.$i", DeckCodec.encode(deck))
+        prefs.flush()
+    }
+
     /** The match left running when the app went to the background, with the record it started from. */
     val savedMatch: Pair<String, Int>?
         get() = prefs.getString("match", null)?.let { it to prefs.getInteger("matchBest", 0) }

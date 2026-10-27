@@ -20,6 +20,15 @@ class AndroidLauncher : AndroidApplication() {
             // 4x MSAA: everything is drawn with ShapeRenderer, so edges would be jagged without it.
             numSamples = 4
         }
-        initialize(MergeTdGame(), config)
+        val game = MergeTdGame(shareText = { text ->
+            runOnUiThread {
+                val send = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, text)
+                }
+                startActivity(Intent.createChooser(send, null))
+            }
+        })
+        initialize(game, config)
     }
 }

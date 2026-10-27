@@ -20,12 +20,35 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     private val confirm = Button(Rectangle(40f, 30f, 310f, 100f), S["Confirmar"])
     private val back = Button(Rectangle(370f, 30f, 310f, 100f), S["Voltar"], color = Skin.PANEL)
     private val enemies = Button(Rectangle(24f, 1190f, 190f, 56f), S["Inimigos"], color = Skin.PANEL)
+    /** Three preset slots (tap loads, hold saves) and a random deck button. */
+    private val presets = List(PRESETS) { Button(Rectangle(506f + it * 66f, 1190f, 60f, 56f), "${it + 1}", color = Skin.PANEL) }
+    private val random = Button(Rectangle(440f, 1190f, 60f, 56f), "?", color = Skin.PANEL)
+    private val hold = LongPress(holdSeconds = 0.6f)
+    private var holdingPreset: Int? = null
+    private var toast = ""
+    private var toastLeft = 0f
+    private val rng = kotlin.random.Random(System.nanoTime())
     private val tap = Tap<Button>()
     private val slots = List(DeckCodec.SIZE) { Rectangle(186f + it * 72f, 1112f, 60f, 60f) }
 
     override fun draw(delta: Float) {
         confirm.enabled = selected.size == DeckCodec.SIZE
         confirm.pressed = tap.current === confirm
+        random.pressed = tap.current === random
+        for ((i, b) in presets.withIndex()) {
+            b.pressed = tap.current === b
+            b.color = if (game.save.deckSlot(i) != null) PRESET_FULL else Skin.PANEL
+        }
+        toastLeft = maxOf(0f, toastLeft - delta)
+        holdingPreset?.let { i ->
+            if (hold.isHeld(game.clock) && selected.size == DeckCodec.SIZE) {
+                game.save.saveDeckSlot(i, selected.toList())
+                say(S.f("Deck salvo no slot %d", i + 1))
+                holdingPreset = null
+                hold.up()
+                tap.cancel()
+            }
+        }
         enemies.pressed = tap.current === enemies
         back.pressed = tap.current === back
         val shapes = game.shapes
@@ -64,6 +87,8 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         confirm.drawShape(shapes)
         back.drawShape(shapes)
         enemies.drawShape(shapes)
+        random.drawShape(shapes)
+        presets.forEach { it.drawShape(shapes) }
         shapes.end()
 
         game.batch.begin()
@@ -82,6 +107,9 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         game.tinyFont.color = Color.WHITE
         confirm.drawText(game.batch, game.font)
         enemies.drawText(game.batch, game.smallFont)
+        random.drawText(game.batch, game.smallFont)
+        presets.forEach { it.drawText(game.batch, game.smallFont) }
+        if (toastLeft > 0f) game.batch.textShadowed(game.tinyFont, toast, 360f, 1176f, Skin.GOLD)
         back.drawText(game.batch, game.font)
         game.batch.end()
     }
@@ -105,11 +133,26 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         }
     }
 
-    private fun buttonAt(p: Vec2) = listOf(confirm, back, enemies).firstOrNull { it.contains(p.x, p.y) }
+    private fun buttonAt(p: Vec2) = (listOf(confirm, back, enemies, random) + presets).firstOrNull { it.contains(p.x, p.y) }
 
-    override fun onTouchDown(p: Vec2) = tap.press(buttonAt(p))
+    private fun say(text: String) {
+        toast = text
+        toastLeft = 2f
+    }
 
-    override fun onTouchCancelled() = tap.cancel()
+    override fun onTouchDown(p: Vec2) {
+        tap.press(buttonAt(p))
+        holdingPreset = presets.indexOfFirst { it.contains(p.x, p.y) }.takeIf { it >= 0 }
+        if (holdingPreset != null) hold.down(p, game.clock)
+    }
+
+    override fun onDrag(p: Vec2) = hold.move(p)
+
+    override fun onTouchCancelled() {
+        tap.cancel()
+        holdingPreset = null
+        hold.up()
+    }
 
     override fun onTouchUp(p: Vec2) {
         val tile = tiles.firstOrNull { it.second.contains(p.x, p.y) }?.first
@@ -124,18 +167,37 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
             tile != null && tile in selected -> selected.remove(tile)
             tile != null && selected.size < DeckCodec.SIZE -> selected.add(tile)
             tile != null -> tap.cancel()
-            else -> when (tap.release(buttonAt(p))) {
+            else -> when (val b = tap.release(buttonAt(p))) {
                 confirm -> {
                     game.save.deck = selected.toList()
                     game.showMenu()
                 }
                 back -> game.showMenu()
                 enemies -> game.showEnemies()
+                random -> {
+                    selected.clear()
+                    selected.addAll(DeckCodec.random(rng))
+                    shown = selected.first()
+                }
+                else -> presets.indexOf(b).takeIf { it >= 0 }?.let { i ->
+                    val deck = game.save.deckSlot(i)
+                    if (deck == null) {
+                        say(S["Segure para salvar o deck aqui"])
+                    } else {
+                        selected.clear()
+                        selected.addAll(deck)
+                        shown = deck.first()
+                    }
+                }
             }
         }
+        holdingPreset = null
+        hold.up()
     }
 
     private companion object {
+        const val PRESETS = 3
+        val PRESET_FULL = Color(0.30f, 0.38f, 0.60f, 1f)
         const val COLS = 7
         val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
     }

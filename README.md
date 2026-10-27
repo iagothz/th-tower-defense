@@ -22,6 +22,7 @@ Tower defense de merge no estilo Random Dice, para jogar offline no Android. Fei
 - **Modos** na tela Partida: Normal, Boss Rush, Sobrevivência e Rápido, com recorde por mapa e modo.
 - Na tela **Partida**, escolha entre 4 caminhos (Ferradura, Serpente, Anel e Reta), com dificuldade e recorde próprios.
 - Na tela **Deck**, o botão **Inimigos** abre a enciclopédia: o que cada inimigo e chefe faz e como vencer. Na partida, dicas de uma linha aparecem na primeira vez que algo novo acontece (coringa, desfazer, sinergia, 7 pips).
+- Na tela **Deck**, três slots guardam decks (toque carrega, segurar salva) e o **?** sorteia um deck. No fim de jogo, **Compartilhar** manda onda, mapa e código para qualquer app.
 - Na tela **Deck**, escolha 5 dos 25 tipos de dado. Tocar num dado mostra o que ele faz: alvo, dano, velocidade, efeito e power-up.
 - **Configurações**: volume do som e da música, vibração, idioma (automático, português ou inglês), **Reduzir movimento** (sem tremor, vinheta nem câmera lenta) e **Texto grande**. A música ganha bateria enquanto um chefe está vivo e acelera no modo Rápido. O jogo funciona sem internet e não coleta nada ([PRIVACY.md](PRIVACY.md)).
 

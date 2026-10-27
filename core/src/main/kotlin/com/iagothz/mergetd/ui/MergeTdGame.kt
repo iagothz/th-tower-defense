@@ -16,7 +16,8 @@ import java.util.Locale
 import com.iagothz.mergetd.logic.MatchSetup
 
 /** [devMode] enables desktop-only cheat keys and disables record saving. */
-class MergeTdGame(val devMode: Boolean = false) : Game() {
+/** [shareText] is the platform's share sheet; without one, sharing copies to the clipboard. */
+class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String) -> Unit)? = null) : Game() {
     lateinit var shapes: ShapeRenderer
     lateinit var batch: SpriteBatch
     lateinit var font: BitmapFont
@@ -93,6 +94,17 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
     ) = switchTo(GameOverScreen(this, map, wave, isRecord, stats, challengeDay, mode, unlocked, code, reward))
 
     fun showMissions() = switchTo(MissionsScreen(this))
+
+    /** Hands [text] to the share sheet; returns false when it was only copied to the clipboard. */
+    fun share(text: String): Boolean {
+        val sheet = shareText
+        if (sheet != null) {
+            sheet(text)
+            return true
+        }
+        Gdx.app.clipboard.contents = text
+        return false
+    }
 
     fun showHistory() = switchTo(HistoryScreen(this))
 

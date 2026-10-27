@@ -252,4 +252,14 @@ class SaveDataTest {
         assertTrue(SaveData(prefs).reduceMotion)
         assertTrue(SaveData(prefs).largeText)
     }
+
+    @Test
+    fun deckSlotsPersist() {
+        val prefs = memoryPrefs()
+        assertNull(SaveData(prefs).deckSlot(0))
+        val deck = listOf(DieType.FIRE, DieType.ICE, DieType.POISON, DieType.ELECTRIC, DieType.WIND)
+        SaveData(prefs).saveDeckSlot(1, deck)
+        assertEquals(deck, SaveData(prefs).deckSlot(1))
+        assertNull(SaveData(prefs).deckSlot(0))
+    }
 }
