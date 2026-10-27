@@ -23,6 +23,7 @@ class SoundPlanner {
                 is GameEvent.PoweredUp -> names += "power"
                 is GameEvent.Killed -> names += if (e.kind.isBoss) "bosskill" else "kill"
                 is GameEvent.Leaked -> names += "leak"
+                is GameEvent.WaveCleared -> names += "clear"
                 is GameEvent.WaveStarted -> names += if (e.boss) "boss" else "wave"
                 is GameEvent.Blast -> Unit
                 is GameEvent.Stolen -> names += "leak"
@@ -107,7 +108,7 @@ class Sfx(private val save: SaveData, private val rng: kotlin.random.Random = ko
     }
 
     private companion object {
-        val NAMES = listOf("buy", "power", "hit", "kill", "bosskill", "leak", "wave", "boss", "deny") +
+        val NAMES = listOf("buy", "power", "hit", "kill", "bosskill", "leak", "wave", "boss", "deny", "clear", "record", "gameover") +
             SoundPlanner.FAMILIES.map { "hit_$it" } + SoundPlanner.MERGES + SoundPlanner.TICKS
         const val VOLUME = 0.6f
         const val DUCK = 0.2f

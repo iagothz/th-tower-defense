@@ -28,14 +28,19 @@ import kotlin.random.Random
  */
 class Effects(private val rng: Random = Random.Default, private val path: EnemyPath = GameMap.DEFAULT.path) {
     class FloatingText(
-        val text: String,
+        var text: String,
         val x: Float,
         var y: Float,
         var age: Float = 0f,
-        val crit: Boolean = false,
+        var crit: Boolean = false,
         val reward: Boolean = false,
         val bad: Boolean = false,
+        /** The enemy a damage number belongs to, so later hits stack into it. */
+        val enemy: Enemy? = null,
     ) {
+        var amount = 0f
+        var count = 1
+
         /** Crits pop in at 1.6× and settle to 1 over [TEXT_POP_TIME]; everything else stays at 1. */
         val scale: Float
             get() = if (!crit) 1f else 1f + 0.6f * (1f - (age / TEXT_POP_TIME).coerceIn(0f, 1f))
@@ -78,6 +83,9 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
 
     private class Kick(val dir: Vec2, var age: Float = 0f)
 
+    /** A merge whose die is still gliding: the landing effects wait for it. */
+    private class Landing(var delay: Float, val pips: Int)
+
     val texts = mutableListOf<FloatingText>()
     val particles = mutableListOf<Particle>()
     val rings = mutableListOf<Ring>()
@@ -90,6 +98,8 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
     private val squashes = mutableMapOf<Cell, Float>()
     private val cellFlashes = mutableMapOf<Cell, Float>()
     private val kicks = mutableMapOf<Cell, Kick>()
+    private val landings = mutableMapOf<Cell, Landing>()
+    private var ending = false
     private var shakeLeft = 0f
     private var shakeDuration = 0f
     private var shakeAmp = 0f
@@ -114,12 +124,14 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
     fun consume(events: List<GameEvent>) {
         val hits = linkedMapOf<Enemy, Float>()
         val crits = mutableSetOf<Enemy>()
+        val sparks = mutableSetOf<Enemy>()
         for (e in events) {
             when (e) {
                 is GameEvent.Hit -> {
                     hits[e.enemy] = (hits[e.enemy] ?: 0f) + e.damage
                     if (e.crit) crits += e.enemy
                     if (e.crit || e.type in HEAVY) jolts[e.enemy] = 0f
+                    if (e.crit || e.type in SPARKS) sparks += e.enemy
                 }
                 is GameEvent.Killed -> {
                     burst(e.at, Skin.color(e.kind), PARTICLES_PER_KILL)
@@ -148,18 +160,12 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
                 }
                 is GameEvent.Merged -> {
                     pops[e.cell] = 0f
-                    squashes[e.cell] = 0f
-                    cellFlashes[e.cell] = 0f
-                    freezeLeft = HIT_STOP
-                    val c = Layout.cellCenter(e.cell)
-                    burst(c, Skin.GOLD, PARTICLES_PER_MERGE)
-                    if (e.pips >= Balance.MAX_PIPS) {
-                        burst(c, Skin.GOLD, PARTICLES_PER_MAX, speed = 1.8f)
-                        rings += Ring(c.x, c.y, 110f, Skin.GOLD)
-                        shake(MAX_SHAKE, 0.3f)
-                        if (texts.size < MAX_TEXTS) texts += FloatingText(S["Máximo!"], c.x, c.y + 50f, crit = true)
-                    }
+                    pulses["undo"] = 0f
+                    // The impact waits for the sliding die to arrive.
+                    val delay = slides.firstOrNull { it.to == e.cell }?.let { SLIDE_TIME - it.age } ?: 0f
+                    if (delay > 0f) landings[e.cell] = Landing(delay, e.pips) else land(e.cell, e.pips)
                 }
+                is GameEvent.WaveCleared -> show(S["Onda limpa!"], null, CLEAR_BANNER_TIME)
                 is GameEvent.Leaked -> {
                     shake(LEAK_SHAKE, 0.25f)
                     leakVignette = LEAK_VIGNETTE_TIME
@@ -192,10 +198,42 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
         }
         for ((enemy, amount) in hits) {
             flashes[enemy] = FLASH_TIME
-            if (texts.size >= MAX_TEXTS) continue
             val p = path.positionAt(enemy.distance)
-            texts += FloatingText(amount.roundToInt().coerceAtLeast(1).toString(), p.x, p.y + 30f, crit = enemy in crits)
+            if (enemy in sparks) burst(p, SPARK, SPARKS_PER_HIT, speed = 1.3f)
+            // A fresh number on the same enemy takes the new damage instead of a second number.
+            val stacked = texts.firstOrNull { it.enemy === enemy && it.age < STACK_WINDOW }
+            if (stacked != null) {
+                stacked.amount += amount
+                stacked.count++
+                stacked.text = stacked.amount.roundToInt().coerceAtLeast(1).toString()
+                if (enemy in crits) stacked.crit = true
+                continue
+            }
+            if (texts.size >= MAX_TEXTS) continue
+            texts += FloatingText(amount.roundToInt().coerceAtLeast(1).toString(), p.x, p.y + 30f, crit = enemy in crits, enemy = enemy)
+                .also { it.amount = amount }
         }
+    }
+
+    /** The moment a merged die is in its cell: freeze, flash, squash, sparkles, and the party at 7 pips. */
+    private fun land(cell: Cell, pips: Int) {
+        squashes[cell] = 0f
+        cellFlashes[cell] = 0f
+        freezeLeft = HIT_STOP
+        val c = Layout.cellCenter(cell)
+        burst(c, Skin.GOLD, PARTICLES_PER_MERGE)
+        if (pips >= Balance.MAX_PIPS) {
+            burst(c, Skin.GOLD, PARTICLES_PER_MAX, speed = 1.8f)
+            rings += Ring(c.x, c.y, 110f, Skin.GOLD)
+            shake(MAX_SHAKE, 0.3f)
+            if (texts.size < MAX_TEXTS) texts += FloatingText(S["Máximo!"], c.x, c.y + 50f, crit = true)
+        }
+    }
+
+    /** The last life just went: a hard shake, and the edges stay red until the screen changes. */
+    fun gameOver() {
+        ending = true
+        shake(GAMEOVER_SHAKE, 0.8f)
     }
 
     /** Ages everything by real time [dt]; the match itself runs on [timeScale] of it. */
@@ -250,7 +288,14 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
                 bannerNote = null
             }
         }
+        landings.values.forEach { it.delay -= dt }
+        val due = landings.filterValues { it.delay <= 0f }
+        due.keys.forEach { landings.remove(it) }
+        for ((cell, l) in due) land(cell, l.pips)
     }
+
+    /** 1 at the start of the boss-death slow motion, 0 when it is over; the camera leans in with it. */
+    fun slowMo(): Float = (slowLeft / SLOWMO_TIME).coerceIn(0f, 1f)
 
     /** How fast the match should run this frame: frozen for an instant after a merge, slow after a boss dies. */
     fun timeScale(): Float = when {
@@ -263,13 +308,14 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
 
     /** Edge darkening right now: a red flash on a leak, a slow red breath on the last life, dark while the boss card shows. */
     fun vignetteAlpha(): Float {
+        if (ending) return 0.95f
         val leak = 0.9f * leakVignette / LEAK_VIGNETTE_TIME
         val boss = 0.55f * minOf(1f, bossVignette / 0.4f)
         val life = if (lastLife) 0.2f + 0.14f * sin(clock * 4f) else 0f
         return maxOf(leak, boss, life)
     }
 
-    fun vignetteColor(): Color = if (leakVignette > 0f || lastLife) VIGNETTE_RED else VIGNETTE_DARK
+    fun vignetteColor(): Color = if (ending || leakVignette > 0f || lastLife) VIGNETTE_RED else VIGNETTE_DARK
 
     /** Starts a HUD pulse under [key], read back with [pulse]. */
     fun hudPulse(key: String) {
@@ -408,10 +454,14 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
                     medium.data.setScale(t.scale)
                     batch.textShadowed(medium, t.text, t.x, t.y, tmp.set(1f, 0.6f, 0.15f, fade))
                     medium.data.setScale(1f)
+                    if (t.count > 1) batch.textShadowed(small, "×${t.count}", t.x + 44f, t.y + 4f, tmp.set(1f, 0.8f, 0.4f, fade))
                 }
                 t.reward -> batch.textShadowed(small, t.text, t.x + 26f, t.y, tmp.set(Skin.GOLD).also { it.a = fade })
                 t.bad -> batch.textShadowed(medium, t.text, t.x, t.y, tmp.set(Skin.HEART).also { it.a = fade })
-                else -> batch.textShadowed(small, t.text, t.x, t.y, tmp.set(1f, 1f, 1f, fade))
+                else -> {
+                    batch.textShadowed(small, t.text, t.x, t.y, tmp.set(1f, 1f, 1f, fade))
+                    if (t.count > 1) batch.textShadowed(small, "×${t.count}", t.x + 34f, t.y + 4f, tmp.set(1f, 0.8f, 0.4f, fade))
+                }
             }
         }
         banner?.let {
@@ -485,6 +535,10 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
         const val JOLT_TIME = 0.12f
         const val JOLT_AMP = 7f
         const val LEAK_SHAKE = 10f
+        const val GAMEOVER_SHAKE = 16f
+        const val CLEAR_BANNER_TIME = 0.9f
+        const val STACK_WINDOW = 0.35f
+        const val SPARKS_PER_HIT = 5
         const val LEAK_VIGNETTE_TIME = 0.4f
         const val PULSE_TIME = 0.4f
         const val GLOW_TIME = 0.5f
@@ -498,6 +552,9 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
         const val BANNER_Y = 1010f
         /** Dice whose hits throw the enemy back a step. */
         val HEAVY = setOf(DieType.IRON, DieType.SNIPER, DieType.GRAVITY)
+        /** Dice whose hits throw sparks off the enemy. */
+        val SPARKS = setOf(DieType.IRON, DieType.SNIPER)
+        private val SPARK = Color(1f, 0.95f, 0.8f, 1f)
         private val EMBER = Color(1f, 0.55f, 0.15f, 1f)
         private val EMBER_DARK = Color(0.9f, 0.3f, 0.1f, 1f)
     }

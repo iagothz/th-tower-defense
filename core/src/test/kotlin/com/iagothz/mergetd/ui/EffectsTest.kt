@@ -347,4 +347,74 @@ class EffectsTest {
         fx.update(Effects.GLOW_TIME + 0.01f)
         assertEquals(0f, fx.typeGlow(DieType.FIRE))
     }
+
+    @Test
+    fun heavyImpactsSparkOnTheEnemy() {
+        fx.consume(listOf(GameEvent.Hit(enemy, 5f, type = DieType.FIRE)))
+        assertTrue(fx.particles.isEmpty(), "a plain hit only flashes")
+        fx.consume(listOf(GameEvent.Hit(enemy, 5f, type = DieType.SNIPER)))
+        assertTrue(fx.particles.isNotEmpty())
+    }
+
+    @Test
+    fun damageNumbersStackWhileTheyAreFresh() {
+        fx.consume(listOf(GameEvent.Hit(enemy, 10f)))
+        fx.update(0.1f)
+        fx.consume(listOf(GameEvent.Hit(enemy, 5f, crit = true)))
+        val t = fx.texts.single()
+        assertEquals("15", t.text)
+        assertEquals(2, t.count)
+        assertTrue(t.crit, "a crit in the stack marks the whole number")
+        fx.update(Effects.STACK_WINDOW)
+        fx.consume(listOf(GameEvent.Hit(enemy, 3f)))
+        assertEquals(2, fx.texts.size, "too old to stack: a new number")
+    }
+
+    @Test
+    fun mergeLandsWhenTheSlideArrives() {
+        val from = Cell(0, 0)
+        val to = Cell(0, 1)
+        fx.slide(from, to, DieType.FIRE, 2)
+        fx.consume(listOf(GameEvent.Merged(to, pips = 3)))
+        assertEquals(1f, fx.timeScale(), "nothing lands while the die is still gliding")
+        assertEquals(0f, fx.cellFlash(to))
+        fx.update(Effects.SLIDE_TIME + 0.001f)
+        assertEquals(0f, fx.timeScale())
+        assertEquals(1f, fx.cellFlash(to))
+    }
+
+    @Test
+    fun bossDeathSlowMotionIsExposedForTheCameraZoom() {
+        assertEquals(0f, fx.slowMo())
+        fx.consume(listOf(GameEvent.Killed(EnemyKind.BOSS_THIEF, Vec2(100f, 100f))))
+        assertEquals(1f, fx.slowMo())
+        fx.update(Effects.SLOWMO_TIME + 0.01f)
+        assertEquals(0f, fx.slowMo())
+    }
+
+    @Test
+    fun gameOverShakesHardAndStaysRed() {
+        fx.gameOver()
+        fx.update(0.01f)
+        assertTrue(fx.shakeOffset() != Vec2(0f, 0f))
+        assertTrue(fx.vignetteAlpha() > 0.8f)
+        assertEquals(Effects.VIGNETTE_RED, fx.vignetteColor())
+        fx.update(2f)
+        assertTrue(fx.vignetteAlpha() > 0.8f, "the red stays until the screen changes")
+    }
+
+    @Test
+    fun clearedWaveGetsAShortBanner() {
+        fx.consume(listOf(GameEvent.WaveCleared(3)))
+        assertEquals("Onda limpa!", fx.banner)
+        fx.update(Effects.CLEAR_BANNER_TIME + 0.01f)
+        assertNull(fx.banner)
+    }
+
+    @Test
+    fun undoButtonPopsAfterAMerge() {
+        assertEquals(0f, fx.pulse("undo"))
+        fx.consume(listOf(GameEvent.Merged(Cell(1, 1), pips = 2)))
+        assertEquals(1f, fx.pulse("undo"))
+    }
 }

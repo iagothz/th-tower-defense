@@ -68,7 +68,7 @@ object S {
         "Pular" to "Skip", "MAX" to "MAX", "Nv%d" to "Lv%d",
         "Próxima onda em %d" to "Next wave in %d", "  ·  chefe em %d" to "  ·  boss in %d", "Chefe: %s" to "Boss: %s",
         "Desafio do dia" to "Daily challenge", "Desafio do dia: deck e mapa do dia" to "Daily challenge: the day's deck and map",
-        "Chefe!" to "Boss!", "Máximo!" to "Max!", "Onda %d" to "Wave %d", "%s!" to "%s!", "-%d SP" to "-%d SP",
+        "Chefe!" to "Boss!", "Máximo!" to "Max!", "Onda limpa!" to "Wave clear!", "Onda %d" to "Wave %d", "%s!" to "%s!", "-%d SP" to "-%d SP",
         "Horda" to "Horde", "Tanques" to "Tanks", "Corrida" to "Rush",
         "%d %s" to "%d %s", "soldados" to "soldiers", "corredores" to "runners", "tanques" to "tanks",
         "curandeiros" to "healers", "fantasmas" to "ghosts",

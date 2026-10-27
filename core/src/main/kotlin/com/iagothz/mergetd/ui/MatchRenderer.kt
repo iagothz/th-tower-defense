@@ -190,6 +190,8 @@ class MatchRenderer(
             shapes.color = Skin.PANEL
             shapes.roundedRect(BOSS_BAR.x, BOSS_BAR.y, BOSS_BAR.width, BOSS_BAR.height, 8f)
             shapes.color = Skin.color(b.kind)
+            // Blinks once it is almost down.
+            if (frac < 0.2f) shapes.color = tmp2.set(Skin.color(b.kind)).lerp(Color.WHITE, 0.3f + 0.3f * sin(clock * 14f))
             if (bossShown > 0.01f) shapes.roundedRect(BOSS_BAR.x, BOSS_BAR.y, maxOf(16f, BOSS_BAR.width * bossShown), BOSS_BAR.height, 8f)
         }
     }

@@ -83,4 +83,9 @@ class SoundPlannerTest {
         assertNull(p.countdown(0f, 0f))
         assertTrue(SoundPlanner.TICKS.containsAll(listOf("tick_1", "tick_2", "tick_3")))
     }
+
+    @Test
+    fun clearedWaveChimes() {
+        assertEquals(setOf("clear"), SoundPlanner().plan(listOf(GameEvent.WaveCleared(2)), 0f))
+    }
 }

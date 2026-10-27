@@ -33,6 +33,12 @@ class GameOverScreen(
     private val rng = Random(System.nanoTime())
     private val confetti = if (isRecord) List(CONFETTI) { newConfetto(rng.nextFloat() * Layout.WORLD_H) } else emptyList()
     private var time = 0f
+    /** The number rows count up one after another instead of just being there. */
+    private val counters = listOf(wave, stats.kills, stats.bosses, stats.merges, stats.bought).map { Counter(0) to it }
+
+    init {
+        if (isRecord) game.sfx.play(setOf("record"))
+    }
 
     private fun newConfetto(y: Float) = Confetto(
         rng.nextFloat() * Layout.WORLD_W, y, 90f + rng.nextFloat() * 120f, rng.nextFloat() * 6.28f,
@@ -53,6 +59,7 @@ class GameOverScreen(
     override fun draw(delta: Float) {
         time += delta
         menu.pressed = tap.current === menu
+        for ((i, c) in counters.withIndex()) if (time > COUNT_FROM + i * COUNT_STAGGER) c.first.update(delta, c.second)
         for (c in confetti) {
             c.y -= c.speed * delta
             c.x += sin(time * 2f + c.sway) * 40f * delta
@@ -79,18 +86,24 @@ class GameOverScreen(
         shapes.end()
 
         game.batch.begin()
+        // The title slams in: big and settling over the first instants.
+        val slam = (1f - (time / SLAM_TIME).coerceIn(0f, 1f))
+        game.bigFont.data.setScale(1f + 1.2f * slam * slam)
         game.batch.textShadowed(game.bigFont, S["Fim de jogo"], 360f, 1020f)
+        game.bigFont.data.setScale(1f)
         if (isRecord) {
             val pulse = 0.8f + 0.2f * sin(time * 4f)
             game.batch.textShadowed(game.font, S["Novo recorde!"], 360f, 920f, Color(1f, 0.85f * pulse + 0.1f, 0.3f, 1f))
         }
         var y = panel.y + panel.height - 44f
-        for ((key, value) in rows) {
+        for ((i, row) in rows.withIndex()) {
+            val (key, value) = row
+            val shown = counters.getOrNull(i - 1)?.first?.shown?.toString() ?: value
             game.smallFont.color = KEY_COLOR
             game.batch.textLeft(game.smallFont, key, panel.x + 32f, y)
             game.smallFont.color = Color.WHITE
             game.font.color = if (key == S["Onda alcançada"]) Skin.GOLD else Color.WHITE
-            game.batch.textRight(game.font, value, panel.x + panel.width - 32f, y)
+            game.batch.textRight(game.font, shown, panel.x + panel.width - 32f, y)
             game.font.color = Color.WHITE
             y -= 58f
         }
@@ -122,6 +135,9 @@ class GameOverScreen(
 
     private companion object {
         const val CONFETTI = 60
+        const val SLAM_TIME = 0.3f
+        const val COUNT_FROM = 0.3f
+        const val COUNT_STAGGER = 0.12f
         val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
     }
 }

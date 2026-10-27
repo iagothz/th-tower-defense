@@ -138,4 +138,24 @@ class MatchEventsTest {
         }
         assertTrue(crits > 0 && plain > 0, "crits=$crits plain=$plain")
     }
+
+    @Test
+    fun clearingAWaveEmitsWaveClearedOnceTheLastEnemyDies() {
+        val m = match()
+        m.devNextWave()
+        m.drainEvents()
+        var cleared = false
+        for (i in 0 until 400) {
+            m.devKillAll()
+            m.update(0.1f)
+            val events = m.drainEvents()
+            assertTrue(events.none { it is GameEvent.WaveStarted }, "the next wave must not start before the clear")
+            if (GameEvent.WaveCleared(1) in events) {
+                cleared = true
+                break
+            }
+        }
+        assertTrue(cleared)
+        assertTrue(m.waveCountdown > 0f)
+    }
 }

@@ -14,6 +14,8 @@ sealed interface GameEvent {
     data class Blast(val at: Vec2, val radius: Float, val type: DieType) : GameEvent
     data class Killed(val kind: EnemyKind, val at: Vec2) : GameEvent
     data class Leaked(val kind: EnemyKind) : GameEvent
+    /** The last enemy of [wave] died before the next one was due. */
+    data class WaveCleared(val wave: Int) : GameEvent
     data class WaveStarted(val wave: Int, val boss: Boolean, val special: SpecialWave? = null, val bossKind: EnemyKind? = null) : GameEvent
     /** A Thief boss took [amount] SP. */
     data class Stolen(val amount: Int) : GameEvent

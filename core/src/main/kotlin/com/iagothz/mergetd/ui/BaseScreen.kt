@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.ScreenAdapter
 import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.ScreenUtils
@@ -68,6 +69,7 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
         viewport.apply()
         val shake = cameraShake()
         viewport.camera.position.set(Layout.WORLD_W / 2 + shake.x, Layout.WORLD_H / 2 + shake.y, 0f)
+        (viewport.camera as? OrthographicCamera)?.zoom = cameraZoom()
         viewport.camera.update()
         game.shapes.projectionMatrix = viewport.camera.combined
         game.batch.projectionMatrix = viewport.camera.combined
@@ -100,6 +102,9 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
 
     /** Camera offset for this frame, in world units. */
     open fun cameraShake(): Vec2 = NO_SHAKE
+
+    /** Camera zoom for this frame: 1 normally, below 1 leans in. */
+    open fun cameraZoom(): Float = 1f
 
     open fun onTouchDown(p: Vec2) {}
     open fun onDrag(p: Vec2) {}

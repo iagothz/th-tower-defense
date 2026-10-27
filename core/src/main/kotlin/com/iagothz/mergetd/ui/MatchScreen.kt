@@ -50,6 +50,8 @@ class MatchScreen(
     private val vignetteColor = Color()
     private val vignetteClear = Color()
     private var clock = 0f
+    /** Seconds left of the frozen, shaking moment after the last life goes; null while playing. */
+    private var ending: Float? = null
     private var paused = restored != null
     private var confirm: Confirm? = null
     /** Simulation speed multiplier: the 2x button, or dev keys up to 4x. */
@@ -83,7 +85,17 @@ class MatchScreen(
     }
 
     override fun draw(delta: Float) {
-        if (!paused) {
+        val end = ending
+        if (end != null) {
+            // The world stands still while the screen shakes and goes red; then the game over screen.
+            effects.update(delta)
+            renderer.update(match, delta)
+            ending = end - delta
+            if (end - delta <= 0f) {
+                finish()
+                return
+            }
+        } else if (!paused) {
             clock += delta
             val countdownBefore = match.waveCountdown
             match.update(delta * speed * effects.timeScale())
@@ -110,8 +122,11 @@ class MatchScreen(
             }
             game.sfx.play(names)
             if (match.isGameOver) {
-                finish()
-                return
+                ending = END_TIME
+                effects.gameOver()
+                game.sfx.play(setOf("gameover"))
+                drag.cancel()
+                hold.up()
             }
         }
         refreshButtons()
@@ -241,6 +256,8 @@ class MatchScreen(
 
     override fun cameraShake(): Vec2 = if (paused) super.cameraShake() else effects.shakeOffset()
 
+    override fun cameraZoom(): Float = 1f - ZOOM_IN * effects.slowMo()
+
     /** The die under a finger held still on the board, with its cell. */
     private fun heldDie(): Pair<Cell, Die>? {
         if (!hold.isHeld(game.clock)) return null
@@ -286,6 +303,7 @@ class MatchScreen(
         // Breathes while you can afford a die.
         buy.scale = if (buy.enabled && !paused) 1f + 0.02f + 0.02f * sin(clock * 6f) else 1f
         speedButton.text = "${speed}x"
+        undo.scale = 1f - 0.3f * effects.pulse("undo")
         for ((t, b) in powerButtons) {
             val cost = match.powerUpCost(t)
             b.enabled = cost != null && match.sp >= cost
@@ -323,6 +341,7 @@ class MatchScreen(
     }
 
     override fun onTouchDown(p: Vec2) {
+        if (ending != null) return
         if (!paused && drag.down(p)) {
             hold.down(p, game.clock)
             return
@@ -344,6 +363,7 @@ class MatchScreen(
     }
 
     override fun onTouchUp(p: Vec2) {
+        if (ending != null) return
         hold.up()
         val from = drag.dragging
         if (from != null) {
@@ -433,6 +453,10 @@ class MatchScreen(
 
     private companion object {
         const val VIGNETTE_DEPTH = 190f
+        /** How long the last-life moment holds before the game over screen. */
+        const val END_TIME = 1.1f
+        /** Camera lean-in at the peak of the boss-death slow motion. */
+        const val ZOOM_IN = 0.05f
         val DANGER = Color(0.7f, 0.25f, 0.25f, 1f)
         val KEY_COLOR = Color(0.75f, 0.77f, 0.85f, 1f)
         /** Die info card, in the sky above the board. */

@@ -90,6 +90,14 @@ save("hit_heavy", tone(0.09, 130, 55, shape=triangle, volume=0.55, release=0.05)
 save("hit_magic", tone(0.03, 660, shape=triangle, volume=0.25) + tone(0.035, 990, shape=triangle, volume=0.25))
 # A boss going down: a rumble under a burst of noise.
 save("bosskill", mix(noise(0.4, volume=0.45, release=0.3), tone(0.45, 170, 35, shape=triangle, volume=0.7, release=0.25)))
+# The last enemy of a wave down before the next one: a quick two-note lift.
+save("clear", tone(0.06, 784, shape=triangle, volume=0.4) + tone(0.12, 1175, shape=triangle, volume=0.4, release=0.08))
+# New record: an arpeggio up with the top held.
+save("record", sum((tone(0.08, f, shape=triangle, volume=0.5) for f in (659, 784, 988, 1319)), [])
+     + [a + b for a, b in zip(tone(0.5, 1568, shape=triangle, volume=0.3, release=0.35), tone(0.5, 1319, shape=triangle, volume=0.25, release=0.35))])
+# Game over: three notes falling into a rumble.
+save("gameover", tone(0.18, 330, shape=triangle, volume=0.5) + tone(0.18, 262, shape=triangle, volume=0.5)
+     + mix(tone(0.6, 196, 110, shape=triangle, volume=0.6, release=0.4), noise(0.5, volume=0.15, release=0.4)))
 
 
 # --- Background loop: a calm minor arpeggio, four chords, 19.2 s at 100 BPM ---

@@ -279,6 +279,7 @@ class Match(
         if (spawnQueue.isEmpty() && enemyList.isEmpty()) {
             inWave = false
             countdown = waveDelay
+            events += GameEvent.WaveCleared(wave)
         }
     }
 
