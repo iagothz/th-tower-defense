@@ -80,7 +80,7 @@ class MatchEventsTest {
         assertTrue(hits[0].enemy === target)
         assertEquals(20f, hits[0].damage, 1e-3f)
         val kills = events.filterIsInstance<GameEvent.Killed>()
-        assertEquals(listOf(GameEvent.Killed(EnemyKind.NORMAL, Layout.PATH.positionAt(target.distance))), kills)
+        assertEquals(listOf(GameEvent.Killed(EnemyKind.NORMAL, Layout.PATH.positionAt(target.distance), by = DieType.FIRE)), kills)
     }
 
     @Test

@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
 import com.iagothz.mergetd.logic.DailyChallenge
 import com.iagothz.mergetd.logic.DieType
+import com.iagothz.mergetd.logic.Progression
 import com.iagothz.mergetd.logic.Layout
 import com.iagothz.mergetd.logic.Vec2
 import kotlin.math.sin
@@ -19,8 +20,9 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
     private val map = Button(Rectangle(365f, 540f, 195f, 96f), S["Partida"])
     private val daily = Button(Rectangle(160f, 434f, 195f, 96f), S["Desafio"], color = Color(0.55f, 0.30f, 0.75f, 1f))
     private val stats = Button(Rectangle(365f, 434f, 195f, 96f), S["Estatísticas"], color = Skin.PANEL)
-    private val settings = Button(Rectangle(160f, 330f, 400f, 90f), S["Configurações"], color = Skin.PANEL)
-    private val buttons = listOf(play, deck, map, daily, stats, settings)
+    private val missions = Button(Rectangle(160f, 330f, 195f, 90f), S["Missões"], color = Skin.PANEL)
+    private val settings = Button(Rectangle(365f, 330f, 195f, 90f), S["Configurações"], color = Skin.PANEL)
+    private val buttons = listOf(play, deck, map, daily, stats, missions, settings)
     private val tap = Tap<Button>()
     private val rng = Random(System.nanoTime())
     private val drops = List(DROPS) { newDrop(rng.nextFloat() * Layout.WORLD_H) }
@@ -56,6 +58,13 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         val shapes = game.shapes
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         for (d in drops) shapes.die(d.type, d.pips, d.x + sin(time * 0.7f + d.sway) * 12f, d.y, d.size, 0.75f, 0.45f)
+        // Account level under the title, as a thin bar.
+        val xp = game.save.xp
+        val level = Progression.level(xp)
+        shapes.color = Color(0.12f, 0.13f, 0.18f, 1f)
+        shapes.roundedRect(200f, 876f, 320f, 10f, 5f)
+        shapes.color = Skin.GOLD
+        shapes.roundedRect(200f, 876f, maxOf(10f, 320f * Progression.intoLevel(xp) / Progression.costToNext(level)), 10f, 5f)
         shapes.color = Skin.PANEL
         shapes.roundedRect(140f, 812f, 440f, 56f, 28f)
         shapes.color = Skin.GOLD
@@ -70,7 +79,7 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
 
         game.batch.begin()
         game.batch.textShadowed(game.bigFont, "Merge TD", 360f, 960f)
-        game.batch.textCentered(game.smallFont, S["Junte dados iguais, segure as ondas"], 360f, 900f)
+        game.batch.textCentered(game.smallFont, S.f("Nível %d · %s", level, S[Progression.title(level)]), 360f, 912f)
         val chosen = game.save.map
         val mode = game.save.mode
         game.batch.textLeft(game.font, S.f("%s · %s: recorde %d", S[chosen.title], S[mode.title], game.save.bestWave(chosen, mode)), 212f, 840f)
@@ -97,6 +106,7 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
             map -> game.showMap()
             daily -> game.startDaily()
             stats -> game.showStats()
+            missions -> game.showMissions()
             settings -> game.showSettings()
         }
     }

@@ -1,5 +1,8 @@
 package com.iagothz.mergetd.ui
 
+import com.iagothz.mergetd.logic.MissionKind
+import com.iagothz.mergetd.logic.MissionProgress
+import com.iagothz.mergetd.logic.Mission
 import com.badlogic.gdx.Preferences
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.GameMap
@@ -194,5 +197,40 @@ class SaveDataTest {
         assertEquals(Language.AUTO, SaveData(prefs).language)
         SaveData(prefs).language = Language.EN
         assertEquals(Language.EN, SaveData(prefs).language)
+    }
+
+    @Test
+    fun xpPersists() {
+        val prefs = memoryPrefs()
+        assertEquals(0, SaveData(prefs).xp)
+        SaveData(prefs).xp = 320
+        assertEquals(320, SaveData(prefs).xp)
+    }
+
+    @Test
+    fun missionsCompleteOnceAndPayTheirXp() {
+        val prefs = memoryPrefs()
+        val save = SaveData(prefs)
+        val missions = listOf(
+            Mission(MissionKind.MERGES, 10, 50),
+            Mission(MissionKind.REACH_WAVE, 8, 80, map = GameMap.DEFAULT),
+            Mission(MissionKind.BOSSES, 2, 70),
+        )
+        val day = 20_000
+        assertEquals(listOf(0, 0, 0), save.missionProgress(day, missions))
+        var done = save.applyMissions(day, missions, listOf(MissionProgress(delta = 6), MissionProgress(absolute = 5), MissionProgress()))
+        assertTrue(done.isEmpty())
+        assertEquals(listOf(6, 5, 0), save.missionProgress(day, missions))
+        assertEquals(0, save.xp)
+
+        done = save.applyMissions(day, missions, listOf(MissionProgress(delta = 6), MissionProgress(absolute = 3), MissionProgress(delta = 2)))
+        assertEquals(listOf(missions[0], missions[2]), done)
+        assertEquals(listOf(10, 5, 2), save.missionProgress(day, missions), "counters cap at the target, wave goals keep their best")
+        assertEquals(120, save.xp)
+
+        done = save.applyMissions(day, missions, listOf(MissionProgress(delta = 6), MissionProgress(absolute = 9), MissionProgress(delta = 2)))
+        assertEquals(listOf(missions[1]), done, "already done ones don't pay twice")
+        assertEquals(200, save.xp)
+        assertEquals(listOf(10, 8, 2), SaveData(prefs).missionProgress(day, missions))
     }
 }

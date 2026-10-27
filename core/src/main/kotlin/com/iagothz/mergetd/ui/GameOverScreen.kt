@@ -24,6 +24,7 @@ class GameOverScreen(
     private val mode: GameMode = GameMode.NORMAL,
     private val unlocked: Set<Achievement> = emptySet(),
     private val code: String? = null,
+    private val reward: MatchReward? = null,
 ) : BaseScreen(game) {
     private class Confetto(var x: Float, var y: Float, val speed: Float, val sway: Float, val color: Color, val w: Float, val h: Float)
 
@@ -118,6 +119,15 @@ class GameOverScreen(
             game.tinyFont.color = KEY_COLOR
             game.batch.textCentered(game.tinyFont, S.f("Código da partida: %s", code), 360f, 1080f)
             game.tinyFont.color = Color.WHITE
+        }
+        if (reward != null) {
+            val line = if (reward.leveledUp) S.f("Novo nível: %d!", reward.level) + "  ·  " + S.f("+%d XP", reward.xp) else S.f("+%d XP", reward.xp)
+            game.batch.textShadowed(game.smallFont, line, 360f, 1130f, if (reward.leveledUp) Skin.GOLD else Color.WHITE)
+            var my = panel.y - 24f - (if (unlocked.isNotEmpty()) 30f else 0f)
+            for (m in reward.missions) {
+                game.batch.textShadowed(game.tinyFont, S.f("Missão: %s", m.text()), 360f, my, Skin.GOLD)
+                my -= 26f
+            }
         }
         menu.drawText(game.batch, game.font)
         game.batch.end()

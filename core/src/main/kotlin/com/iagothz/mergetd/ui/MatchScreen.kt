@@ -13,6 +13,8 @@ import com.iagothz.mergetd.logic.Balance
 import com.iagothz.mergetd.logic.Cell
 import com.iagothz.mergetd.logic.Combat
 import com.iagothz.mergetd.logic.DailyChallenge
+import com.iagothz.mergetd.logic.DailyMissions
+import com.iagothz.mergetd.logic.Progression
 import com.iagothz.mergetd.logic.MatchCode
 import com.iagothz.mergetd.logic.Die
 import com.iagothz.mergetd.logic.DieType
@@ -40,6 +42,8 @@ class MatchScreen(
     private val buttonTap = Tap<Button>()
     private val effects = Effects(path = match.path)
     private val stats = MatchStats()
+    private val missions = DailyMissions.of(DailyChallenge.today())
+    private val tracker = MissionTracker(missions, match)
     private val tutorial = Tutorial(active = restored == null && fresh == null && !game.save.tutorialDone)
 
     init {
@@ -109,6 +113,7 @@ class MatchScreen(
             effects.consume(events)
             stats.consume(events)
             stats.observe(match)
+            tracker.consume(events)
             tutorial.consume(events)
             tutorial.update(delta)
             if (tutorial.finished && !game.save.tutorialDone) game.save.tutorialDone = true
@@ -430,10 +435,10 @@ class MatchScreen(
         }
     }
 
-    /** Clears the saved match and, outside dev mode, books the result (totals, the relevant record, achievements). */
-    private fun book(): Set<Achievement> {
+    /** Clears the saved match and, outside dev mode, books the result (totals, the relevant record, achievements, XP, missions). */
+    private fun book(): Pair<Set<Achievement>, MatchReward?> {
         game.save.clearMatch()
-        if (game.devMode) return emptySet()
+        if (game.devMode) return emptySet<Achievement>() to null
         game.save.recordMatch(match.map, match.deck, match.wave, stats.kills, stats.bosses, stats.merges, match.challengeDay, match.mode, match.locked)
         game.save.addHistory(
             MatchRecord(
@@ -447,12 +452,21 @@ class MatchScreen(
             maxPips = stats.maxPips, synergy = stats.synergyUsed, hunterStacks = stats.hunterStacks,
             daily = match.challengeDay != null, undo = stats.undoUsed, rich = stats.rich, mapsAtTen = game.save.mapsAt(10),
         )
-        return game.save.unlock(Achievements.earned(progress))
+        val fresh = game.save.unlock(Achievements.earned(progress))
+        val levelBefore = Progression.level(game.save.xp)
+        val matchXp = Progression.xpForMatch(match.wave, stats.bosses)
+        game.save.xp += matchXp
+        val done = game.save.applyMissions(DailyChallenge.today(), missions, tracker.progress())
+        val level = Progression.level(game.save.xp)
+        return fresh to MatchReward(matchXp + done.sumOf { it.xp }, level, level > levelBefore, done)
     }
 
     private fun finish() {
-        val fresh = book()
-        game.showGameOver(match.map, match.wave, !game.devMode && match.wave > previousBest, stats, match.challengeDay, match.mode, fresh, match.setup?.takeIf { match.challengeDay == null }?.let { MatchCode.encode(it) })
+        val (fresh, reward) = book()
+        game.showGameOver(
+            match.map, match.wave, !game.devMode && match.wave > previousBest, stats, match.challengeDay, match.mode, fresh,
+            match.setup?.takeIf { match.challengeDay == null }?.let { MatchCode.encode(it) }, reward,
+        )
     }
 
     private companion object {

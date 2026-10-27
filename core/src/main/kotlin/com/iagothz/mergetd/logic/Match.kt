@@ -472,7 +472,7 @@ class Match(
             for (e in dead) {
                 val at = path.positionAt(e.distance)
                 sp += e.kind.reward * (if (mode == GameMode.SURVIVAL) Balance.SURVIVAL_SP else 1) + e.stolen
-                events += GameEvent.Killed(e.kind, at)
+                events += GameEvent.Killed(e.kind, at, e.lastHit?.type)
                 if (e.kind == EnemyKind.BOSS_SPLITTER) {
                     for (side in listOf(-1f, 1f)) {
                         enemyList += Enemy(EnemyKind.TANK, e.maxHp * Balance.SPLITTER_FRACTION).apply {

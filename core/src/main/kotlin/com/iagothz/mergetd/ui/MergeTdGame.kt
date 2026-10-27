@@ -92,8 +92,10 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
 
     fun showGameOver(
         map: GameMap, wave: Int, isRecord: Boolean, stats: MatchStats, challengeDay: Int? = null,
-        mode: GameMode = GameMode.NORMAL, unlocked: Set<Achievement> = emptySet(), code: String? = null,
-    ) = switchTo(GameOverScreen(this, map, wave, isRecord, stats, challengeDay, mode, unlocked, code))
+        mode: GameMode = GameMode.NORMAL, unlocked: Set<Achievement> = emptySet(), code: String? = null, reward: MatchReward? = null,
+    ) = switchTo(GameOverScreen(this, map, wave, isRecord, stats, challengeDay, mode, unlocked, code, reward))
+
+    fun showMissions() = switchTo(MissionsScreen(this))
 
     fun showHistory() = switchTo(HistoryScreen(this))
 

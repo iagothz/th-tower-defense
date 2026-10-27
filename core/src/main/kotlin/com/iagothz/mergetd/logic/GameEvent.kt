@@ -12,7 +12,8 @@ sealed interface GameEvent {
     data class Hit(val enemy: Enemy, val damage: Float, val crit: Boolean = false, val type: DieType? = null) : GameEvent
     /** An area explosion (trap or Supernova) went off at [at]. */
     data class Blast(val at: Vec2, val radius: Float, val type: DieType) : GameEvent
-    data class Killed(val kind: EnemyKind, val at: Vec2) : GameEvent
+    /** [by] is the die that landed the last hit, when one did. */
+    data class Killed(val kind: EnemyKind, val at: Vec2, val by: DieType? = null) : GameEvent
     data class Leaked(val kind: EnemyKind) : GameEvent
     /** The last enemy of [wave] died before the next one was due. */
     data class WaveCleared(val wave: Int) : GameEvent

@@ -6,6 +6,8 @@ import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.EnemyKind
 import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.GameMode
+import com.iagothz.mergetd.logic.Mission
+import com.iagothz.mergetd.logic.MissionProgress
 
 /** One finished match, as the history screen shows it. */
 data class MatchRecord(
@@ -154,6 +156,38 @@ class SaveData(private val prefs: Preferences) {
 
     /** How many maps have a normal-mode record of at least [wave]. */
     fun mapsAt(wave: Int): Int = GameMap.entries.count { bestWave(it) >= wave }
+
+    // --- Progression: XP and the day's missions ---
+
+    var xp: Int
+        get() = prefs.getInteger("xp", 0)
+        set(value) {
+            prefs.putInteger("xp", value)
+            prefs.flush()
+        }
+
+    /** Progress on [missions] for [day], one number per mission, 0 when nothing was done yet. */
+    fun missionProgress(day: Int, missions: List<Mission>): List<Int> {
+        val parts = prefs.getString("missions.$day", "").split("|").mapNotNull { it.toIntOrNull() }
+        return missions.indices.map { parts.getOrElse(it) { 0 } }
+    }
+
+    /**
+     * Adds a match's [progress] to the day's missions: counters add up, wave goals keep their best, both capped at the
+     * target. Missions that reach the target now pay their XP; returns them.
+     */
+    fun applyMissions(day: Int, missions: List<Mission>, progress: List<MissionProgress>): List<Mission> {
+        val before = missionProgress(day, missions)
+        val after = missions.mapIndexed { i, m ->
+            val p = progress.getOrElse(i) { MissionProgress() }
+            minOf(m.target, if (m.counts) before[i] + p.delta else maxOf(before[i], p.absolute))
+        }
+        val done = missions.filterIndexed { i, m -> before[i] < m.target && after[i] >= m.target }
+        prefs.putString("missions.$day", after.joinToString("|"))
+        if (done.isNotEmpty()) prefs.putInteger("xp", xp + done.sumOf { it.xp })
+        prefs.flush()
+        return done
+    }
 
     var map: GameMap
         get() = prefs.getString("map", null)?.let { GameMap.byId(it) } ?: GameMap.DEFAULT
