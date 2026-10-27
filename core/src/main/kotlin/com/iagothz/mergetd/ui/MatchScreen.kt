@@ -3,6 +3,8 @@ package com.iagothz.mergetd.ui
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.Color
+import com.iagothz.mergetd.logic.GameMode
+import kotlin.math.sin
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
@@ -44,6 +46,9 @@ class MatchScreen(
         if (fresh != null) effects.announce(S["Desafio do dia: deck e mapa do dia"], 2.5f)
     }
     private val sounds = SoundPlanner()
+    private val spCounter = Counter(match.sp)
+    private val vignetteColor = Color()
+    private val vignetteClear = Color()
     private var clock = 0f
     private var paused = restored != null
     private var confirm: Confirm? = null
@@ -80,6 +85,7 @@ class MatchScreen(
     override fun draw(delta: Float) {
         if (!paused) {
             clock += delta
+            val countdownBefore = match.waveCountdown
             match.update(delta * speed * effects.timeScale())
             renderer.update(match, delta)
             for (s in match.lastShots) {
@@ -95,7 +101,14 @@ class MatchScreen(
             tutorial.update(delta)
             if (tutorial.finished && !game.save.tutorialDone) game.save.tutorialDone = true
             effects.update(delta)
-            game.sfx.play(sounds.plan(events, clock))
+            effects.lastLife = match.lives == 1 && match.mode != GameMode.SURVIVAL && !match.isGameOver
+            spCounter.update(delta, match.sp)
+            val names = sounds.plan(events, clock).toMutableSet()
+            sounds.countdown(countdownBefore, match.waveCountdown)?.let {
+                names += it
+                effects.hudPulse("tick")
+            }
+            game.sfx.play(names)
             if (match.isGameOver) {
                 finish()
                 return
@@ -108,6 +121,7 @@ class MatchScreen(
         Gdx.gl.glEnable(GL20.GL_BLEND)
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         renderer.drawShapes(match, drag, effects)
+        drawVignette(effects.vignetteAlpha(), effects.vignetteColor())
         buy.drawShape(shapes)
         if (match.canUndo) undo.drawShape(shapes)
         speedButton.drawShape(shapes)
@@ -136,11 +150,11 @@ class MatchScreen(
 
         val batch = game.batch
         batch.begin()
-        renderer.drawHud(match)
+        renderer.drawHud(match, effects, spCounter.shown)
         effects.drawText(batch, game.smallFont, game.bigFont, game.font)
         if (game.devMode) {
             game.smallFont.color = Color.ORANGE
-            batch.textCentered(game.smallFont, "DEV ${speed}x  N B S L K F", 360f, 1260f)
+            batch.textCentered(game.smallFont, "DEV ${speed}x  N B S L H K F", 360f, 1260f)
             game.smallFont.color = Color.WHITE
         }
         buy.drawText(batch, game.font)
@@ -172,6 +186,26 @@ class MatchScreen(
         }
 
         if (paused) drawPauseOverlay()
+    }
+
+    /** Darkens the screen edges: strips that fade inward, plus solid cover beyond the world for wide screens. */
+    private fun drawVignette(alpha: Float, color: Color) {
+        if (alpha <= 0f) return
+        val shapes = game.shapes
+        val solid = vignetteColor.set(color).also { it.a = alpha }
+        val clear = vignetteClear.set(color).also { it.a = 0f }
+        val d = VIGNETTE_DEPTH
+        val w = Layout.WORLD_W
+        val h = Layout.WORLD_H
+        shapes.rect(0f, 0f, d, h, solid, clear, clear, solid)
+        shapes.rect(w - d, 0f, d, h, clear, solid, solid, clear)
+        shapes.rect(0f, 0f, w, d, solid, solid, clear, clear)
+        shapes.rect(0f, h - d, w, d, clear, clear, solid, solid)
+        shapes.color = solid
+        shapes.rect(-400f, -400f, 400f, h + 800f)
+        shapes.rect(w, -400f, 400f, h + 800f)
+        shapes.rect(0f, -400f, w, 400f)
+        shapes.rect(0f, h, w, 400f)
     }
 
     /** The balloon's panel plus a pulsing gold ring around the step's target; the balloon sits in the sky. */
@@ -249,10 +283,13 @@ class MatchScreen(
     private fun refreshButtons() {
         buy.text = S.f("Comprar (%d)", match.buyCost)
         buy.enabled = match.canBuy()
+        // Breathes while you can afford a die.
+        buy.scale = if (buy.enabled && !paused) 1f + 0.02f + 0.02f * sin(clock * 6f) else 1f
         speedButton.text = "${speed}x"
         for ((t, b) in powerButtons) {
             val cost = match.powerUpCost(t)
             b.enabled = cost != null && match.sp >= cost
+            b.scale = 1f + 0.08f * effects.typeGlow(t)
         }
     }
 
@@ -289,6 +326,14 @@ class MatchScreen(
         if (!paused && drag.down(p)) {
             hold.down(p, game.clock)
             return
+        }
+        if (!paused) {
+            // A tap on something you can't afford says no instead of doing nothing.
+            val denied = (listOf(buy) + powerButtons.map { it.second }).firstOrNull { !it.enabled && it.rect.contains(p.x, p.y) }
+            if (denied != null) {
+                denied.deny()
+                game.sfx.play(setOf("deny"))
+            }
         }
         buttonTap.press(buttonAt(p))
     }
@@ -337,7 +382,7 @@ class MatchScreen(
         buttonTap.cancel()
     }
 
-    /** Desktop cheats: N next wave, B boss, S +500 SP, L +1 life, K kill all, F speed 1x/2x/4x. */
+    /** Desktop cheats: N next wave, B boss, S +500 SP, L +1 life, H lose a life, K kill all, F speed 1x/2x/4x. */
     override fun onKey(keycode: Int) {
         if (!game.devMode || paused) return
         when (keycode) {
@@ -345,6 +390,7 @@ class MatchScreen(
             Input.Keys.B -> match.devBossWave()
             Input.Keys.S -> match.devAddSp(500)
             Input.Keys.L -> match.devAddLife()
+            Input.Keys.H -> match.devLeak()
             Input.Keys.K -> match.devKillAll()
             Input.Keys.F -> speed = if (speed >= 4) 1 else speed * 2
         }
@@ -386,6 +432,7 @@ class MatchScreen(
     }
 
     private companion object {
+        const val VIGNETTE_DEPTH = 190f
         val DANGER = Color(0.7f, 0.25f, 0.25f, 1f)
         val KEY_COLOR = Color(0.75f, 0.77f, 0.85f, 1f)
         /** Die info card, in the sky above the board. */

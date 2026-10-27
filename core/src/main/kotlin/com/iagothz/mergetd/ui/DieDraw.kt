@@ -53,13 +53,13 @@ fun ShapeRenderer.die(
         color = ink.set(Skin.GOLD).also { it.a = alpha }
         roundedRect(cx - hw - 4f, cy - hh - 4f, w + 8f, h + 8f, size * 0.19f * face + 4f)
     }
-    base.set(Skin.color(type)).mul(brightness, brightness, brightness, 1f).also { it.a = alpha }
+    base.set(Skin.color(type)).mul(brightness, brightness, brightness, 1f).clamp().also { it.a = alpha }
     bevelRect(cx - hw, cy - hh, w, h, size * 0.19f * face, base, lip)
     // The body sits on top of the lip, so everything on its face is centred a little higher.
     val fy = cy + lip / 2
-    ink.set(Skin.glyphColor(type)).mul(brightness, brightness, brightness, 1f).also { it.a = alpha }
+    ink.set(Skin.glyphColor(type)).mul(brightness, brightness, brightness, 1f).clamp().also { it.a = alpha }
     glyph(type, cx, fy, size / 2 * 0.62f * face, ink, base)
-    color = ink.set(Skin.pipColor(type)).mul(brightness, brightness, brightness, 1f).also { it.a = alpha }
+    color = ink.set(Skin.pipColor(type)).mul(brightness, brightness, brightness, 1f).clamp().also { it.a = alpha }
     val step = size * 0.25f
     val r = size * 0.0885f * face
     for ((dx, dy) in PIPS[pips - 1]) pip(cx + dx * step * scaleX, fy + dy * step * scaleY, r)

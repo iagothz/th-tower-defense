@@ -235,6 +235,12 @@ class Match(
         lives++
     }
 
+    /** Loses a life as if a soldier had walked through, for testing the leak feedback. */
+    internal fun devLeak() {
+        lives = maxOf(0, lives - 1)
+        events += GameEvent.Leaked(EnemyKind.NORMAL)
+    }
+
     private fun startWave(n: Int) {
         wave = n
         inWave = true

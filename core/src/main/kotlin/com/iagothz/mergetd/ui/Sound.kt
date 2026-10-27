@@ -7,6 +7,7 @@ import com.badlogic.gdx.audio.Sound
 import com.iagothz.mergetd.logic.Balance
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.GameEvent
+import kotlin.math.ceil
 
 /** Decides which sounds a frame's events play: each at most once per frame, hits rate-limited. */
 class SoundPlanner {
@@ -34,8 +35,17 @@ class SoundPlanner {
         return names
     }
 
+    /** "tick_3", "tick_2", "tick_1" as the wave countdown crosses each of its last three seconds; null otherwise. */
+    fun countdown(prev: Float, now: Float): String? {
+        if (now <= 0f) return null
+        val n = ceil(now).toInt()
+        if (n !in 1..3) return null
+        return if (ceil(prev).toInt() > n) "tick_$n" else null
+    }
+
     companion object {
         const val HIT_GAP = 0.05f
+        val TICKS = (1..3).map { "tick_$it" }.toSet()
         val FAMILIES = setOf("fire", "ice", "zap", "wind", "heavy", "magic")
         /** One merge sound per result size, a semitone pair higher each pip, and a fanfare at 7. */
         val MERGES = (2..6).map { "merge_$it" }.toSet() + "max"
@@ -59,7 +69,10 @@ class Sfx(private val save: SaveData, private val rng: kotlin.random.Random = ko
         volume = MUSIC_VOLUME
     }
 
+    private var duck = 1f
+
     fun play(names: Set<String>) {
+        if ("boss" in names) duck = DUCK
         if (save.vibrationOn && Gdx.input.isPeripheralAvailable(Input.Peripheral.Vibrator)) {
             when {
                 "leak" in names -> Gdx.input.vibrate(80)
@@ -79,12 +92,13 @@ class Sfx(private val save: SaveData, private val rng: kotlin.random.Random = ko
 
     fun click() = play(setOf("buy"))
 
-    /** Keeps the loop in step with the setting; cheap enough to call every frame. */
-    fun updateMusic() {
+    /** Keeps the loop in step with the setting and lets a boss entrance duck it; call every frame. */
+    fun updateMusic(dt: Float) {
+        duck += (1f - duck) * minOf(1f, dt * DUCK_RECOVERY)
         val on = save.musicOn && save.musicVolume > 0f
         if (on && !music.isPlaying) music.play()
         if (!on && music.isPlaying) music.pause()
-        if (on) music.volume = MUSIC_VOLUME * save.musicVolume
+        if (on) music.volume = MUSIC_VOLUME * save.musicVolume * duck
     }
 
     fun dispose() {
@@ -93,8 +107,11 @@ class Sfx(private val save: SaveData, private val rng: kotlin.random.Random = ko
     }
 
     private companion object {
-        val NAMES = listOf("buy", "power", "hit", "kill", "bosskill", "leak", "wave", "boss") + SoundPlanner.FAMILIES.map { "hit_$it" } + SoundPlanner.MERGES
+        val NAMES = listOf("buy", "power", "hit", "kill", "bosskill", "leak", "wave", "boss", "deny") +
+            SoundPlanner.FAMILIES.map { "hit_$it" } + SoundPlanner.MERGES + SoundPlanner.TICKS
         const val VOLUME = 0.6f
+        const val DUCK = 0.2f
+        const val DUCK_RECOVERY = 1.2f
         const val PITCH_SPREAD = 0.1f
         const val MUSIC_VOLUME = 0.35f
     }

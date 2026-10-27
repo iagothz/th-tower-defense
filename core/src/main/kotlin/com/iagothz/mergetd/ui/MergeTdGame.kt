@@ -52,7 +52,7 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
         val dt = Gdx.graphics.deltaTime
         clock += dt
         if (fader.update(dt)) next?.let { apply(it) }
-        sfx.updateMusic()
+        sfx.updateMusic(dt)
         super.render()
     }
 

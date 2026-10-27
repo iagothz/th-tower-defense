@@ -95,6 +95,13 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
     private var shakeAmp = 0f
     private var freezeLeft = 0f
     private var slowLeft = 0f
+    private var leakVignette = 0f
+    private var bossVignette = 0f
+    private var clock = 0f
+    private val pulses = mutableMapOf<String, Float>()
+    private val glows = mutableMapOf<DieType, Float>()
+    /** Set by the screen each frame: one life left, so the edges breathe red. */
+    var lastLife = false
     var banner: String? = null
         private set
     /** Second line under the banner: what the boss does. */
@@ -153,9 +160,14 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
                         if (texts.size < MAX_TEXTS) texts += FloatingText(S["Máximo!"], c.x, c.y + 50f, crit = true)
                     }
                 }
-                is GameEvent.Leaked -> shake(LEAK_SHAKE, 0.25f)
-                is GameEvent.Stolen -> if (texts.size < MAX_TEXTS) {
-                    texts += FloatingText(S.f("-%d SP", e.amount), Layout.WORLD_W / 2, 1150f, bad = true)
+                is GameEvent.Leaked -> {
+                    shake(LEAK_SHAKE, 0.25f)
+                    leakVignette = LEAK_VIGNETTE_TIME
+                    pulses["lives"] = 0f
+                }
+                is GameEvent.Stolen -> {
+                    pulses["sp"] = 0f
+                    if (texts.size < MAX_TEXTS) texts += FloatingText(S.f("-%d SP", e.amount), Layout.WORLD_W / 2, 1150f, bad = true)
                 }
                 is GameEvent.WaveStarted -> {
                     val boss = e.bossKind
@@ -169,9 +181,13 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
                         note = boss?.let { Skin.bossAbility(it) },
                         seconds = if (e.boss) BOSS_BANNER_TIME else BANNER_TIME,
                     )
-                    if (e.boss) shake(6f, 0.4f)
+                    pulses["wave"] = 0f
+                    if (e.boss) {
+                        shake(6f, 0.4f)
+                        bossVignette = BOSS_BANNER_TIME
+                    }
                 }
-                is GameEvent.PoweredUp -> Unit
+                is GameEvent.PoweredUp -> glows[e.type] = 0f
             }
         }
         for ((enemy, amount) in hits) {
@@ -184,6 +200,13 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
 
     /** Ages everything by real time [dt]; the match itself runs on [timeScale] of it. */
     fun update(dt: Float) {
+        clock += dt
+        leakVignette = maxOf(0f, leakVignette - dt)
+        bossVignette = maxOf(0f, bossVignette - dt)
+        pulses.replaceAll { _, t -> t + dt }
+        pulses.values.removeAll { it >= PULSE_TIME }
+        glows.replaceAll { _, t -> t + dt }
+        glows.values.removeAll { it >= GLOW_TIME }
         texts.forEach {
             it.age += dt
             it.y += TEXT_RISE * dt
@@ -237,6 +260,33 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
     }
 
     fun isFlashing(enemy: Enemy): Boolean = enemy in flashes
+
+    /** Edge darkening right now: a red flash on a leak, a slow red breath on the last life, dark while the boss card shows. */
+    fun vignetteAlpha(): Float {
+        val leak = 0.9f * leakVignette / LEAK_VIGNETTE_TIME
+        val boss = 0.55f * minOf(1f, bossVignette / 0.4f)
+        val life = if (lastLife) 0.2f + 0.14f * sin(clock * 4f) else 0f
+        return maxOf(leak, boss, life)
+    }
+
+    fun vignetteColor(): Color = if (leakVignette > 0f || lastLife) VIGNETTE_RED else VIGNETTE_DARK
+
+    /** Starts a HUD pulse under [key], read back with [pulse]. */
+    fun hudPulse(key: String) {
+        pulses[key] = 0f
+    }
+
+    /** 1 just after a HUD element was poked ("wave", "lives", "sp", "tick"), 0 once it has settled. */
+    fun pulse(key: String): Float {
+        val age = pulses[key] ?: return 0f
+        return 1f - (age / PULSE_TIME).coerceIn(0f, 1f)
+    }
+
+    /** 1 just after a power-up of [type]: every die of that type on the board lights up. */
+    fun typeGlow(type: DieType): Float {
+        val age = glows[type] ?: return 0f
+        return 1f - (age / GLOW_TIME).coerceIn(0f, 1f)
+    }
 
     /** How far back along the path a heavily hit enemy is thrown right now, in path units. */
     fun jolt(enemy: Enemy): Float {
@@ -435,6 +485,11 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
         const val JOLT_TIME = 0.12f
         const val JOLT_AMP = 7f
         const val LEAK_SHAKE = 10f
+        const val LEAK_VIGNETTE_TIME = 0.4f
+        const val PULSE_TIME = 0.4f
+        const val GLOW_TIME = 0.5f
+        val VIGNETTE_RED = Color(0.8f, 0.05f, 0.05f, 1f)
+        val VIGNETTE_DARK = Color(0.02f, 0.01f, 0.05f, 1f)
         const val MAX_SHAKE = 5f
         const val BOSS_KILL_SHAKE = 9f
         const val BANNER_TIME = 1.5f

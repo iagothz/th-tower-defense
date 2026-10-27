@@ -81,6 +81,7 @@ Teclas na partida:
 - **B:** próximo chefe.
 - **S:** +500 SP.
 - **L:** +1 vida.
+- **H:** perde 1 vida (testa o aviso de vazamento).
 - **K:** mata todos os inimigos.
 - **F:** velocidade 1×/2×/4×.
 

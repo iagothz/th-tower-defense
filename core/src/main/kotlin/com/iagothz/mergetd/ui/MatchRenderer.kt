@@ -40,10 +40,15 @@ class MatchRenderer(
     private val tmp2 = Color()
     private var seedCounter = 0
     private var clock = 0f
+    private var lastDelta = 0f
+    /** Boss HP bar: fills up from empty when a boss appears, then tracks its HP. */
+    private var bossSeen: Enemy? = null
+    private var bossShown = 0f
 
     /** Collects the shots of the last update and ages old traces. */
     fun update(match: Match, delta: Float) {
         clock += delta
+        lastDelta = delta
         traces.forEach { it.left -= delta }
         traces.removeAll { it.left <= 0f }
         match.lastShots.forEach { traces += Trace(it, traceTtl(it.type), seedCounter++) }
@@ -75,14 +80,14 @@ class MatchRenderer(
             shapes.roundedRect(p.x - s / 2 + 8f, p.y - s / 2 - 16f, s, s, 20f)
             drawDie(die, p, 1f, DRAG_SCALE)
         }
-        drawHudShapes(match)
+        drawHudShapes(match, effects)
     }
 
-    /** Call inside a SpriteBatch batch. */
-    fun drawHud(match: Match) {
-        batch.textLeft(font, "${match.wave}", WAVE_PILL.x + 58f, HUD_Y)
-        batch.textLeft(font, "${match.lives}", LIVES_PILL.x + 58f, HUD_Y)
-        batch.textLeft(font, "${match.sp}", SP_PILL.x + 58f, HUD_Y)
+    /** Call inside a SpriteBatch batch. [sp] is the rolling counter's value, not the match's. */
+    fun drawHud(match: Match, effects: Effects, sp: Int) {
+        popped(effects.pulse("wave")) { batch.textLeft(font, "${match.wave}", WAVE_PILL.x + 58f, HUD_Y) }
+        popped(effects.pulse("lives")) { batch.textLeft(font, "${match.lives}", LIVES_PILL.x + 58f, HUD_Y) }
+        popped(effects.pulse("sp")) { batch.textLeft(font, "$sp", SP_PILL.x + 58f, HUD_Y) }
         // Hunter kill stacks, bottom-right of the die.
         for ((cell, die) in match.board.occupied()) {
             if (die.type != DieType.HUNTER || die.stacks == 0) continue
@@ -92,7 +97,9 @@ class MatchRenderer(
         if (match.waveCountdown > 0f) {
             val until = WaveSpawner.wavesUntilBoss(match.wave + 1)
             val boss = if (match.mode == GameMode.BOSS_RUSH || WaveSpawner.isBossWave(match.wave + 1)) "" else S.f("  ·  chefe em %d", until)
-            batch.textCentered(font, S.f("Próxima onda em %d", ceil(match.waveCountdown).toInt()) + boss, 360f, 1106f)
+            if (match.waveCountdown <= URGENT) font.color = tmp.set(1f, 0.75f, 0.3f, 1f)
+            popped(effects.pulse("tick"), 0.25f) { batch.textCentered(font, S.f("Próxima onda em %d", ceil(match.waveCountdown).toInt()) + boss, 360f, 1106f) }
+            font.color = Color.WHITE
             batch.textCentered(tinyFont, wavePreview(match.wave + 1, match.bossOrder, match.mode), 360f, 1140f)
         }
         boss(match)?.let { batch.textCentered(smallFont, Skin.enemyName(it.kind), 360f, BOSS_BAR.y + BOSS_BAR.height + 18f) }
@@ -108,7 +115,13 @@ class MatchRenderer(
         }
     }
 
-    /** "12 soldados · 4 corredores", "Horda! 40 soldados", or "Chefe: Trocador" on a boss wave. */
+    /** Draws [block] with the font scaled up by [amount] × [pulse] (a quick pop), then resets it. */
+    private inline fun popped(pulse: Float, amount: Float = 0.35f, block: () -> Unit) {
+        if (pulse > 0f) font.data.setScale(1f + amount * pulse)
+        block()
+        if (pulse > 0f) font.data.setScale(1f)
+    }
+
     /** Chips for the active synergies, side by side on the board's top rim. */
     private fun synergyChips(match: Match): List<Pair<Synergy, Rectangle>> {
         val active = match.synergies().toList()
@@ -132,7 +145,7 @@ class MatchRenderer(
 
     private fun boss(match: Match): Enemy? = match.enemies.firstOrNull { it.kind.isBoss && it.alive }
 
-    private fun drawHudShapes(match: Match) {
+    private fun drawHudShapes(match: Match, effects: Effects) {
         for (pill in listOf(WAVE_PILL, LIVES_PILL, SP_PILL)) {
             shapes.color = Skin.PANEL
             shapes.roundedRect(pill.x, pill.y, pill.width, pill.height, pill.height / 2)
@@ -143,15 +156,18 @@ class MatchRenderer(
         shapes.rectLine(WAVE_PILL.x + 22f, iy - 14f, WAVE_PILL.x + 22f, iy + 16f, 3f)
         shapes.color = Skin.color(DieType.COMBO)
         shapes.triangle(WAVE_PILL.x + 23f, iy + 16f, WAVE_PILL.x + 23f, iy, WAVE_PILL.x + 45f, iy + 8f)
+        // The heart swells and shudders when a life goes.
+        val hurt = effects.pulse("lives")
         shapes.color = Skin.HEART
-        shapes.heart(LIVES_PILL.x + 32f, iy, 11f)
+        shapes.heart(LIVES_PILL.x + 32f + sin(clock * 70f) * 4f * hurt, iy, 11f + 7f * hurt)
         shapes.coin(SP_PILL.x + 32f, iy, 14f)
 
         if (match.waveCountdown > 0f) {
             val frac = (match.waveCountdown / match.waveDelay).coerceIn(0f, 1f)
+            val urgency = ((URGENT - match.waveCountdown) / URGENT).coerceIn(0f, 1f)
             shapes.color = Skin.PANEL
             shapes.roundedRect(COUNTDOWN_BAR.x, COUNTDOWN_BAR.y, COUNTDOWN_BAR.width, COUNTDOWN_BAR.height, 6f)
-            shapes.color = Skin.color(DieType.ELECTRIC)
+            shapes.color = tmp2.set(Skin.color(DieType.ELECTRIC)).lerp(1f, 0.3f, 0.2f, 1f, urgency)
             shapes.roundedRect(COUNTDOWN_BAR.x, COUNTDOWN_BAR.y, COUNTDOWN_BAR.width * frac, COUNTDOWN_BAR.height, 6f)
         }
         val chips = synergyChips(match)
@@ -161,14 +177,20 @@ class MatchRenderer(
             shapes.color = Skin.GOLD
             shapes.roundedRect(r.x, r.y, 6f, r.height, 3f)
         }
-        boss(match)?.let { b ->
+        val boss = boss(match)
+        if (boss !== bossSeen) {
+            bossSeen = boss
+            bossShown = 0f
+        }
+        boss?.let { b ->
             val frac = (b.hp / b.maxHp).coerceIn(0f, 1f)
+            bossShown += (frac - bossShown) * minOf(1f, lastDelta * 4f)
             shapes.color = Color.BLACK
             shapes.roundedRect(BOSS_BAR.x - 3f, BOSS_BAR.y - 3f, BOSS_BAR.width + 6f, BOSS_BAR.height + 6f, 10f)
             shapes.color = Skin.PANEL
             shapes.roundedRect(BOSS_BAR.x, BOSS_BAR.y, BOSS_BAR.width, BOSS_BAR.height, 8f)
             shapes.color = Skin.color(b.kind)
-            if (frac > 0f) shapes.roundedRect(BOSS_BAR.x, BOSS_BAR.y, maxOf(16f, BOSS_BAR.width * frac), BOSS_BAR.height, 8f)
+            if (bossShown > 0.01f) shapes.roundedRect(BOSS_BAR.x, BOSS_BAR.y, maxOf(16f, BOSS_BAR.width * bossShown), BOSS_BAR.height, 8f)
         }
     }
 
@@ -234,8 +256,11 @@ class MatchRenderer(
             if (cell == drag.dragging) {
                 drawDie(die, c, 0.35f)
             } else {
+                // A power-up lights every die of its type and gives it a little jump.
+                val glow = effects.typeGlow(die.type)
                 val s = effects.dieScale(cell)
-                shapes.die(die.type, die.pips, lifted.x, lifted.y, DIE, if (die.disabled) 0.4f else 1f, 1f, s.x, s.y)
+                val bright = if (die.disabled) 0.4f else 1f + 0.45f * glow
+                shapes.die(die.type, die.pips, lifted.x, lifted.y, DIE * (1f + 0.1f * glow), bright, 1f, s.x, s.y)
             }
         }
     }
@@ -419,6 +444,8 @@ class MatchRenderer(
     companion object {
         private const val SHOT_TTL = 0.1f
         private const val DRAG_SCALE = 1.12f
+        /** Last seconds of the countdown: the bar reddens and the ticks play. */
+        private const val URGENT = 3f
         const val PATH_WIDTH = 40f
         const val DIE = Layout.CELL - 8f
         private const val BOARD_PAD = 18f

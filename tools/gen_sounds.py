@@ -65,6 +65,12 @@ save("hit", noise(0.03, volume=0.18))
 save("kill", tone(0.12, 620, 180, volume=0.3))
 save("leak", tone(0.3, 140, 55, shape=triangle, volume=0.8, release=0.1))
 save("wave", tone(0.12, 440, volume=0.3) + tone(0.16, 660, volume=0.3))
+# Countdown: three ticks climbing a third each, the last one a touch longer.
+save("tick_3", tone(0.04, 880, shape=lambda p: square(p, 0.3), volume=0.22))
+save("tick_2", tone(0.04, 1047, shape=lambda p: square(p, 0.3), volume=0.24))
+save("tick_1", tone(0.06, 1319, shape=lambda p: square(p, 0.3), volume=0.26))
+# Tapping something you can't afford.
+save("deny", tone(0.09, 170, 115, shape=lambda p: square(p, 0.3), volume=0.28, release=0.05))
 save("boss", [a + b for a, b in zip(tone(0.7, 110, 98, volume=0.3, release=0.2),
                                      tone(0.7, 116, 104, volume=0.3, release=0.2))])
 print("wrote", sorted(p.name for p in OUT.glob("*.wav")))

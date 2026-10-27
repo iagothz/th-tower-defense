@@ -293,4 +293,58 @@ class EffectsTest {
         fx.update(Effects.TEXT_POP_TIME + 0.01f)
         assertEquals(1f, t.scale)
     }
+
+    @Test
+    fun leakFlashesARedVignette() {
+        assertEquals(0f, fx.vignetteAlpha())
+        fx.consume(listOf(GameEvent.Leaked(EnemyKind.NORMAL)))
+        assertTrue(fx.vignetteAlpha() > 0f)
+        assertEquals(Effects.VIGNETTE_RED, fx.vignetteColor())
+        fx.update(Effects.LEAK_VIGNETTE_TIME + 0.01f)
+        assertEquals(0f, fx.vignetteAlpha())
+    }
+
+    @Test
+    fun bossEntranceDarkensTheEdgesWhileTheCardShows() {
+        fx.consume(listOf(GameEvent.WaveStarted(10, boss = true, bossKind = EnemyKind.BOSS_REGEN)))
+        assertTrue(fx.vignetteAlpha() > 0f)
+        assertEquals(Effects.VIGNETTE_DARK, fx.vignetteColor())
+        fx.update(Effects.BOSS_BANNER_TIME + 0.1f)
+        assertEquals(0f, fx.vignetteAlpha())
+    }
+
+    @Test
+    fun lastLifePulsesRedUntilItIsOver() {
+        fx.lastLife = true
+        fx.update(0.1f)
+        assertTrue(fx.vignetteAlpha() > 0f)
+        assertEquals(Effects.VIGNETTE_RED, fx.vignetteColor())
+        fx.lastLife = false
+        fx.update(0.1f)
+        assertEquals(0f, fx.vignetteAlpha())
+    }
+
+    @Test
+    fun hudPulsesOnWaveStartAndLeak() {
+        assertEquals(0f, fx.pulse("wave"))
+        fx.consume(listOf(GameEvent.WaveStarted(2, boss = false)))
+        assertEquals(1f, fx.pulse("wave"))
+        fx.consume(listOf(GameEvent.Leaked(EnemyKind.FAST)))
+        assertEquals(1f, fx.pulse("lives"))
+        fx.hudPulse("tick")
+        assertEquals(1f, fx.pulse("tick"))
+        fx.update(Effects.PULSE_TIME + 0.01f)
+        assertEquals(0f, fx.pulse("wave"))
+        assertEquals(0f, fx.pulse("tick"))
+    }
+
+    @Test
+    fun powerUpGlowsEveryDieOfThatType() {
+        assertEquals(0f, fx.typeGlow(DieType.FIRE))
+        fx.consume(listOf(GameEvent.PoweredUp(DieType.FIRE)))
+        assertEquals(1f, fx.typeGlow(DieType.FIRE))
+        assertEquals(0f, fx.typeGlow(DieType.ICE))
+        fx.update(Effects.GLOW_TIME + 0.01f)
+        assertEquals(0f, fx.typeGlow(DieType.FIRE))
+    }
 }
