@@ -18,9 +18,19 @@ class Match(
     val seed: Int? = null,
     /** Started from a code: map and deck were dictated, so it books no map or deck record. */
     val locked: Boolean = false,
+    /** Handicaps chosen before the match; they scale the score. */
+    val mutators: Set<Mutator> = emptySet(),
+    /** The weekly challenge this match is, if any (weeks since 1970); booked against that week's score. */
+    val week: Int? = null,
 ) {
     /** What a code needs to replay this match; null for a match without a known seed. */
-    val setup: MatchSetup? get() = seed?.let { MatchSetup(map, mode, it, deck) }
+    val setup: MatchSetup? get() = seed?.let { MatchSetup(map, mode, it, deck, mutators) }
+
+    /** The mutator score so far: wave × the product of the active mutators. */
+    val score: Int get() = Mutator.score(wave, mutators)
+
+    /** What is still to come this wave plus what is on the path, by kind. */
+    fun previewOfCurrentWave(): Map<EnemyKind, Int> = (spawnQueue + enemyList.map { it.kind }).groupingBy { it }.eachCount()
 
     val board = Board()
     val path: EnemyPath get() = map.path
@@ -187,6 +197,8 @@ class Match(
         line("mode", mode.id)
         line("seed", seed ?: "")
         line("locked", locked)
+        line("mutators", Mutator.mask(mutators))
+        line("week", week ?: -1)
         line("bosses", bossOrder.joinToString(",") { it.name })
         line("wave", wave)
         line("sp", sp)
@@ -239,6 +251,12 @@ class Match(
     }
 
     /** Loses a life as if a soldier had walked through, for testing the leak feedback. */
+    /** Puts one [kind] on the path right now, for tests. */
+    internal fun devSpawn(kind: EnemyKind): Enemy {
+        spawn(kind)
+        return enemyList.last()
+    }
+
     internal fun devLeak() {
         lives = maxOf(0, lives - 1)
         events += GameEvent.Leaked(EnemyKind.NORMAL)
@@ -248,7 +266,7 @@ class Match(
         wave = n
         inWave = true
         spawnQueue.clear()
-        spawnQueue.addAll(WaveSpawner.composition(n, bossOrder, mode))
+        spawnQueue.addAll(WaveSpawner.composition(n, bossOrder, mode, Mutator.SWARM in mutators))
         spawnTimer = 0f
         val boss = spawnQueue.firstOrNull()?.takeIf { it.isBoss }
         events += GameEvent.WaveStarted(n, boss != null, WaveSpawner.special(n), boss)
@@ -292,9 +310,10 @@ class Match(
             mode == GameMode.RUSH -> Balance.RUSH_HP
             else -> 1f
         }
-        enemyList += Enemy(kind, WaveSpawner.enemyHp(wave, kind) * WaveSpawner.hpScale(wave) * modeHp).apply {
+        val toughness = if (Mutator.TOUGH in mutators) Balance.TOUGH_HP else 1f
+        enemyList += Enemy(kind, WaveSpawner.enemyHp(wave, kind) * WaveSpawner.hpScale(wave) * modeHp * toughness).apply {
             if (kind == EnemyKind.BOSS_ARMORED) armor = Balance.ARMOR_FRACTION * WaveSpawner.enemyHp(wave, EnemyKind.NORMAL)
-            speedScale = if (mode == GameMode.RUSH) Balance.RUSH_SPEED else 1f
+            speedScale = (if (mode == GameMode.RUSH) Balance.RUSH_SPEED else 1f) * (if (Mutator.SWIFT in mutators) Balance.SWIFT_SPEED else 1f)
         }
     }
 
@@ -304,9 +323,10 @@ class Match(
         for (src in enemyList) {
             if (!src.alive) continue
             when (src.kind) {
-                EnemyKind.HEALER -> for (e in enemyList) {
+                EnemyKind.HEALER, EnemyKind.ELITE -> for (e in enemyList) {
+                    val rate = if (src.kind == EnemyKind.ELITE) Balance.ELITE_HEAL_PER_SEC else Balance.HEALER_PER_SEC
                     if (e !== src && e.alive && abs(e.distance - src.distance) <= Balance.HEALER_RADIUS) {
-                        e.hp = minOf(e.maxHp, e.hp + Balance.HEALER_PER_SEC * e.maxHp * dt)
+                        e.hp = minOf(e.maxHp, e.hp + rate * e.maxHp * dt)
                     }
                 }
                 EnemyKind.BOSS_COMMANDER -> for (e in enemyList) {
@@ -325,8 +345,11 @@ class Match(
             if (!e.alive) continue
             e.distance += e.speed() * dt
             if (e.distance >= path.length) {
-                lives = maxOf(0, lives - e.kind.lifeDamage)
-                events += GameEvent.Leaked(e.kind)
+                // A Treasure that gets away costs nothing but the reward.
+                if (e.kind.lifeDamage > 0) {
+                    lives = maxOf(0, lives - e.kind.lifeDamage)
+                    events += GameEvent.Leaked(e.kind)
+                }
                 iter.remove()
             }
         }
@@ -471,7 +494,8 @@ class Match(
             enemyList.removeAll { !it.alive }
             for (e in dead) {
                 val at = path.positionAt(e.distance)
-                sp += e.kind.reward * (if (mode == GameMode.SURVIVAL) Balance.SURVIVAL_SP else 1) + e.stolen
+                val reward = if (Mutator.POOR in mutators) (e.kind.reward * Balance.POOR_REWARD).roundToInt() else e.kind.reward
+                sp += reward * (if (mode == GameMode.SURVIVAL) Balance.SURVIVAL_SP else 1) + e.stolen
                 events += GameEvent.Killed(e.kind, at, e.lastHit?.type)
                 if (e.kind == EnemyKind.BOSS_SPLITTER) {
                     for (side in listOf(-1f, 1f)) {
@@ -503,9 +527,9 @@ class Match(
         private const val SNAPSHOT_VERSION = 4
 
         /** An ordinary match whose seed is drawn from [rng] and remembered, so it can be shared as a code. */
-        fun seeded(deck: List<DieType>, map: GameMap, mode: GameMode, rng: Random = Random.Default): Match {
+        fun seeded(deck: List<DieType>, map: GameMap, mode: GameMode, mutators: Set<Mutator> = emptySet(), rng: Random = Random.Default): Match {
             val seed = rng.nextInt()
-            return Match(deck, Random(seed), map, mode = mode, seed = seed)
+            return Match(deck, Random(seed), map, mode = mode, seed = seed, mutators = mutators)
         }
 
         /** Rebuilds a match from [snapshot] text; null if the text is damaged or from another version. */
@@ -533,7 +557,9 @@ class Match(
             val mode = scalars["mode"]?.let { requireNotNull(GameMode.byId(it)) { "unknown mode $it" } } ?: GameMode.NORMAL
             val seed = scalars["seed"]?.takeIf { it.isNotEmpty() }?.toInt()
             val locked = scalars["locked"]?.toBooleanStrict() ?: false
-            val m = Match(scalars.getValue("deck").split(",").map(::type), rng, map, daily, mode, seed, locked)
+            val mutators = Mutator.fromMask(scalars["mutators"]?.toInt() ?: 0)
+            val week = scalars["week"]?.toInt()?.takeIf { it >= 0 }
+            val m = Match(scalars.getValue("deck").split(",").map(::type), rng, map, daily, mode, seed, locked, mutators, week)
             m.wave = scalars.getValue("wave").toInt()
             m.sp = scalars.getValue("sp").toInt()
             m.lives = scalars.getValue("lives").toInt()
@@ -570,7 +596,7 @@ class Match(
                         pushed = f[11].toFloat()
                         stolen = f[12].toInt()
                         armor = f[13].toFloat()
-                        speedScale = if (mode == GameMode.RUSH) Balance.RUSH_SPEED else 1f
+                        speedScale = (if (mode == GameMode.RUSH) Balance.RUSH_SPEED else 1f) * (if (Mutator.SWIFT in mutators) Balance.SWIFT_SPEED else 1f)
                         for (stack in f.drop(14)) {
                             val (dps, remaining) = stack.split(":")
                             poison += PoisonStack(dps.toFloat(), remaining.toFloat())

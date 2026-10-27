@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Rectangle
 import com.iagothz.mergetd.logic.Balance
 import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.GameMode
+import com.iagothz.mergetd.logic.Mutator
 import com.iagothz.mergetd.logic.Layout
 import com.iagothz.mergetd.logic.MatchCode
 import com.iagothz.mergetd.logic.Vec2
@@ -16,13 +17,15 @@ import com.iagothz.mergetd.logic.Vec2
 class MapScreen(game: MergeTdGame) : BaseScreen(game) {
     private var selected = game.save.map
     private var mode = game.save.mode
+    private val mutators = game.save.mutators.toMutableSet()
+    private val mutatorChips = Mutator.entries.mapIndexed { i, m -> m to Rectangle(24f + i * 170f, 330f, 162f, 56f) }
     private val cards = GameMap.entries.mapIndexed { i, m ->
         m to Rectangle(24f + (i % 2) * 340f, 870f - (i / 2) * 300f, 332f, 280f)
     }
     private val modes = GameMode.entries.mapIndexed { i, m -> m to Rectangle(24f + i * 170f, 440f, 162f, 64f) }
     private val confirm = Button(Rectangle(40f, 30f, 310f, 100f), S["Confirmar"])
     private val back = Button(Rectangle(370f, 30f, 310f, 100f), S["Voltar"], color = Skin.PANEL)
-    private val playCode = Button(Rectangle(190f, 300f, 340f, 72f), S["Jogar código"], color = Color(0.55f, 0.30f, 0.75f, 1f))
+    private val playCode = Button(Rectangle(190f, 212f, 340f, 64f), S["Jogar código"], color = Color(0.55f, 0.30f, 0.75f, 1f))
     private var codeError = 0f
     private val tap = Tap<Button>()
 
@@ -54,6 +57,7 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
             }
             shapes.bevelRect(r.x, r.y, r.width, r.height, 14f, if (m == mode) MODE_ON else Skin.PANEL)
         }
+        for ((m, r) in mutatorChips) shapes.bevelRect(r.x, r.y, r.width, r.height, 14f, if (m in mutators) MUTATOR_ON else Skin.PANEL)
         confirm.drawShape(shapes)
         back.drawShape(shapes)
         playCode.drawShape(shapes)
@@ -74,14 +78,20 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
         game.smallFont.color = Color.WHITE
         for ((m, r) in modes) game.batch.textCentered(game.smallFont, S[m.title], r.x + r.width / 2, r.y + r.height / 2 + 2f)
         game.tinyFont.color = Skin.GOLD
-        game.batch.textCentered(game.tinyFont, S[mode.description], 360f, 410f)
+        game.batch.textCentered(game.tinyFont, S[mode.description], 360f, 414f)
+        game.smallFont.color = KEY_COLOR
+        game.batch.textLeft(game.smallFont, S.f("Mutadores ×%s", DieInfo.num(Mutator.multiplier(mutators))), 24f, 400f)
+        game.smallFont.color = Color.WHITE
+        for ((m, r) in mutatorChips) game.batch.textCentered(game.tinyFont, S[m.title], r.x + r.width / 2, r.y + r.height / 2 + 2f)
+        game.tinyFont.color = Skin.GOLD
+        game.batch.textCentered(game.tinyFont, if (mutators.isEmpty()) S["Sem mutadores: recorde normal"] else mutators.joinToString(" · ") { S[it.description] }, 360f, 304f)
         game.tinyFont.color = Color.WHITE
         confirm.drawText(game.batch, game.font)
         back.drawText(game.batch, game.font)
         playCode.drawText(game.batch, game.smallFont)
         if (codeError > 0f) {
             game.smallFont.color = Skin.HEART
-            game.batch.textCentered(game.smallFont, S["Código inválido"], 360f, 270f)
+            game.batch.textCentered(game.smallFont, S["Código inválido"], 360f, 190f)
             game.smallFont.color = Color.WHITE
         }
         game.batch.end()
@@ -123,7 +133,7 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
 
                 override fun canceled() = Unit
             },
-            S["Código da partida"], "", "XXXX-XXXX-XXXX-XX",
+            S["Código da partida"], "", "XXXXX-XXXXX-XXXXX",
         )
     }
 
@@ -134,9 +144,11 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
     override fun onTouchUp(p: Vec2) {
         val card = cards.firstOrNull { it.second.contains(p.x, p.y) }?.first
         val chip = modes.firstOrNull { it.second.contains(p.x, p.y) }?.first
-        if (card != null || chip != null) {
+        val mutator = mutatorChips.firstOrNull { it.second.contains(p.x, p.y) }?.first
+        if (card != null || chip != null || mutator != null) {
             if (card != null) selected = card
             if (chip != null) mode = chip
+            if (mutator != null && !mutators.remove(mutator)) mutators += mutator
             tap.cancel()
             return
         }
@@ -144,6 +156,7 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
             confirm -> {
                 game.save.map = selected
                 game.save.mode = mode
+                game.save.mutators = mutators
                 game.showMenu()
             }
             back -> game.showMenu()
@@ -152,6 +165,7 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
     }
 
     private companion object {
+        val MUTATOR_ON = Color(0.70f, 0.30f, 0.30f, 1f)
         const val PREVIEW_SCALE = 0.15f
         val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
         val MODE_ON = Color(0.55f, 0.30f, 0.75f, 1f)

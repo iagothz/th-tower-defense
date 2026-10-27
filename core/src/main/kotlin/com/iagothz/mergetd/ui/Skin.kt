@@ -120,6 +120,8 @@ object Skin {
         EnemyKind.BOSS_REGEN to Color(0.32f, 0.66f, 0.38f, 1f),
         EnemyKind.HEALER to Color(0.95f, 0.90f, 0.80f, 1f),
         EnemyKind.GHOST to Color(0.70f, 0.80f, 0.95f, 1f),
+        EnemyKind.ELITE to Color(0.78f, 0.22f, 0.22f, 1f),
+        EnemyKind.TREASURE to Color(1f, 0.85f, 0.30f, 1f),
         EnemyKind.BOSS_SPLITTER to Color(0.80f, 0.55f, 0.20f, 1f),
         EnemyKind.BOSS_ARMORED to Color(0.50f, 0.52f, 0.58f, 1f),
         EnemyKind.BOSS_THIEF to Color(0.25f, 0.25f, 0.35f, 1f),
@@ -135,6 +137,8 @@ object Skin {
         EnemyKind.BOSS_REGEN to "Regenerador",
         EnemyKind.HEALER to "Curandeiro",
         EnemyKind.GHOST to "Fantasma",
+        EnemyKind.ELITE to "Elite",
+        EnemyKind.TREASURE to "Tesouro",
         EnemyKind.BOSS_SPLITTER to "Divisor",
         EnemyKind.BOSS_ARMORED to "Blindado",
         EnemyKind.BOSS_THIEF to "Ladrão",
@@ -177,12 +181,16 @@ object Skin {
         EnemyKind.TANK -> S["tanques"]
         EnemyKind.HEALER -> S["curandeiros"]
         EnemyKind.GHOST -> S["fantasmas"]
+        EnemyKind.ELITE -> S["elites"]
+        EnemyKind.TREASURE -> S["tesouros"]
         else -> enemyName(k)
     }
 
     fun enemyRadius(k: EnemyKind): Float = when {
         k.isBoss -> 28f
         k == EnemyKind.TANK -> 22f
+        k == EnemyKind.ELITE -> 21f
+        k == EnemyKind.TREASURE -> 14f
         k == EnemyKind.HEALER -> 18f
         else -> 16f
     }
@@ -191,6 +199,7 @@ object Skin {
     fun enemySides(k: EnemyKind): Int = when (k) {
         EnemyKind.FAST -> 3
         EnemyKind.TANK -> 6
+        EnemyKind.TREASURE -> 5
         EnemyKind.BOSS_SPLITTER -> 4
         EnemyKind.BOSS_ARMORED -> 8
         EnemyKind.BOSS_THIEF -> 5

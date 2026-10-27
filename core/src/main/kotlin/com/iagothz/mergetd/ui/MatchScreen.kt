@@ -35,7 +35,7 @@ class MatchScreen(
 ) : BaseScreen(game) {
     private enum class Confirm(val question: String) { RESTART("Reiniciar a partida?"), QUIT("Sair da partida?") }
 
-    private val match = restored ?: fresh ?: Match.seeded(game.save.deck, game.save.map, game.save.mode)
+    private val match = restored ?: fresh ?: Match.seeded(game.save.deck, game.save.map, game.save.mode, game.save.mutators)
     private val drag = DragController(match)
     private val hold = LongPress()
     private val renderer = MatchRenderer(game.shapes, game.batch, game.font, game.smallFont, game.tinyFont)
@@ -86,7 +86,12 @@ class MatchScreen(
         onTouchCancelled()
         if (game.devMode || match.isGameOver) return
         val day = match.challengeDay
-        if (day != null) game.save.recordDaily(day, match.wave) else game.save.recordWave(match.map, match.wave, match.mode)
+        val week = match.week
+        when {
+            day != null -> game.save.recordDaily(day, match.wave)
+            week != null -> game.save.recordWeekly(week, match.score)
+            else -> game.save.recordWave(match.map, match.wave, match.mode)
+        }
         game.save.saveMatch(match.snapshot(), previousBest)
     }
 
@@ -463,6 +468,8 @@ class MatchScreen(
         game.save.clearMatch()
         if (game.devMode) return emptySet<Achievement>() to null
         game.save.recordMatch(match.map, match.deck, match.wave, stats.kills, stats.bosses, stats.merges, match.challengeDay, match.mode, match.locked)
+        match.week?.let { game.save.recordWeekly(it, match.score) }
+        if (match.week == null && match.mutators.isNotEmpty() && match.score > game.save.bestScore) game.save.bestScore = match.score
         game.save.addHistory(
             MatchRecord(
                 DailyChallenge.today(), match.map, match.mode, match.deck, match.wave, stats.killedBy,
@@ -486,9 +493,11 @@ class MatchScreen(
 
     private fun finish() {
         val (fresh, reward) = book()
+        val isRecord = !game.devMode && (if (match.week != null) match.score > previousBest else match.wave > previousBest)
         game.showGameOver(
-            match.map, match.wave, !game.devMode && match.wave > previousBest, stats, match.challengeDay, match.mode, fresh,
-            match.setup?.takeIf { match.challengeDay == null }?.let { MatchCode.encode(it) }, reward,
+            match.map, match.wave, isRecord, stats, match.challengeDay, match.mode, fresh,
+            match.setup?.takeIf { match.challengeDay == null && match.week == null }?.let { MatchCode.encode(it) }, reward,
+            match.score.takeIf { match.mutators.isNotEmpty() }, match.week,
         )
     }
 

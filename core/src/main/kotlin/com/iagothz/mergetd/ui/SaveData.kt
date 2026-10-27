@@ -8,6 +8,7 @@ import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.GameMode
 import com.iagothz.mergetd.logic.Mission
 import com.iagothz.mergetd.logic.MissionProgress
+import com.iagothz.mergetd.logic.Mutator
 
 /** One finished match, as the history screen shows it. */
 data class MatchRecord(
@@ -276,6 +277,32 @@ class SaveData(private val prefs: Preferences) {
             prefs.putString("deck", DeckCodec.encode(value))
             prefs.flush()
         }
+
+    /** Mutators chosen on the match screen for ordinary matches. */
+    var mutators: Set<Mutator>
+        get() = prefs.getString("mutators", "").split(",").mapNotNull { Mutator.byId(it) }.toSet()
+        set(value) {
+            prefs.putString("mutators", value.joinToString(",") { it.id })
+            prefs.flush()
+        }
+
+    /** Best mutator score of any ordinary match. */
+    var bestScore: Int
+        get() = prefs.getInteger("score.best", 0)
+        set(value) {
+            prefs.putInteger("score.best", value)
+            prefs.flush()
+        }
+
+    fun weeklyBest(week: Int): Int = prefs.getInteger("weekly.$week", 0)
+
+    /** Books the week's score; true when it beat the record. */
+    fun recordWeekly(week: Int, score: Int): Boolean {
+        if (score <= weeklyBest(week)) return false
+        prefs.putInteger("weekly.$week", score)
+        prefs.flush()
+        return true
+    }
 
     /** One of the three saved deck presets, or null when the slot is empty. */
     fun deckSlot(i: Int): List<DieType>? = prefs.getString("deckslot.$i", null)?.let { DeckCodec.decode(it) }?.takeIf { it.size == DeckCodec.SIZE }

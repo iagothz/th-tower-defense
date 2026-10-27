@@ -25,6 +25,10 @@ class GameOverScreen(
     private val unlocked: Set<Achievement> = emptySet(),
     private val code: String? = null,
     private val reward: MatchReward? = null,
+    /** Mutator score, shown when any mutator was on. */
+    private val score: Int? = null,
+    /** The weekly challenge this was, booked by score. */
+    private val week: Int? = null,
 ) : BaseScreen(game) {
     private class Confetto(var x: Float, var y: Float, val speed: Float, val sway: Float, val color: Color, val w: Float, val h: Float)
 
@@ -49,14 +53,18 @@ class GameOverScreen(
     )
 
     private val rows: List<Pair<String, String>> = listOf(
-        S[if (challengeDay != null) "Desafio do dia" else "Mapa"] to
+        S[if (challengeDay != null) "Desafio do dia" else if (week != null) "Desafio semanal" else "Mapa"] to
             (if (challengeDay != null) DailyChallenge.of(challengeDay).dateLabel else "${S[map.title]} · ${S[mode.title]}"),
         S["Onda alcançada"] to "$wave",
         S["Inimigos derrotados"] to "${stats.kills}",
         S["Chefes derrotados"] to "${stats.bosses}",
         S["Merges"] to "${stats.merges}",
         S["Dados comprados"] to "${stats.bought}",
-        S["Recorde"] to S.f("onda %d", if (challengeDay != null) game.save.dailyBest(challengeDay) else game.save.bestWave(map, mode)),
+        S["Recorde"] to when {
+            challengeDay != null -> S.f("onda %d", game.save.dailyBest(challengeDay))
+            week != null -> S.f("pontuação %d", game.save.weeklyBest(week))
+            else -> S.f("onda %d", game.save.bestWave(map, mode))
+        },
     )
 
     override fun draw(delta: Float) {
@@ -124,6 +132,9 @@ class GameOverScreen(
             game.tinyFont.color = KEY_COLOR
             game.batch.textCentered(game.tinyFont, S.f("Código da partida: %s", code), 360f, 1080f)
             game.tinyFont.color = Color.WHITE
+        }
+        if (score != null) {
+            game.batch.textShadowed(game.smallFont, S.f("Pontuação %d (onda %d × mutadores)", score, wave), 360f, 1172f, Skin.GOLD)
         }
         if (reward != null) {
             val line = if (reward.leveledUp) S.f("Novo nível: %d!", reward.level) + "  ·  " + S.f("+%d XP", reward.xp) else S.f("+%d XP", reward.xp)

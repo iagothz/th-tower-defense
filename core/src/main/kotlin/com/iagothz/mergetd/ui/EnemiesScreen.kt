@@ -82,6 +82,8 @@ class EnemiesScreen(game: MergeTdGame) : BaseScreen(game) {
             EnemyKind.TANK to "Lento, com muita vida.",
             EnemyKind.HEALER to "Cura os inimigos ao redor.",
             EnemyKind.GHOST to "Ignora lentidão, atordoamento, empurrão e armadilhas.",
+            EnemyKind.ELITE to "Grande, cura a escolta e vale 30 SP.",
+            EnemyKind.TREASURE to "Foge rápido; não tira vida, mas vale 60 SP.",
         )
         private val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
         private val ROW_SELECTED = Color(0.22f, 0.24f, 0.33f, 1f)

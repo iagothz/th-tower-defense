@@ -13,7 +13,7 @@ class MatchCodeTest {
     fun roundTripsEverything() {
         val setup = MatchSetup(GameMap.RING, GameMode.RUSH, -123_456_789, deck)
         val code = MatchCode.encode(setup)
-        assertTrue(Regex("[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{2}").matches(code), code)
+        assertTrue(Regex("[0-9A-Z]{5}-[0-9A-Z]{5}-[0-9A-Z]{5}").matches(code), code)
         assertEquals(setup, MatchCode.decode(code))
         assertEquals(setup, MatchCode.decode(code.lowercase().replace("-", " ")), "lenient about case, dashes and spaces")
     }
@@ -44,7 +44,7 @@ class MatchCodeTest {
 
     @Test
     fun ordinaryMatchesCarryASeedToo() {
-        val m = Match.seeded(DeckCodec.DEFAULT, GameMap.RING, GameMode.SURVIVAL, Random(9))
+        val m = Match.seeded(DeckCodec.DEFAULT, GameMap.RING, GameMode.SURVIVAL, rng = Random(9))
         assertTrue(m.seed != null)
         assertTrue(!m.locked)
         assertEquals(m.seed, Match.restore(m.snapshot())!!.seed)

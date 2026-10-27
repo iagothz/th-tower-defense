@@ -12,6 +12,8 @@ object Tips {
         EnemyKind.FAST -> "Os corredores escaparam. Gelo, Tempo e Gravidade seguram eles; Vento atira rápido o bastante para acompanhar."
         EnemyKind.TANK -> "Os tanques passaram. Ferro, Sniper e Maldição derrubam os de muita vida; veneno acumula bem neles."
         EnemyKind.HEALER -> "O curandeiro manteve a fila viva. Mate ele primeiro: Sniper mira o mais resistente, Fogo pega o grupo."
+        EnemyKind.ELITE -> "A Elite curava a escolta. Mate ela primeiro com Sniper ou Ferro; depois a fila cai fácil."
+        EnemyKind.TREASURE -> "O Tesouro escapou: não custa vida, mas valia 60 SP. Vento e Sniper alcançam os rápidos."
         EnemyKind.GHOST -> "Fantasmas ignoram lentidão e armadilhas. Dano puro: Ferro, Sniper, Crítico e Combo."
         EnemyKind.BOSS_SILENCER -> "O Silenciador cala um dado por vez. Espalhe o dano em vários dados em vez de um só gigante."
         EnemyKind.BOSS_SWAPPER -> "O Trocador embaralha o tabuleiro. Luz e Combo dependem de posição; prefira dados que valem em qualquer lugar."

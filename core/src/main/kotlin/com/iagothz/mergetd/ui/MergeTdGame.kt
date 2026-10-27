@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.iagothz.mergetd.logic.DailyChallenge
+import com.iagothz.mergetd.logic.WeeklyChallenge
 import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.GameMode
 import com.iagothz.mergetd.logic.Match
@@ -76,6 +77,15 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
         switchTo(MatchScreen(this))
     }
 
+    fun showChallenges() = switchTo(ChallengeScreen(this))
+
+    /** This week's fixed run with its two mutators, booked against the week's score. */
+    fun startWeekly() {
+        save.clearMatch()
+        val w = WeeklyChallenge.of(WeeklyChallenge.thisWeek())
+        switchTo(MatchScreen(this, previousBest = save.weeklyBest(w.week), fresh = w.newMatch()))
+    }
+
     /** Reopens the match Android closed while the app was in the background; false if there is none. */
     private fun resumeSavedMatch(): Boolean {
         val (text, previousBest) = save.savedMatch ?: return false
@@ -91,7 +101,8 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
     fun showGameOver(
         map: GameMap, wave: Int, isRecord: Boolean, stats: MatchStats, challengeDay: Int? = null,
         mode: GameMode = GameMode.NORMAL, unlocked: Set<Achievement> = emptySet(), code: String? = null, reward: MatchReward? = null,
-    ) = switchTo(GameOverScreen(this, map, wave, isRecord, stats, challengeDay, mode, unlocked, code, reward))
+        score: Int? = null, week: Int? = null,
+    ) = switchTo(GameOverScreen(this, map, wave, isRecord, stats, challengeDay, mode, unlocked, code, reward, score, week))
 
     fun showMissions() = switchTo(MissionsScreen(this))
 

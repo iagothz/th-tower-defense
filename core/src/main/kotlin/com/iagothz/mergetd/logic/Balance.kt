@@ -48,6 +48,20 @@ object Balance {
     /** HEALER: fraction of max HP restored per second to enemies within RADIUS path units. */
     const val HEALER_RADIUS = 90f
     const val HEALER_PER_SEC = 0.02f
+    /** Elite: a big soldier that heals its escort, leading every third ordinary wave from here. */
+    const val ELITE_FROM_WAVE = 6
+    const val ELITE_EVERY = 3
+    const val ELITE_HEAL_PER_SEC = 0.015f
+    /** Treasure: fast, harmless, rich; at the back of every fourth wave from here. */
+    const val TREASURE_FROM_WAVE = 6
+    const val TREASURE_EVERY = 4
+    /** Mutators. */
+    const val SWIFT_SPEED = 1.3f
+    const val TOUGH_HP = 1.5f
+    const val POOR_REWARD = 0.5f
+    /** Extra enemies per wave as a fraction of the wave (2/5 ≈ 40%). */
+    const val SWARM_EXTRA_NUM = 2
+    const val SWARM_EXTRA_DEN = 5
     /** BOSS_ARMORED ignores this fraction of a plain soldier's HP (of its wave) on every hit. */
     const val ARMOR_FRACTION = 0.15f
     /** BOSS_THIEF takes this fraction of the player's SP every ability tick. */

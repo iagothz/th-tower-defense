@@ -104,7 +104,7 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
             play -> game.startMatch()
             deck -> game.showDeck()
             map -> game.showMap()
-            daily -> game.startDaily()
+            daily -> game.showChallenges()
             stats -> game.showStats()
             missions -> game.showMissions()
             settings -> game.showSettings()

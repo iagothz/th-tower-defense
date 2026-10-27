@@ -14,6 +14,10 @@ enum class EnemyKind(
     HEALER(1.2f, 0.9f, 15, 1),
     /** Immune to slows, stuns, pushes and traps. */
     GHOST(0.8f, 1.3f, 15, 1),
+    /** A big soldier that heals the enemies around it; worth three soldiers. */
+    ELITE(3f, 0.9f, 30, 1),
+    /** Runs for the exit, costs no life if it makes it, pays a lot if it doesn't. */
+    TREASURE(0.6f, 1.8f, 60, 0),
     BOSS_SILENCER(40f, 0.5f, 100, 2, isBoss = true),
     BOSS_SWAPPER(40f, 0.5f, 100, 2, isBoss = true),
     BOSS_REGEN(40f, 0.5f, 100, 2, isBoss = true),

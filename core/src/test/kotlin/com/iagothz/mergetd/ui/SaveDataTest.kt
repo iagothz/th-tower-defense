@@ -1,5 +1,6 @@
 package com.iagothz.mergetd.ui
 
+import com.iagothz.mergetd.logic.Mutator
 import com.iagothz.mergetd.logic.MissionKind
 import com.iagothz.mergetd.logic.MissionProgress
 import com.iagothz.mergetd.logic.Mission
@@ -261,5 +262,21 @@ class SaveDataTest {
         SaveData(prefs).saveDeckSlot(1, deck)
         assertEquals(deck, SaveData(prefs).deckSlot(1))
         assertNull(SaveData(prefs).deckSlot(0))
+    }
+
+    @Test
+    fun mutatorsAndWeeklyRecordsPersist() {
+        val prefs = memoryPrefs()
+        assertTrue(SaveData(prefs).mutators.isEmpty())
+        SaveData(prefs).mutators = setOf(Mutator.SWIFT, Mutator.POOR)
+        assertEquals(setOf(Mutator.SWIFT, Mutator.POOR), SaveData(prefs).mutators)
+
+        assertEquals(0, SaveData(prefs).weeklyBest(2_900))
+        assertTrue(SaveData(prefs).recordWeekly(2_900, 21))
+        assertFalse(SaveData(prefs).recordWeekly(2_900, 15))
+        assertEquals(21, SaveData(prefs).weeklyBest(2_900))
+        assertEquals(0, SaveData(prefs).bestScore)
+        SaveData(prefs).bestScore = 30
+        assertEquals(30, SaveData(prefs).bestScore)
     }
 }
