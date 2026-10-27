@@ -29,7 +29,7 @@ class Board {
         if (from == to) return false
         val a = this[from] ?: return false
         val b = this[to] ?: return false
-        val clone = cloneOf(a, b)
+        val clone = actor(a, b)?.takeIf { it.type == DieType.CLONE }
         // A 7-pip Clone copies anything; otherwise pips must match.
         if (clone != null && clone.pips >= Balance.MAX_PIPS) return true
         if (a.pips != b.pips) return false
@@ -38,27 +38,27 @@ class Board {
         return a.type == b.type || a.type.wildcard || b.type.wildcard
     }
 
-    /** The cell whose die changes when [from] is dropped on [to]: the Clone's own cell, or [to]. */
+    /** The cell whose die changes when [from] is dropped on [to]: the acting Clone's own cell, or [to]. */
     fun resultCell(from: Cell, to: Cell): Cell {
         val a = this[from] ?: return to
         val b = this[to] ?: return to
-        return if (cloneOf(a, b) === a) from else to
+        val actor = actor(a, b)
+        return if (actor?.type == DieType.CLONE && actor === a) from else to
     }
 
     fun merge(from: Cell, to: Cell, deck: List<DieType>, rng: Random): Boolean {
         if (!canMerge(from, to)) return false
         val a = this[from]!!
         val b = this[to]!!
-        val clone = cloneOf(a, b)
-        if (clone != null) {
-            val source = if (clone === a) b else a
-            this[if (clone === a) from else to] = Die(source.type, source.pips).apply { disabledFor = clone.disabledFor }
+        val actor = actor(a, b)
+        if (actor?.type == DieType.CLONE) {
+            val source = if (actor === a) b else a
+            this[if (actor === a) from else to] = Die(source.type, source.pips).apply { disabledFor = actor.disabledFor }
             return true
         }
-        val type = when {
+        val type = when (actor?.type) {
             // The Boost guarantees the other die's type (so two Boosts make a Boost); the Mirror and ordinary merges roll the deck.
-            a.type == DieType.BOOST -> b.type
-            b.type == DieType.BOOST -> a.type
+            DieType.BOOST -> if (actor === a) b.type else a.type
             else -> deck.random(rng)
         }
         this[from] = null
@@ -73,10 +73,14 @@ class Board {
         return true
     }
 
-    /** The Clone in a pair of exactly one Clone and one other die, else null. */
-    private fun cloneOf(a: Die, b: Die): Die? = when {
-        a.type == DieType.CLONE && b.type != DieType.CLONE -> a
-        b.type == DieType.CLONE && a.type != DieType.CLONE -> b
+    /**
+     * The die whose wildcard effect applies when [a] is dropped on [b]: the dragged die if it is a wildcard,
+     * else the target if it is, else none. Two Clones have no effect on each other and merge normally.
+     */
+    private fun actor(a: Die, b: Die): Die? = when {
+        a.type == DieType.CLONE && b.type == DieType.CLONE -> null
+        a.type.wildcard || a.type == DieType.CLONE -> a
+        b.type.wildcard || b.type == DieType.CLONE -> b
         else -> null
     }
 

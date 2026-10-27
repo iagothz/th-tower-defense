@@ -62,10 +62,10 @@ object DieTextsEn {
             "the killed enemy explodes for the die's damage on anyone within %s; whoever dies in the blast explodes too",
         "cada ataque causa de 0x a %sx o dano normal (média %sx)" to "every attack deals 0x to %sx the normal damage (%sx on average)",
         "+%d SP por pip a cada inimigo que matar, além da recompensa normal" to "+%d SP per pip for every enemy it kills, on top of the normal reward",
-        "arrastado sobre um dado de mesmos pips (ou o contrário), vira uma cópia dele, tipo e pips, e o original continua no lugar; stacks do Caçador não são copiados; dois Clonadores fazem merge normal" to
-            "dropped on a die of the same pips (or the other way round), it becomes a copy of it, type and pips, and the original stays; Hunter stacks aren't copied; two Cloners merge normally",
-        "faz merge com qualquer dado de mesmos pips e o resultado é o tipo do outro dado com +1 pip (dois Reforços viram um Reforço)" to
-            "merges with any die of the same pips and the result is the other die's type with +1 pip (two Boosts make a Boost)",
+        "arrastado sobre um dado de mesmos pips (ou o contrário), vira uma cópia dele, tipo e pips, e o original continua no lugar; stacks do Caçador não são copiados; entre dois coringas vale o efeito do dado arrastado; dois Clonadores fazem merge normal" to
+            "dropped on a die of the same pips (or the other way round), it becomes a copy of it, type and pips, and the original stays; Hunter stacks aren't copied; between two wildcards the dragged die's effect wins; two Cloners merge normally",
+        "faz merge com qualquer dado de mesmos pips e o resultado é o tipo do outro dado com +1 pip (dois Reforços viram um Reforço; levado a um Clonador, sobe o Clonador)" to
+            "merges with any die of the same pips and the result is the other die's type with +1 pip (two Boosts make a Boost; taken to a Cloner, it grows the Cloner)",
         // 7 pips
         "explosão com raio ×%s e dano cheio nos vizinhos" to "blast radius ×%s with full damage on the neighbours",
         "além da lentidão, congela o alvo por %s s" to "besides the slow, freezes the target for %s s",
@@ -75,6 +75,7 @@ object DieTextsEn {
         "gera o dobro de SP" to "makes twice the SP",
         "acerta também o segundo inimigo mais resistente" to "also hits the second toughest enemy",
         "ataca com o dano do dado mais forte do tabuleiro" to "attacks with the damage of the strongest die on the board",
+        "cresce mais rápido: %s s por pip (níveis 2 a 5)" to "grows faster: %s s per pip (levels 2 to 5)",
         "a cada %s s planta um dado de 1 pip do deck numa célula vazia" to "every %s s it plants a 1-pip deck die in an empty cell",
         "acelera também os vizinhos das diagonais" to "also speeds up the diagonal neighbours",
         "os críticos de todo o tabuleiro dão x%s" to "every crit on the board deals x%s",

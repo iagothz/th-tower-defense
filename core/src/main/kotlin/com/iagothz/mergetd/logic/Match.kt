@@ -71,6 +71,9 @@ class Match(
 
     fun powerMult(t: DieType): Float = Balance.powerMult(powerLevel(t))
 
+    /** Seconds a Growth die needs per pip right now: its power-up levels make it grow faster. */
+    fun growthInterval(): Float = Balance.GROWTH_INTERVAL / powerMult(DieType.GROWTH)
+
     /** Attack-speed factor for the die in [cell] from active LIGHT dice next to it; a 7-pip Light also reaches diagonals. */
     fun speedMultiplier(cell: Cell): Float {
         fun light(dr: Int, dc: Int, diagonal: Boolean): Int {
@@ -387,13 +390,14 @@ class Match(
                 }
                 DieType.GROWTH -> {
                     die.timer += dt
+                    val interval = growthInterval()
                     // Each pip it earns, it turns into one of the deck's types; it may roll Growth and keep going.
-                    if (die.timer >= Balance.GROWTH_INTERVAL && die.pips < Balance.MAX_PIPS) {
+                    if (die.timer >= interval && die.pips < Balance.MAX_PIPS) {
                         board[cell] = Die(deck.random(rng), die.pips + 1).apply { disabledFor = die.disabledFor }
                         continue
-                    } else if (die.timer >= Balance.GROWTH_INTERVAL) {
+                    } else if (die.timer >= interval) {
                         // At 7 pips it plants a new 1-pip die from the deck instead.
-                        die.timer -= Balance.GROWTH_INTERVAL
+                        die.timer -= interval
                         board.emptyCells().randomOrNull(rng)?.let { empty ->
                             board[empty] = Die(deck.random(rng), 1)
                             events += GameEvent.DieBought(empty)

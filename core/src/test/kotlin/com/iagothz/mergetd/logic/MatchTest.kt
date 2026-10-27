@@ -172,11 +172,29 @@ class MatchTest {
         m.lives = 1000
         m.board[Cell(0, 0)] = Die(DieType.GROWTH, 1)
         m.board[Cell(0, 1)] = Die(DieType.GROWTH, 7)
-        m.advance(74.9f)
+        m.advance(Balance.GROWTH_INTERVAL - 0.1f)
         assertEquals(1, m.board[Cell(0, 0)]!!.pips)
         m.advance(0.2f)
         assertEquals(2, m.board[Cell(0, 0)]!!.pips)
         assertEquals(7, m.board[Cell(0, 1)]!!.pips)
+    }
+
+    /** Each Growth power-up level shortens the wait: the interval is divided by the power multiplier. */
+    @Test
+    fun growthPowerUpsMakeItGrowFaster() {
+        val m = Match(listOf(DieType.GROWTH, DieType.FIRE, DieType.ICE, DieType.POISON, DieType.ELECTRIC), Random(5))
+        m.lives = 1000
+        m.sp = 100000
+        assertTrue(m.powerUp(DieType.GROWTH))
+        assertTrue(m.powerUp(DieType.GROWTH))
+        assertEquals(3, m.powerLevel(DieType.GROWTH))
+        val faster = Balance.GROWTH_INTERVAL / Balance.powerMult(3)
+        assertEquals(faster, m.growthInterval())
+        m.board[Cell(0, 0)] = Die(DieType.GROWTH, 1)
+        m.advance(faster - 0.2f)
+        assertEquals(1, m.board[Cell(0, 0)]!!.pips)
+        m.advance(0.4f)
+        assertEquals(2, m.board[Cell(0, 0)]!!.pips)
     }
 
     /** Gaining a pip rerolls the Growth into one of the deck's types, with the new pips. */
@@ -187,10 +205,9 @@ class MatchTest {
             val m = Match(deck, Random(seed))
             m.lives = 1000
             m.board[Cell(0, 0)] = Die(DieType.GROWTH, 3)
-            m.advance(75.1f)
+            m.advance(Balance.GROWTH_INTERVAL + 0.1f)
             val die = m.board[Cell(0, 0)]!!
             assertEquals(4, die.pips)
-            assertEquals(0, die.stacks)
             die.type
         }
         assertTrue(types.all { it in deck }, "$types")

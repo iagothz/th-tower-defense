@@ -76,7 +76,8 @@ object Balance {
 
     const val MINE_INTERVAL = 5f
     const val MINE_SP_PER_PIP = 10
-    const val GROWTH_INTERVAL = 75f
+    /** Seconds per pip at power level 1; each level divides it by the power multiplier (45 → 34,6 → 28,1 → 22,5 → 18). */
+    const val GROWTH_INTERVAL = 45f
 
     /** LIGHT: attack-speed bonus per pip for each orthogonal neighbour. */
     const val LIGHT_SPEED_PER_PIP = 0.15f

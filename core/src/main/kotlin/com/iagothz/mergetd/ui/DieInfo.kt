@@ -98,8 +98,8 @@ data class DieInfo(val summary: String, val rows: List<Pair<String, String>>) {
             DieType.NOVA -> S.f("o inimigo morto explode com o dano do dado em quem estiver a até %s; quem morrer na explosão também explode", num(Balance.NOVA_RADIUS))
             DieType.LUCK -> S.f("cada ataque causa de 0x a %sx o dano normal (média %sx)", num(Balance.LUCK_MAX_MULT), num(Balance.LUCK_MAX_MULT / 2))
             DieType.VAMPIRE -> S.f("+%d SP por pip a cada inimigo que matar, além da recompensa normal", Balance.VAMPIRE_SP_PER_PIP)
-            DieType.CLONE -> S["arrastado sobre um dado de mesmos pips (ou o contrário), vira uma cópia dele, tipo e pips, e o original continua no lugar; stacks do Caçador não são copiados; dois Clonadores fazem merge normal"]
-            DieType.BOOST -> S["faz merge com qualquer dado de mesmos pips e o resultado é o tipo do outro dado com +1 pip (dois Reforços viram um Reforço)"]
+            DieType.CLONE -> S["arrastado sobre um dado de mesmos pips (ou o contrário), vira uma cópia dele, tipo e pips, e o original continua no lugar; stacks do Caçador não são copiados; entre dois coringas vale o efeito do dado arrastado; dois Clonadores fazem merge normal"]
+            DieType.BOOST -> S["faz merge com qualquer dado de mesmos pips e o resultado é o tipo do outro dado com +1 pip (dois Reforços viram um Reforço; levado a um Clonador, sobe o Clonador)"]
         }
 
         /** What the die gains at the pip cap. */
@@ -144,6 +144,7 @@ data class DieInfo(val summary: String, val rows: List<Pair<String, String>>) {
         private fun powerUp(t: DieType): String {
             val bonus = Balance.POWER_MULT.drop(1).joinToString("/") { "+${pct(it - 1f)}" }
             return when (t) {
+                DieType.GROWTH -> S.f("cresce mais rápido: %s s por pip (níveis 2 a 5)", Balance.POWER_MULT.drop(1).joinToString("/") { num(Balance.GROWTH_INTERVAL / it) })
                 DieType.MINE -> S.f("%s de SP gerado (níveis 2 a 5)", bonus)
                 DieType.POISON -> S.f("%s no dano e no veneno (níveis 2 a 5)", bonus)
                 DieType.TRAP, DieType.NOVA -> S.f("%s no dano das explosões (níveis 2 a 5)", bonus)

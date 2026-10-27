@@ -98,7 +98,7 @@ th-tower-defense/
 | Mina | dourado | Minerador: não ataca; gera `10 × pips × powerMult` SP a cada 5 s |
 | Sniper | roxo | Dano alto e ataque lento; mira o inimigo com mais vida |
 | Espelho | branco | Ataque fraco. Coringa: faz merge com qualquer dado de mesmos pips; o resultado é sorteado do deck, como num merge normal |
-| Crescimento | rosa | A cada 75 s ganha +1 pip e vira um tipo sorteado do deck (pode continuar Crescimento); para em 7 pips; fraco nos outros atributos |
+| Crescimento | rosa | A cada 45 s (dividido pelo multiplicador do power-up: 34,6 / 28,1 / 22,5 / 18 s nos níveis 2 a 5, `Match.growthInterval`) ganha +1 pip e vira um tipo sorteado do deck (pode continuar Crescimento); para em 7 pips; fraco nos outros atributos |
 | Luz | amarelo-claro | Ataque fraco; os vizinhos ortogonais atacam +15% mais rápido por pip da Luz (somam) |
 | Crítico | laranja | Ataque fraco; cada pip dá +3% de chance de crítico (dano x3) a todos os dados, até 60% |
 | Combo | azul | +30% de dano para cada outro Combo no tabuleiro |
@@ -219,6 +219,7 @@ A ordem dos 7 chefes é sorteada por partida (onda 10, 20, 30... seguem a lista;
 - **JUnit 5 no pacote `logic`,** com RNG semeado:
   - custo de compra e casa cheia;
   - merge válido e inválido, máximo de 7 pips;
+  - Entre dois coringas vale o efeito do dado arrastado (`Board.actor`): Reforço sobre Clonador sobe o Clonador, Clonador sobre Reforço clona o Reforço, Espelho sobre Reforço sorteia; dois Clonadores fazem merge normal.
   - Espelho (sorteio), Reforço (tipo garantido) e Clonador (cópia, original fica);
   - Crescimento (vira tipo do deck ao ganhar pip);
   - SP de abates e da Mina;

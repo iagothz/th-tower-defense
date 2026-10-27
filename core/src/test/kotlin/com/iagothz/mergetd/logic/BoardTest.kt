@@ -123,6 +123,34 @@ class BoardTest {
         assertFalse(board(Die(DieType.CLONE, 2), Die(DieType.ICE, 3)).canMerge(a, b))
     }
 
+    /** Between two wildcards, the one being dragged applies its effect to the one it lands on. */
+    @Test
+    fun theDraggedWildcardDecides() {
+        // Boost onto Clone: the Clone grows a pip.
+        val boostOntoClone = board(Die(DieType.BOOST, 2), Die(DieType.CLONE, 2))
+        assertEquals(b, boostOntoClone.resultCell(a, b))
+        assertTrue(boostOntoClone.merge(a, b, deck, rng))
+        assertNull(boostOntoClone[a])
+        assertEquals(DieType.CLONE, boostOntoClone[b]!!.type)
+        assertEquals(3, boostOntoClone[b]!!.pips)
+
+        // Clone onto Boost: a copy of the Boost, which stays put.
+        val cloneOntoBoost = board(Die(DieType.CLONE, 2), Die(DieType.BOOST, 2))
+        assertEquals(a, cloneOntoBoost.resultCell(a, b))
+        assertTrue(cloneOntoBoost.merge(a, b, deck, rng))
+        assertEquals(DieType.BOOST, cloneOntoBoost[a]!!.type)
+        assertEquals(2, cloneOntoBoost[a]!!.pips)
+        assertEquals(DieType.BOOST, cloneOntoBoost[b]!!.type)
+
+        // Mirror onto Boost rolls the deck; Boost onto Mirror keeps the Mirror.
+        val mirrorOntoBoost = board(Die(DieType.MIRROR, 2), Die(DieType.BOOST, 2))
+        assertTrue(mirrorOntoBoost.merge(a, b, deck, rng))
+        assertTrue(mirrorOntoBoost[b]!!.type in deck)
+        val boostOntoMirror = board(Die(DieType.BOOST, 2), Die(DieType.MIRROR, 2))
+        assertTrue(boostOntoMirror.merge(a, b, deck, rng))
+        assertEquals(DieType.MIRROR, boostOntoMirror[b]!!.type)
+    }
+
     @Test
     fun twoClonesMergeNormally() {
         val board = board(Die(DieType.CLONE, 3), Die(DieType.CLONE, 3))
