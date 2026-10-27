@@ -13,11 +13,11 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     private val selected = game.save.deck.toMutableList()
     private var shown = selected.firstOrNull() ?: DieType.FIRE
     private val tiles = DieType.entries.mapIndexed { i, t ->
-        t to Rectangle(40f + (i % 5) * 132f, 950f - (i / 5) * 180f, 112f, 112f)
+        t to Rectangle(34f + (i % COLS) * 112f, 1010f - (i / COLS) * 136f, 92f, 92f)
     }
-    private val panel = Rectangle(24f, 240f, 672f, 470f)
-    private val confirm = Button(Rectangle(40f, 90f, 310f, 110f), "Confirmar")
-    private val back = Button(Rectangle(370f, 90f, 310f, 110f), "Voltar", color = Skin.PANEL)
+    private val panel = Rectangle(24f, 150f, 672f, 400f)
+    private val confirm = Button(Rectangle(40f, 30f, 310f, 100f), "Confirmar")
+    private val back = Button(Rectangle(370f, 30f, 310f, 100f), "Voltar", color = Skin.PANEL)
 
     override fun draw(delta: Float) {
         confirm.enabled = selected.size == DeckCodec.SIZE
@@ -26,10 +26,10 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         for ((t, r) in tiles) {
             if (t in selected) {
                 shapes.color = Color.WHITE
-                shapes.roundedRect(r.x - 8, r.y - 8, r.width + 16, r.height + 16, 22f)
+                shapes.roundedRect(r.x - 6, r.y - 6, r.width + 12, r.height + 12, 20f)
             }
             shapes.color = Skin.color(t)
-            shapes.roundedRect(r.x, r.y, r.width, r.height, 18f)
+            shapes.roundedRect(r.x, r.y, r.width, r.height, 16f)
             if (t == shown) {
                 shapes.color = Skin.pipColor(t)
                 shapes.circle(r.x + r.width / 2, r.y + r.height / 2, 10f, 16)
@@ -44,9 +44,9 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.end()
 
         game.batch.begin()
-        game.batch.textCentered(game.bigFont, "Deck", 360f, 1200f)
-        game.batch.textCentered(game.font, "Escolha 5 dados (${selected.size}/5)", 360f, 1125f)
-        for ((t, r) in tiles) game.batch.textCentered(game.smallFont, Skin.label(t), r.x + r.width / 2, r.y - 24f)
+        game.batch.textCentered(game.bigFont, "Deck", 360f, 1215f)
+        game.batch.textCentered(game.font, "Escolha 5 dados (${selected.size}/5)", 360f, 1145f)
+        for ((t, r) in tiles) game.batch.textCentered(game.smallFont, Skin.label(t), r.x + r.width / 2, r.y - 20f)
         drawInfo()
         confirm.drawText(game.batch, game.font)
         back.drawText(game.batch, game.font)
@@ -60,17 +60,15 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         val valueWidth = panel.width - 48f - keyWidth
         var y = panel.y + panel.height - 36f
 
-        game.font.color = Skin.color(shown)
         game.font.draw(game.batch, Skin.fullName(shown), left, y)
-        game.font.color = Color.WHITE
-        y -= 52f
-        y -= game.smallFont.draw(game.batch, info.summary, left, y, panel.width - 48f, Align.left, true).height + 22f
+        y -= 46f
+        y -= game.smallFont.draw(game.batch, info.summary, left, y, panel.width - 48f, Align.left, true).height + 16f
 
         for ((key, value) in info.rows) {
             game.smallFont.color = KEY_COLOR
             game.smallFont.draw(game.batch, key, left, y)
             game.smallFont.color = Color.WHITE
-            y -= game.smallFont.draw(game.batch, value, left + keyWidth, y, valueWidth, Align.left, true).height + 16f
+            y -= game.smallFont.draw(game.batch, value, left + keyWidth, y, valueWidth, Align.left, true).height + 12f
         }
     }
 
@@ -90,6 +88,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     }
 
     private companion object {
+        const val COLS = 6
         val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
     }
 }

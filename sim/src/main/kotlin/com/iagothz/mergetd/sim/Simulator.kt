@@ -12,14 +12,24 @@ data class GameResult(val wave: Int, val killedBy: EnemyKind?, val deck: List<Di
 
 object Simulator {
     const val MAX_WAVE = 100
+    /** Game-time limit, so a stalemate (enemies held in place forever) can't hang a report. */
+    const val MAX_SECONDS = 4 * 3600f
     private const val ACT_EVERY = 0.5f
 
-    fun play(deck: List<DieType>, bot: (Long) -> Bot, seed: Long, maxWave: Int = MAX_WAVE): GameResult {
+    fun play(
+        deck: List<DieType>,
+        bot: (Long) -> Bot,
+        seed: Long,
+        maxWave: Int = MAX_WAVE,
+        maxSeconds: Float = MAX_SECONDS,
+    ): GameResult {
         val match = Match(deck, Random(seed))
         val player = bot(seed)
         val stepsPerAct = (ACT_EVERY / Balance.STEP).toInt()
         var killedBy: EnemyKind? = null
-        while (!match.isGameOver && match.wave <= maxWave) {
+        var seconds = 0f
+        while (!match.isGameOver && match.wave <= maxWave && seconds < maxSeconds) {
+            seconds += ACT_EVERY
             player.act(match)
             repeat(stepsPerAct) { match.update(Balance.STEP) }
             for (e in match.drainEvents()) if (e is GameEvent.Leaked) killedBy = e.kind

@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.iagothz.mergetd.logic.Die
+import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.Layout
 import com.iagothz.mergetd.logic.Match
 import com.iagothz.mergetd.logic.ShotEvent
@@ -12,7 +13,12 @@ import com.iagothz.mergetd.logic.Vec2
 import kotlin.math.ceil
 
 /** Draws the path, board, enemies and shot traces of a [Match]. */
-class MatchRenderer(private val shapes: ShapeRenderer, private val batch: SpriteBatch, private val font: BitmapFont) {
+class MatchRenderer(
+    private val shapes: ShapeRenderer,
+    private val batch: SpriteBatch,
+    private val font: BitmapFont,
+    private val smallFont: BitmapFont,
+) {
     private class Trace(val shot: ShotEvent, var ttl: Float)
 
     private val traces = mutableListOf<Trace>()
@@ -28,6 +34,7 @@ class MatchRenderer(private val shapes: ShapeRenderer, private val batch: Sprite
     /** Call inside a Filled ShapeRenderer batch. */
     fun drawShapes(match: Match, drag: DragController, effects: Effects) {
         drawPath()
+        drawTraps(match)
         drawBoard(match, drag, effects)
         drawEnemies(match, effects)
         drawTraces()
@@ -42,6 +49,13 @@ class MatchRenderer(private val shapes: ShapeRenderer, private val batch: Sprite
         batch.textCentered(font, "Onda ${match.wave}", 130f, 1210f)
         batch.textCentered(font, "Vidas ${match.lives}", 330f, 1210f)
         batch.textCentered(font, "SP ${match.sp}", 520f, 1210f)
+        // Hunter kill stacks, bottom-right of the die.
+        for ((cell, die) in match.board.occupied()) {
+            if (die.type != DieType.HUNTER || die.stacks == 0) continue
+            val c = Layout.cellCenter(cell)
+            smallFont.color = Color.WHITE
+            batch.textCentered(smallFont, "${die.stacks}", c.x + 38f, c.y - 40f)
+        }
         if (match.waveCountdown > 0f) {
             batch.textCentered(font, "Próxima onda em ${ceil(match.waveCountdown).toInt()}", 360f, 1110f)
         }
@@ -56,6 +70,16 @@ class MatchRenderer(private val shapes: ShapeRenderer, private val batch: Sprite
         shapes.circle(pts.first().x, pts.first().y, 14f, 20)
         shapes.color = Color(0.8f, 0.25f, 0.25f, 1f)
         shapes.circle(pts.last().x, pts.last().y, 14f, 20)
+    }
+
+    private fun drawTraps(match: Match) {
+        for (t in match.traps) {
+            val p = Layout.PATH.positionAt(t.distance)
+            shapes.color = Skin.color(DieType.TRAP)
+            shapes.circle(p.x, p.y, 11f, 16)
+            shapes.color = Color(0.95f, 0.3f, 0.2f, 1f)
+            shapes.circle(p.x, p.y, 4f, 10)
+        }
     }
 
     private fun drawBoard(match: Match, drag: DragController, effects: Effects) {
@@ -92,12 +116,17 @@ class MatchRenderer(private val shapes: ShapeRenderer, private val batch: Sprite
         for (e in match.enemies) {
             val p = Layout.PATH.positionAt(e.distance)
             val r = Skin.enemyRadius(e.kind)
+            if (e.curse > 0f) {
+                shapes.color = Skin.color(DieType.CURSE)
+                shapes.circle(p.x, p.y, r + 8f, 24)
+            }
             if (e.poison.isNotEmpty()) {
                 shapes.color = Color(0.3f, 0.85f, 0.3f, 1f)
                 shapes.circle(p.x, p.y, r + 4f, 24)
             }
             shapes.color = tmp.set(Skin.color(e.kind))
             if (e.slow > 0f) shapes.color = tmp.lerp(0.5f, 0.8f, 1f, 1f, 0.5f)
+            if (e.stunTime > 0f) shapes.color = tmp.lerp(Skin.color(DieType.TIME), 0.6f)
             if (effects.isFlashing(e)) shapes.color = Color.WHITE
             shapes.circle(p.x, p.y, r, 24)
 
@@ -113,10 +142,13 @@ class MatchRenderer(private val shapes: ShapeRenderer, private val batch: Sprite
     private fun drawTraces() {
         for (t in traces) {
             shapes.color = Skin.color(t.shot.type)
+            // Chains hop from hit to hit; a quake strikes every enemy straight from the die.
+            val fan = t.shot.type == DieType.QUAKE
+            val width = if (t.shot.crit) 8f else 4f
             var from = t.shot.from
             for (to in t.shot.to) {
-                shapes.rectLine(from.x, from.y, to.x, to.y, 4f)
-                from = to
+                shapes.rectLine(from.x, from.y, to.x, to.y, width)
+                if (!fan) from = to
             }
         }
     }

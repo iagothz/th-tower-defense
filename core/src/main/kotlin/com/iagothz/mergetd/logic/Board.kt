@@ -40,7 +40,13 @@ class Board {
         }
         this[from] = null
         // A merge can't be used to shake off a Silencer.
-        this[to] = Die(type, a.pips + 1).apply { disabledFor = maxOf(a.disabledFor, b.disabledFor) }
+        this[to] = Die(type, a.pips + 1).apply {
+            disabledFor = maxOf(a.disabledFor, b.disabledFor)
+            // A Hunter keeps the kills of the Hunters that formed it.
+            if (type == DieType.HUNTER) {
+                stacks = minOf(Balance.HUNTER_MAX_STACKS, listOf(a, b).filter { it.type == DieType.HUNTER }.sumOf { it.stacks })
+            }
+        }
         return true
     }
 

@@ -85,7 +85,7 @@ th-tower-defense/
 
 **Recorde:** maior onda alcançada.
 
-## Dados (10 tipos)
+## Dados (23 tipos)
 
 | Tipo | Cor | Efeito |
 |---|---|---|
@@ -95,12 +95,25 @@ th-tower-defense/
 | Elétrico | amarelo | Salta para mais 2 inimigos próximos, com 70% do dano a cada salto |
 | Vento | ciano | Dano baixo e intervalo de ataque muito curto |
 | Ferro | cinza | Dano ×2 contra chefes |
-| Mina | dourado | Não ataca; gera `10 × pips × powerMult` SP a cada 5 s |
+| Mina | dourado | Minerador: não ataca; gera `10 × pips × powerMult` SP a cada 5 s |
 | Sniper | roxo | Dano alto e ataque lento; mira o inimigo com mais vida |
 | Espelho | branco | Ataque fraco. Pode fazer merge com qualquer dado de mesmos pips, e o resultado tem o tipo do outro dado. Dois Espelhos geram um tipo aleatório |
-| Crescimento | rosa | A cada 60 s, ganha +1 pip (máx. 7); fraco nos outros atributos |
+| Crescimento | rosa | A cada 75 s, ganha +1 pip (máx. 7); fraco nos outros atributos |
+| Luz | amarelo-claro | Ataque fraco; os vizinhos ortogonais atacam +15% mais rápido por pip da Luz (somam) |
+| Crítico | laranja | Ataque fraco; cada pip dá +3% de chance de crítico (dano x3) a todos os dados, até 60% |
+| Combo | azul | +30% de dano para cada outro Combo no tabuleiro |
+| Maldição | roxo-escuro | O alvo recebe 15% + 3% × pips a mais de dano de tudo (inclusive veneno) por 3 s; não acumula |
+| Caçador | marrom | +1 stack por abate, +5% de dano por stack (máx. 40); merge de Caçadores soma os stacks se o resultado for Caçador |
+| Gravidade | azul-marinho | Empurra o alvo 40 + 10 × pips para trás; cada inimigo pode ser empurrado no máximo 300 no total (chefes: 25% de tudo) |
+| Tempo | verde-água | Congela o alvo 0,3 + 0,1 × pips s (chefes: metade); não renova um congelamento ativo e deixa o inimigo imune por 1 s depois |
+| Armadilha | oliva | Planta mina 150 à frente do primeiro inimigo; explode quando alguém pisa (raio 60); máx. 3 por dado |
+| Terremoto | bege | Cada ataque acerta todos os inimigos |
+| Ceifador | grafite | Inimigo comum abaixo de 5% + 2% × pips da vida morre na hora |
+| Supernova | magenta | Inimigo morto por ela explode (raio 90) com o dano do dado; mortes na explosão também explodem |
+| Sorte | verde-limão | Dano sorteado de 0x a 4x a cada ataque |
+| Vampiro | vinho | +1 SP por pip a cada abate, além da recompensa |
 
-Os valores base (dano e intervalo) ficam em `Balance.kt`.
+Os valores base (dano e intervalo) ficam em `Balance.kt`. O dado que deu o último golpe recebe o crédito do abate (Vampiro, Caçador, Supernova). Gravidade e Tempo têm limites para nenhum inimigo ficar preso para sempre.
 
 ## Inimigos
 

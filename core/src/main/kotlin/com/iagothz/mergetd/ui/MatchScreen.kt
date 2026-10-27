@@ -20,7 +20,7 @@ class MatchScreen(
 ) : BaseScreen(game) {
     private val match = restored ?: Match(game.save.deck)
     private val drag = DragController(match)
-    private val renderer = MatchRenderer(game.shapes, game.batch, game.font)
+    private val renderer = MatchRenderer(game.shapes, game.batch, game.font, game.smallFont)
     private val buttonTap = Tap<Button>()
     private val effects = Effects()
     private val sounds = SoundPlanner()

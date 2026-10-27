@@ -21,9 +21,25 @@ object Skin {
         DieType.SNIPER to Color(0.60f, 0.40f, 0.85f, 1f),
         DieType.MIRROR to Color(0.92f, 0.92f, 0.95f, 1f),
         DieType.GROWTH to Color(0.95f, 0.50f, 0.75f, 1f),
+        DieType.LIGHT to Color(1.00f, 0.96f, 0.72f, 1f),
+        DieType.CRIT to Color(1.00f, 0.55f, 0.15f, 1f),
+        DieType.COMBO to Color(0.25f, 0.50f, 0.95f, 1f),
+        DieType.CURSE to Color(0.42f, 0.18f, 0.52f, 1f),
+        DieType.HUNTER to Color(0.45f, 0.30f, 0.20f, 1f),
+        DieType.GRAVITY to Color(0.20f, 0.24f, 0.45f, 1f),
+        DieType.TIME to Color(0.45f, 0.90f, 0.72f, 1f),
+        DieType.TRAP to Color(0.50f, 0.55f, 0.25f, 1f),
+        DieType.QUAKE to Color(0.78f, 0.58f, 0.38f, 1f),
+        DieType.REAPER to Color(0.22f, 0.22f, 0.26f, 1f),
+        DieType.NOVA to Color(0.92f, 0.40f, 0.85f, 1f),
+        DieType.LUCK to Color(0.58f, 0.86f, 0.30f, 1f),
+        DieType.VAMPIRE to Color(0.62f, 0.10f, 0.16f, 1f),
     )
 
-    private val lightDice = setOf(DieType.ICE, DieType.ELECTRIC, DieType.MIRROR, DieType.WIND)
+    private val lightDice = setOf(
+        DieType.ICE, DieType.ELECTRIC, DieType.MIRROR, DieType.WIND,
+        DieType.LIGHT, DieType.TIME, DieType.LUCK, DieType.QUAKE,
+    )
 
     private val labels = mapOf(
         DieType.FIRE to "Fogo",
@@ -36,6 +52,27 @@ object Skin {
         DieType.SNIPER to "Sniper",
         DieType.MIRROR to "Espelho",
         DieType.GROWTH to "Cresc.",
+        DieType.LIGHT to "Luz",
+        DieType.CRIT to "Crítico",
+        DieType.COMBO to "Combo",
+        DieType.CURSE to "Maldição",
+        DieType.HUNTER to "Caçador",
+        DieType.GRAVITY to "Gravid.",
+        DieType.TIME to "Tempo",
+        DieType.TRAP to "Armad.",
+        DieType.QUAKE to "Terrem.",
+        DieType.REAPER to "Ceifador",
+        DieType.NOVA to "Nova",
+        DieType.LUCK to "Sorte",
+        DieType.VAMPIRE to "Vampiro",
+    )
+
+    private val fullNames = mapOf(
+        DieType.GROWTH to "Crescimento",
+        DieType.GRAVITY to "Gravidade",
+        DieType.TRAP to "Armadilha",
+        DieType.QUAKE to "Terremoto",
+        DieType.NOVA to "Supernova",
     )
 
     private val enemyColors = mapOf(
@@ -56,7 +93,7 @@ object Skin {
     fun label(t: DieType): String = labels.getValue(t)
 
     /** Unabbreviated name, for places with room for it. */
-    fun fullName(t: DieType): String = if (t == DieType.GROWTH) "Crescimento" else label(t)
+    fun fullName(t: DieType): String = fullNames[t] ?: label(t)
 
     fun enemyRadius(k: EnemyKind): Float = when {
         k.isBoss -> 32f

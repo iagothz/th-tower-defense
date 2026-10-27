@@ -9,7 +9,7 @@ Tower defense de merge no estilo Random Dice, para jogar offline no Android. Fei
 - Gaste SP nos botões de baixo para aumentar o dano de um tipo (níveis 1 a 5).
 - As ondas são infinitas, com um chefe a cada 10 ondas. Você tem 3 vidas; o recorde é a maior onda alcançada.
 - Se você trocar de app no meio da partida, o jogo pausa e salva. Mesmo que o Android feche o jogo, ao abrir de novo a partida volta de onde parou.
-- Na tela **Deck**, escolha 5 dos 10 tipos de dado. Tocar num dado mostra o que ele faz: alvo, dano, velocidade, efeito e power-up.
+- Na tela **Deck**, escolha 5 dos 23 tipos de dado. Tocar num dado mostra o que ele faz: alvo, dano, velocidade, efeito e power-up.
 
 ## Requisitos
 

@@ -65,4 +65,21 @@ class MatchSnapshotTest {
         assertNull(Match.restore(midWave().snapshot().replace("sniper", "laser")))
         assertNull(Match.restore(midWave().snapshot().lines().dropLast(3).joinToString("\n") + "\nenemy=BOSS"))
     }
+
+    @Test
+    fun roundTripKeepsNewDiceState() {
+        val m = Match(listOf(DieType.TRAP, DieType.HUNTER, DieType.CURSE, DieType.TIME, DieType.FIRE), Random(2))
+        m.board[Cell(1, 2)] = Die(DieType.TRAP, 2)
+        m.board[Cell(0, 0)] = Die(DieType.HUNTER, 3).apply { stacks = 17 }
+        m.debugAddEnemy(Enemy(EnemyKind.TANK, 500f).apply { distance = 300f; curse = 0.2f; curseTime = 1.5f; stunTime = 99f })
+        m.update(Balance.STEP)
+        assertEquals(1, m.traps.size)
+        val restored = assertNotNull(Match.restore(m.snapshot()))
+        assertEquals(m.snapshot(), restored.snapshot())
+        assertEquals(17, restored.board[Cell(0, 0)]!!.stacks)
+        assertEquals(m.traps.single().distance, restored.traps.single().distance)
+        val e = restored.enemies.single()
+        assertEquals(0.2f, e.curse)
+        assertTrue(e.stunTime > 90f)
+    }
 }

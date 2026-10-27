@@ -27,4 +27,12 @@ class SimulatorTest {
         val r = Simulator.play(DeckCodec.DEFAULT, { SmartBot() }, seed = 5, maxWave = 2)
         assertTrue(r.wave <= 3)
     }
+
+    @Test
+    fun gameTimeLimitStopsAStalledGame() {
+        // A bot that never acts on a board with no dice still loses; a 10 s limit must end it first.
+        val r = Simulator.play(DeckCodec.DEFAULT, { object : Bot { override fun act(m: com.iagothz.mergetd.logic.Match) = Unit } }, seed = 1, maxSeconds = 10f)
+        assertEquals(1, r.wave)
+        assertEquals(null, r.killedBy)
+    }
 }

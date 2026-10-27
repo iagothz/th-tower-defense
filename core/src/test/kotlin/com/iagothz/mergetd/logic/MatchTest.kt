@@ -171,7 +171,7 @@ class MatchTest {
         m.lives = 1000
         m.board[Cell(0, 0)] = Die(DieType.GROWTH, 1)
         m.board[Cell(0, 1)] = Die(DieType.GROWTH, 7)
-        m.advance(59.9f)
+        m.advance(74.9f)
         assertEquals(1, m.board[Cell(0, 0)]!!.pips)
         m.advance(0.2f)
         assertEquals(2, m.board[Cell(0, 0)]!!.pips)

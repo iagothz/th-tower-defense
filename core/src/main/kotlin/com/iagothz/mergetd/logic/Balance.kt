@@ -54,7 +54,45 @@ object Balance {
 
     const val MINE_INTERVAL = 5f
     const val MINE_SP_PER_PIP = 10
-    const val GROWTH_INTERVAL = 60f
+    const val GROWTH_INTERVAL = 75f
+
+    /** LIGHT: attack-speed bonus per pip for each orthogonal neighbour. */
+    const val LIGHT_SPEED_PER_PIP = 0.15f
+    /** CRIT: crit chance per pip, shared by every die on the board. */
+    const val CRIT_CHANCE_PER_PIP = 0.03f
+    const val CRIT_MAX = 0.6f
+    const val CRIT_MULT = 3f
+    /** COMBO: damage bonus for each other COMBO die on the board. */
+    const val COMBO_BONUS = 0.3f
+    /** CURSE: extra damage taken = BASE + PER_PIP × pips (18% at 1 pip, 36% at 7). */
+    const val CURSE_BASE = 0.15f
+    const val CURSE_PER_PIP = 0.03f
+    const val CURSE_DURATION = 3f
+    const val HUNTER_BONUS_PER_STACK = 0.05f
+    const val HUNTER_MAX_STACKS = 40
+    /** GRAVITY: path units pushed back = BASE + PER_PIP × pips, × BOSS_FACTOR for bosses. */
+    const val GRAVITY_PUSH_BASE = 40f
+    const val GRAVITY_PUSH_PER_PIP = 10f
+    const val GRAVITY_BOSS_FACTOR = 0.25f
+    /** Total push one enemy can take (× BOSS_FACTOR for bosses), so Gravity can't hold anyone forever. */
+    const val GRAVITY_MAX_PUSH = 300f
+    /** TIME: stun seconds = BASE + PER_PIP × pips, × BOSS_FACTOR for bosses. */
+    const val TIME_STUN_BASE = 0.3f
+    const val TIME_STUN_PER_PIP = 0.1f
+    const val TIME_BOSS_FACTOR = 0.5f
+    /** After a stun ends the enemy can't be stunned again for this long. */
+    const val STUN_IMMUNITY = 1f
+    /** TRAP: planted this far ahead of the leading enemy; goes off when an enemy is within TRIGGER of it. */
+    const val TRAP_AHEAD = 150f
+    const val TRAP_TRIGGER = 16f
+    const val TRAP_RADIUS = 60f
+    const val TRAP_MAX_PER_DIE = 3
+    /** REAPER: kills a non-boss left under BASE + PER_PIP × pips of its max HP. */
+    const val REAPER_BASE = 0.05f
+    const val REAPER_PER_PIP = 0.02f
+    const val NOVA_RADIUS = 90f
+    const val LUCK_MAX_MULT = 4f
+    const val VAMPIRE_SP_PER_PIP = 1
 
     fun powerMult(level: Int): Float = POWER_MULT[level - 1]
 
@@ -69,5 +107,18 @@ object Balance {
         DieType.SNIPER -> DieStats(60f, 2.5f)
         DieType.MIRROR -> DieStats(12f, 1.0f)
         DieType.GROWTH -> DieStats(8f, 1.0f)
+        DieType.LIGHT -> DieStats(8f, 1.0f)
+        DieType.CRIT -> DieStats(10f, 1.0f)
+        DieType.COMBO -> DieStats(12f, 1.0f)
+        DieType.CURSE -> DieStats(6f, 1.0f)
+        DieType.HUNTER -> DieStats(12f, 1.0f)
+        DieType.GRAVITY -> DieStats(8f, 1.5f)
+        DieType.TIME -> DieStats(8f, 1.2f)
+        DieType.TRAP -> DieStats(30f, 2.5f)
+        DieType.QUAKE -> DieStats(6f, 2.0f)
+        DieType.REAPER -> DieStats(15f, 1.2f)
+        DieType.NOVA -> DieStats(18f, 1.2f)
+        DieType.LUCK -> DieStats(10f, 1.0f)
+        DieType.VAMPIRE -> DieStats(14f, 1.0f)
     }
 }

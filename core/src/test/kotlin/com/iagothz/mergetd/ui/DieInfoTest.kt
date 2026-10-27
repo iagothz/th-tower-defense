@@ -27,7 +27,8 @@ class DieInfoTest {
         assertTrue("20%" in ice && "50%" in ice && "2 s" in ice, ice)
         val poison = row(DieType.POISON, "Efeito")!!
         assertTrue("8 de dano/s por pip" in poison && "3 s" in poison && "5" in poison, poison)
-        assertTrue("60 s" in row(DieType.GROWTH, "Efeito")!!)
+        assertTrue("75 s" in row(DieType.GROWTH, "Efeito")!!)
+        assertEquals("Inimigo mais à frente", row(DieType.LIGHT, "Alvo"))
         assertEquals("Inimigo com mais vida", row(DieType.SNIPER, "Alvo"))
     }
 

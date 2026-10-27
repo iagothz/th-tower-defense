@@ -1,7 +1,11 @@
 package com.iagothz.mergetd.logic
 
+import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.random.Random
+
+/** A TRAP mine waiting on the path; [owner] is credited with its kills. */
+class Trap(val distance: Float, val damage: Float, val owner: Die?)
 
 class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
     val board = Board()
@@ -18,6 +22,9 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
     val lastShots: List<ShotEvent> get() = shots
 
     private val events = mutableListOf<GameEvent>()
+
+    private val trapList = mutableListOf<Trap>()
+    val traps: List<Trap> get() = trapList
 
     private var purchases = 0
     private val powerLevels = mutableMapOf<DieType, Int>()
@@ -38,6 +45,28 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
     fun powerUpCost(t: DieType): Int? = Balance.POWER_COSTS.getOrNull(powerLevel(t) - 1)
 
     fun powerMult(t: DieType): Float = Balance.powerMult(powerLevel(t))
+
+    /** Attack-speed factor for the die in [cell] from active LIGHT dice next to it. */
+    fun speedMultiplier(cell: Cell): Float {
+        val neighbours = listOf(
+            Cell(cell.row - 1, cell.col), Cell(cell.row + 1, cell.col),
+            Cell(cell.row, cell.col - 1), Cell(cell.row, cell.col + 1),
+        ).filter { it.row in 0 until Balance.ROWS && it.col in 0 until Balance.COLS }
+        val lightPips = neighbours.mapNotNull { board[it] }
+            .filter { it.type == DieType.LIGHT && !it.disabled }
+            .sumOf { it.pips }
+        return 1 + Balance.LIGHT_SPEED_PER_PIP * lightPips
+    }
+
+    /** Board-wide bonuses: crit chance from active CRIT dice and the number of COMBO dice. */
+    fun attackBonus(): AttackBonus {
+        val dice = board.occupied().map { it.second }
+        val critPips = dice.filter { it.type == DieType.CRIT && !it.disabled }.sumOf { it.pips }
+        return AttackBonus(
+            critChance = minOf(Balance.CRIT_MAX, Balance.CRIT_CHANCE_PER_PIP * critPips),
+            comboCount = dice.count { it.type == DieType.COMBO },
+        )
+    }
 
     fun canBuy(): Boolean = !isGameOver && sp >= buyCost && board.emptyCells().isNotEmpty()
 
@@ -103,13 +132,14 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
         line("power", powerLevels.entries.joinToString(",") { "${it.key.id}:${it.value}" })
         line("queue", spawnQueue.joinToString(",") { it.name })
         for ((c, d) in board.occupied()) {
-            line("die", listOf(c.row, c.col, d.type.id, d.pips, d.cooldown, d.timer, d.disabledFor).joinToString(","))
+            line("die", listOf(c.row, c.col, d.type.id, d.pips, d.cooldown, d.timer, d.disabledFor, d.stacks).joinToString(","))
         }
         for (e in enemyList) {
-            val fields = listOf(e.kind.name, e.maxHp, e.hp, e.distance, e.slow, e.slowTime, e.abilityTimer) +
+            val fields = listOf(e.kind.name, e.maxHp, e.hp, e.distance, e.slow, e.slowTime, e.abilityTimer, e.curse, e.curseTime, e.stunTime, e.stunImmune, e.pushed) +
                 e.poison.map { "${it.dps}:${it.remaining}" }
             line("enemy", fields.joinToString(","))
         }
+        for (t in trapList) line("trap", "${t.distance},${t.damage}")
     }
 
     internal fun debugStartWave(n: Int) {
@@ -150,6 +180,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
     private fun step(dt: Float) {
         updateSpawner(dt)
         moveEnemies(dt)
+        triggerTraps()
         bossAbilities(dt)
         updateDice(dt)
         removeDead()
@@ -210,6 +241,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
     }
 
     private fun updateDice(dt: Float) {
+        val bonus = attackBonus()
         for ((cell, die) in board.occupied()) {
             if (die.disabled) {
                 die.disabledFor -= dt
@@ -232,37 +264,80 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
                 }
                 else -> Unit
             }
-            if (die.type.attacks) attack(cell, die, dt)
+            if (die.type.attacks) attack(cell, die, dt, bonus)
         }
     }
 
-    private fun attack(cell: Cell, die: Die, dt: Float) {
+    private fun attack(cell: Cell, die: Die, dt: Float, bonus: AttackBonus) {
         die.cooldown -= dt
         if (die.cooldown > 0f) return
-        val shot = Combat.attack(die, Layout.cellCenter(cell), powerLevel(die.type), enemyList, Layout.PATH)
-        if (shot == null) {
-            die.cooldown = 0f
+        val fired = if (die.type == DieType.TRAP) {
+            plantTrap(die)
         } else {
-            die.cooldown += Combat.attackInterval(die.type, die.pips)
-            shots += shot
-            shot.damage.forEach { (enemy, amount) -> events += GameEvent.Hit(enemy, amount) }
+            val shot = Combat.attack(die, Layout.cellCenter(cell), powerLevel(die.type), enemyList, Layout.PATH, bonus, rng)
+            if (shot != null) {
+                shots += shot
+                shot.damage.forEach { (enemy, amount) -> events += GameEvent.Hit(enemy, amount) }
+            }
+            shot != null
+        }
+        if (fired) {
+            die.cooldown += Combat.attackInterval(die.type, die.pips) / speedMultiplier(cell)
+        } else {
+            die.cooldown = 0f
         }
     }
 
-    private fun removeDead() {
-        val iter = enemyList.iterator()
+    /** Plants a mine ahead of the leading enemy, up to the per-die cap. */
+    private fun plantTrap(die: Die): Boolean {
+        val leader = enemyList.filter { it.alive }.maxByOrNull { it.distance } ?: return false
+        if (trapList.count { it.owner === die } >= Balance.TRAP_MAX_PER_DIE) return false
+        val at = minOf(leader.distance + Balance.TRAP_AHEAD, Layout.PATH.length - 1f)
+        trapList += Trap(at, Combat.baseDamage(DieType.TRAP, die.pips, powerLevel(DieType.TRAP)), die)
+        return true
+    }
+
+    private fun triggerTraps() {
+        val iter = trapList.iterator()
         while (iter.hasNext()) {
-            val e = iter.next()
-            if (!e.alive) {
+            val trap = iter.next()
+            if (enemyList.none { it.alive && abs(it.distance - trap.distance) <= Balance.TRAP_TRIGGER }) continue
+            iter.remove()
+            blast(Layout.PATH.positionAt(trap.distance), Balance.TRAP_RADIUS, trap.damage, trap.owner)
+        }
+    }
+
+    /** Area damage around [center], credited to [by]. */
+    private fun blast(center: Vec2, radius: Float, damage: Float, by: Die?) {
+        for (e in enemyList) {
+            if (!e.alive || Layout.PATH.positionAt(e.distance).dst(center) > radius) continue
+            events += GameEvent.Hit(e, e.takeDamage(damage, by))
+        }
+    }
+
+    /** Pays rewards and kill effects; repeats while Supernova explosions keep killing. */
+    private fun removeDead() {
+        while (true) {
+            val dead = enemyList.filter { !it.alive }
+            if (dead.isEmpty()) return
+            enemyList.removeAll { !it.alive }
+            for (e in dead) {
+                val at = Layout.PATH.positionAt(e.distance)
                 sp += e.kind.reward
-                events += GameEvent.Killed(e.kind, Layout.PATH.positionAt(e.distance))
-                iter.remove()
+                events += GameEvent.Killed(e.kind, at)
+                val killer = e.lastHit ?: continue
+                when (killer.type) {
+                    DieType.VAMPIRE -> sp += Balance.VAMPIRE_SP_PER_PIP * killer.pips
+                    DieType.HUNTER -> killer.stacks = minOf(Balance.HUNTER_MAX_STACKS, killer.stacks + 1)
+                    DieType.NOVA -> blast(at, Balance.NOVA_RADIUS, Combat.baseDamage(DieType.NOVA, killer.pips, powerLevel(DieType.NOVA)), killer)
+                    else -> Unit
+                }
             }
         }
     }
 
     companion object {
-        private const val SNAPSHOT_VERSION = 1
+        private const val SNAPSHOT_VERSION = 2
 
         /** Rebuilds a match from [snapshot] text; null if the text is damaged or from another version. */
         fun restore(text: String, rng: Random = Random.Default): Match? =
@@ -304,6 +379,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
                         cooldown = f[4].toFloat()
                         timer = f[5].toFloat()
                         disabledFor = f[6].toFloat()
+                        stacks = f[7].toInt()
                     }
                     "enemy" -> m.enemyList += Enemy(EnemyKind.valueOf(f[0]), f[1].toFloat()).apply {
                         hp = f[2].toFloat()
@@ -311,11 +387,17 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
                         slow = f[4].toFloat()
                         slowTime = f[5].toFloat()
                         abilityTimer = f[6].toFloat()
-                        for (stack in f.drop(7)) {
+                        curse = f[7].toFloat()
+                        curseTime = f[8].toFloat()
+                        stunTime = f[9].toFloat()
+                        stunImmune = f[10].toFloat()
+                        pushed = f[11].toFloat()
+                        for (stack in f.drop(12)) {
                             val (dps, remaining) = stack.split(":")
                             poison += PoisonStack(dps.toFloat(), remaining.toFloat())
                         }
                     }
+                    "trap" -> m.trapList += Trap(f[0].toFloat(), f[1].toFloat(), null)
                 }
             }
             return m
