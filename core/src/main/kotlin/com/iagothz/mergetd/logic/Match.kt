@@ -5,7 +5,7 @@ import kotlin.math.roundToInt
 import kotlin.random.Random
 
 /** A TRAP mine waiting on the path; [owner] is credited with its kills. */
-class Trap(val distance: Float, val damage: Float, val owner: Die?)
+class Trap(val distance: Float, val damage: Float, val owner: Die?, val radius: Float = Balance.TRAP_RADIUS)
 
 /** [challengeDay] is set for a daily challenge (its day since the epoch); it changes only how the result is booked. */
 class Match(
@@ -13,11 +13,12 @@ class Match(
     private val rng: Random = Random.Default,
     val map: GameMap = GameMap.DEFAULT,
     val challengeDay: Int? = null,
+    val mode: GameMode = GameMode.NORMAL,
 ) {
     val board = Board()
     val path: EnemyPath get() = map.path
-    var sp = Balance.START_SP
-    var lives = Balance.START_LIVES
+    var sp = Balance.START_SP * (if (mode == GameMode.SURVIVAL) Balance.SURVIVAL_SP else 1)
+    var lives = if (mode == GameMode.SURVIVAL) 1 else Balance.START_LIVES
     var wave = 0
         private set
 
@@ -45,7 +46,9 @@ class Match(
     private val powerLevels = mutableMapOf<DieType, Int>()
 
     private var inWave = false
-    private var countdown = Balance.WAVE_DELAY
+    /** Pause between waves; Rápido cuts it. */
+    val waveDelay: Float get() = Balance.WAVE_DELAY * (if (mode == GameMode.RUSH) Balance.RUSH_DELAY else 1f)
+    private var countdown = waveDelay
     private val spawnQueue = ArrayDeque<EnemyKind>()
     private var spawnTimer = 0f
     private var accumulator = 0f
@@ -61,25 +64,37 @@ class Match(
 
     fun powerMult(t: DieType): Float = Balance.powerMult(powerLevel(t))
 
-    /** Attack-speed factor for the die in [cell] from active LIGHT dice next to it. */
+    /** Attack-speed factor for the die in [cell] from active LIGHT dice next to it; a 7-pip Light also reaches diagonals. */
     fun speedMultiplier(cell: Cell): Float {
-        val neighbours = listOf(
-            Cell(cell.row - 1, cell.col), Cell(cell.row + 1, cell.col),
-            Cell(cell.row, cell.col - 1), Cell(cell.row, cell.col + 1),
-        ).filter { it.row in 0 until Balance.ROWS && it.col in 0 until Balance.COLS }
-        val lightPips = neighbours.mapNotNull { board[it] }
-            .filter { it.type == DieType.LIGHT && !it.disabled }
-            .sumOf { it.pips }
+        fun light(dr: Int, dc: Int, diagonal: Boolean): Int {
+            val c = Cell(cell.row + dr, cell.col + dc)
+            if (c.row !in 0 until Balance.ROWS || c.col !in 0 until Balance.COLS) return 0
+            val d = board[c] ?: return 0
+            if (d.type != DieType.LIGHT || d.disabled || (diagonal && d.pips < Balance.MAX_PIPS)) return 0
+            return d.pips
+        }
+        val lightPips = light(-1, 0, false) + light(1, 0, false) + light(0, -1, false) + light(0, 1, false) +
+            light(-1, -1, true) + light(-1, 1, true) + light(1, -1, true) + light(1, 1, true)
         return 1 + Balance.LIGHT_SPEED_PER_PIP * lightPips
     }
 
-    /** Board-wide bonuses: crit chance from active CRIT dice and the number of COMBO dice. */
+    /** Synergies switched on by the dice standing (and not silenced) on the board. */
+    fun synergies(): Set<Synergy> = Synergy.active(board.occupied().map { it.second }.filter { !it.disabled }.map { it.type })
+
+    /** Board-wide bonuses: crit chance and multiplier, COMBO count, synergies, strongest damage for a 7-pip Mirror. */
     fun attackBonus(): AttackBonus {
         val dice = board.occupied().map { it.second }
-        val critPips = dice.filter { it.type == DieType.CRIT && !it.disabled }.sumOf { it.pips }
+        val active = dice.filter { !it.disabled }
+        val syn = synergies()
+        val critPips = active.filter { it.type == DieType.CRIT }.sumOf { it.pips }
+        val dazzle = if (Synergy.DAZZLE in syn) Balance.DAZZLE_CRIT else 0f
         return AttackBonus(
-            critChance = minOf(Balance.CRIT_MAX, Balance.CRIT_CHANCE_PER_PIP * critPips),
-            comboCount = dice.count { it.type == DieType.COMBO },
+            critChance = minOf(Balance.CRIT_MAX, Balance.CRIT_CHANCE_PER_PIP * critPips + dazzle),
+            comboCount = dice.count { it.type == DieType.COMBO } + dice.count { it.type == DieType.COMBO && it.pips >= Balance.MAX_PIPS },
+            critMult = if (active.any { it.type == DieType.CRIT && it.pips >= Balance.MAX_PIPS }) Balance.CRIT_MULT_MAX else Balance.CRIT_MULT,
+            synergies = syn,
+            strongestDamage = active.filter { it.type.attacks && it.type != DieType.MIRROR }
+                .maxOfOrNull { Combat.baseDamage(it.type, it.pips, powerLevel(it.type)) } ?: 0f,
         )
     }
 
@@ -159,6 +174,7 @@ class Match(
         line("deck", DeckCodec.encode(deck))
         line("map", map.id)
         line("daily", challengeDay ?: -1)
+        line("mode", mode.id)
         line("bosses", bossOrder.joinToString(",") { it.name })
         line("wave", wave)
         line("sp", sp)
@@ -178,7 +194,7 @@ class Match(
                 e.poison.map { "${it.dps}:${it.remaining}" }
             line("enemy", fields.joinToString(","))
         }
-        for (t in trapList) line("trap", "${t.distance},${t.damage}")
+        for (t in trapList) line("trap", "${t.distance},${t.damage},${t.radius}")
     }
 
     internal fun debugStartWave(n: Int) {
@@ -214,9 +230,10 @@ class Match(
         wave = n
         inWave = true
         spawnQueue.clear()
-        spawnQueue.addAll(WaveSpawner.composition(n, bossOrder))
+        spawnQueue.addAll(WaveSpawner.composition(n, bossOrder, mode))
         spawnTimer = 0f
-        events += GameEvent.WaveStarted(n, WaveSpawner.isBossWave(n), WaveSpawner.special(n), spawnQueue.firstOrNull()?.takeIf { it.isBoss })
+        val boss = spawnQueue.firstOrNull()?.takeIf { it.isBoss }
+        events += GameEvent.WaveStarted(n, boss != null, WaveSpawner.special(n), boss)
     }
 
     private fun step(dt: Float) {
@@ -242,17 +259,23 @@ class Match(
         spawnTimer -= dt
         if (spawnQueue.isNotEmpty() && spawnTimer <= 0f) {
             spawn(spawnQueue.removeFirst())
-            spawnTimer += Balance.SPAWN_INTERVAL
+            spawnTimer += Balance.SPAWN_INTERVAL * (if (mode == GameMode.RUSH) Balance.RUSH_SPAWN else 1f)
         }
         if (spawnQueue.isEmpty() && enemyList.isEmpty()) {
             inWave = false
-            countdown = Balance.WAVE_DELAY
+            countdown = waveDelay
         }
     }
 
     private fun spawn(kind: EnemyKind) {
-        enemyList += Enemy(kind, WaveSpawner.enemyHp(wave, kind) * WaveSpawner.hpScale(wave)).apply {
+        val modeHp = when {
+            mode == GameMode.BOSS_RUSH && kind.isBoss -> Balance.BOSS_RUSH_HP
+            mode == GameMode.RUSH -> Balance.RUSH_HP
+            else -> 1f
+        }
+        enemyList += Enemy(kind, WaveSpawner.enemyHp(wave, kind) * WaveSpawner.hpScale(wave) * modeHp).apply {
             if (kind == EnemyKind.BOSS_ARMORED) armor = Balance.ARMOR_FRACTION * WaveSpawner.enemyHp(wave, EnemyKind.NORMAL)
+            speedScale = if (mode == GameMode.RUSH) Balance.RUSH_SPEED else 1f
         }
     }
 
@@ -331,7 +354,19 @@ class Match(
                     die.timer += dt
                     if (die.timer >= Balance.MINE_INTERVAL) {
                         die.timer -= Balance.MINE_INTERVAL
-                        sp += (Balance.MINE_SP_PER_PIP * die.pips * powerMult(die.type)).roundToInt()
+                        val maxed = if (die.pips >= Balance.MAX_PIPS) 2 else 1
+                        sp += (Balance.MINE_SP_PER_PIP * die.pips * powerMult(die.type)).roundToInt() * maxed
+                    }
+                }
+                DieType.BOOST -> if (die.pips >= Balance.MAX_PIPS) {
+                    // A 7-pip Boost hands out a free power level now and then.
+                    die.timer += dt
+                    if (die.timer >= Balance.BOOST_INTERVAL) {
+                        die.timer -= Balance.BOOST_INTERVAL
+                        deck.filter { powerUpCost(it) != null }.randomOrNull(rng)?.let { t ->
+                            powerLevels[t] = powerLevel(t) + 1
+                            events += GameEvent.PoweredUp(t)
+                        }
                     }
                 }
                 DieType.GROWTH -> {
@@ -341,7 +376,12 @@ class Match(
                         board[cell] = Die(deck.random(rng), die.pips + 1).apply { disabledFor = die.disabledFor }
                         continue
                     } else if (die.timer >= Balance.GROWTH_INTERVAL) {
+                        // At 7 pips it plants a new 1-pip die from the deck instead.
                         die.timer -= Balance.GROWTH_INTERVAL
+                        board.emptyCells().randomOrNull(rng)?.let { empty ->
+                            board[empty] = Die(deck.random(rng), 1)
+                            events += GameEvent.DieBought(empty)
+                        }
                     }
                 }
                 else -> Unit
@@ -373,19 +413,22 @@ class Match(
     /** Plants a mine ahead of the leading enemy, up to the per-die cap. */
     private fun plantTrap(die: Die): Boolean {
         val leader = enemyList.filter { it.alive }.maxByOrNull { it.distance } ?: return false
-        if (trapList.count { it.owner === die } >= Balance.TRAP_MAX_PER_DIE) return false
+        val maxed = die.pips >= Balance.MAX_PIPS
+        if (trapList.count { it.owner === die } >= (if (maxed) Balance.TRAP_MAX_PER_DIE_MAX else Balance.TRAP_MAX_PER_DIE)) return false
         val at = minOf(leader.distance + Balance.TRAP_AHEAD, path.length - 1f)
-        trapList += Trap(at, Combat.baseDamage(DieType.TRAP, die.pips, powerLevel(DieType.TRAP)), die)
+        val radius = Balance.TRAP_RADIUS * (if (maxed) Balance.TRAP_MAX_RADIUS else 1f)
+        trapList += Trap(at, Combat.baseDamage(DieType.TRAP, die.pips, powerLevel(DieType.TRAP)), die, radius)
         return true
     }
 
     private fun triggerTraps() {
         val iter = trapList.iterator()
+        val trigger = Balance.TRAP_TRIGGER * (if (Synergy.AMBUSH in synergies()) Balance.AMBUSH_TRIGGER else 1f)
         while (iter.hasNext()) {
             val trap = iter.next()
-            if (enemyList.none { it.alive && it.kind != EnemyKind.GHOST && abs(it.distance - trap.distance) <= Balance.TRAP_TRIGGER }) continue
+            if (enemyList.none { it.alive && it.kind != EnemyKind.GHOST && abs(it.distance - trap.distance) <= trigger }) continue
             iter.remove()
-            blast(path.positionAt(trap.distance), Balance.TRAP_RADIUS, trap.damage, trap.owner, DieType.TRAP)
+            blast(path.positionAt(trap.distance), trap.radius, trap.damage, trap.owner, DieType.TRAP)
         }
     }
 
@@ -408,7 +451,7 @@ class Match(
             enemyList.removeAll { !it.alive }
             for (e in dead) {
                 val at = path.positionAt(e.distance)
-                sp += e.kind.reward + e.stolen
+                sp += e.kind.reward * (if (mode == GameMode.SURVIVAL) Balance.SURVIVAL_SP else 1) + e.stolen
                 events += GameEvent.Killed(e.kind, at)
                 if (e.kind == EnemyKind.BOSS_SPLITTER) {
                     for (side in listOf(-1f, 1f)) {
@@ -419,9 +462,17 @@ class Match(
                 }
                 val killer = e.lastHit ?: continue
                 when (killer.type) {
-                    DieType.VAMPIRE -> sp += Balance.VAMPIRE_SP_PER_PIP * killer.pips
+                    DieType.VAMPIRE -> {
+                        val maxed = killer.pips >= Balance.MAX_PIPS
+                        sp += Balance.VAMPIRE_SP_PER_PIP * killer.pips * (if (maxed) 2 else 1)
+                        killer.stacks++
+                        if (maxed && killer.stacks % Balance.VAMPIRE_LIFE_KILLS == 0) lives = minOf(Balance.MAX_LIVES, lives + 1)
+                    }
                     DieType.HUNTER -> if (killer.stacks < Balance.hunterCap(killer.pips)) killer.stacks++
-                    DieType.NOVA -> blast(at, Balance.NOVA_RADIUS, Combat.baseDamage(DieType.NOVA, killer.pips, powerLevel(DieType.NOVA)), killer, DieType.NOVA)
+                    DieType.NOVA -> {
+                        val boost = if (killer.pips >= Balance.MAX_PIPS) Balance.NOVA_MAX else 1f
+                        blast(at, Balance.NOVA_RADIUS * boost, Combat.baseDamage(DieType.NOVA, killer.pips, powerLevel(DieType.NOVA)) * boost, killer, DieType.NOVA)
+                    }
                     else -> Unit
                 }
             }
@@ -429,7 +480,7 @@ class Match(
     }
 
     companion object {
-        private const val SNAPSHOT_VERSION = 3
+        private const val SNAPSHOT_VERSION = 4
 
         /** Rebuilds a match from [snapshot] text; null if the text is damaged or from another version. */
         fun restore(text: String, rng: Random = Random.Default): Match? =
@@ -453,7 +504,8 @@ class Match(
             // Saves from before maps have no "map" line and were always played on the default map.
             val map = scalars["map"]?.let { requireNotNull(GameMap.byId(it)) { "unknown map $it" } } ?: GameMap.DEFAULT
             val daily = scalars["daily"]?.toInt()?.takeIf { it >= 0 }
-            val m = Match(scalars.getValue("deck").split(",").map(::type), rng, map, daily)
+            val mode = scalars["mode"]?.let { requireNotNull(GameMode.byId(it)) { "unknown mode $it" } } ?: GameMode.NORMAL
+            val m = Match(scalars.getValue("deck").split(",").map(::type), rng, map, daily, mode)
             m.wave = scalars.getValue("wave").toInt()
             m.sp = scalars.getValue("sp").toInt()
             m.lives = scalars.getValue("lives").toInt()
@@ -490,12 +542,13 @@ class Match(
                         pushed = f[11].toFloat()
                         stolen = f[12].toInt()
                         armor = f[13].toFloat()
+                        speedScale = if (mode == GameMode.RUSH) Balance.RUSH_SPEED else 1f
                         for (stack in f.drop(14)) {
                             val (dps, remaining) = stack.split(":")
                             poison += PoisonStack(dps.toFloat(), remaining.toFloat())
                         }
                     }
-                    "trap" -> m.trapList += Trap(f[0].toFloat(), f[1].toFloat(), null)
+                    "trap" -> m.trapList += Trap(f[0].toFloat(), f[1].toFloat(), null, f[2].toFloat())
                 }
             }
             return m

@@ -22,13 +22,13 @@ import com.iagothz.mergetd.logic.Vec2
 class MatchScreen(
     game: MergeTdGame,
     restored: Match? = null,
-    private val previousBest: Int = game.save.bestWave(game.save.map),
+    private val previousBest: Int = game.save.bestWave(game.save.map, game.save.mode),
     /** A fresh daily challenge: starts running, no tutorial, booked against the day's record. */
     fresh: Match? = null,
 ) : BaseScreen(game) {
     private enum class Confirm(val question: String) { RESTART("Reiniciar a partida?"), QUIT("Sair da partida?") }
 
-    private val match = restored ?: fresh ?: Match(game.save.deck, map = game.save.map)
+    private val match = restored ?: fresh ?: Match(game.save.deck, map = game.save.map, mode = game.save.mode)
     private val drag = DragController(match)
     private val hold = LongPress()
     private val renderer = MatchRenderer(game.shapes, game.batch, game.font, game.smallFont, game.tinyFont)
@@ -70,7 +70,7 @@ class MatchScreen(
         onTouchCancelled()
         if (game.devMode || match.isGameOver) return
         val day = match.challengeDay
-        if (day != null) game.save.recordDaily(day, match.wave) else game.save.recordWave(match.map, match.wave)
+        if (day != null) game.save.recordDaily(day, match.wave) else game.save.recordWave(match.map, match.wave, match.mode)
         game.save.saveMatch(match.snapshot(), previousBest)
     }
 
@@ -351,12 +351,12 @@ class MatchScreen(
     private fun book() {
         game.save.clearMatch()
         if (game.devMode) return
-        game.save.recordMatch(match.map, match.deck, match.wave, stats.kills, stats.bosses, stats.merges, match.challengeDay)
+        game.save.recordMatch(match.map, match.deck, match.wave, stats.kills, stats.bosses, stats.merges, match.challengeDay, match.mode)
     }
 
     private fun finish() {
         book()
-        game.showGameOver(match.map, match.wave, !game.devMode && match.wave > previousBest, stats, match.challengeDay)
+        game.showGameOver(match.map, match.wave, !game.devMode && match.wave > previousBest, stats, match.challengeDay, match.mode)
     }
 
     private companion object {

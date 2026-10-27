@@ -18,7 +18,7 @@ class DieInfoTest {
     @Test
     fun speedUsesDecimalCommaAndPipScaling() {
         assertEquals("a cada 1 s (1 pip) até 0,53 s (7 pips)", row(DieType.FIRE, "Velocidade"))
-        assertEquals("a cada 0,35 s (1 pip) até 0,18 s (7 pips)", row(DieType.WIND, "Velocidade"))
+        assertEquals("a cada 0,35 s (1 pip) até 0,09 s (7 pips)", row(DieType.WIND, "Velocidade"))
     }
 
     @Test
@@ -58,5 +58,13 @@ class DieInfoTest {
         assertTrue("sorteado" in row(DieType.MIRROR, "Efeito")!!)
         assertTrue("deck" in row(DieType.GROWTH, "Efeito")!!)
         assertTrue("7 pips" in row(DieType.HUNTER, "Efeito")!!)
+    }
+
+    @Test
+    fun everyTypeExplainsItsSevenPipAbility() {
+        for (t in DieType.entries) {
+            val row = row(t, "7 pips")
+            assertTrue(row != null && row.isNotBlank(), "$t")
+        }
     }
 }

@@ -9,6 +9,8 @@ import com.iagothz.mergetd.logic.Balance
 import com.iagothz.mergetd.logic.Die
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.Enemy
+import com.iagothz.mergetd.logic.GameMode
+import com.iagothz.mergetd.logic.Synergy
 import com.iagothz.mergetd.logic.EnemyKind
 import com.iagothz.mergetd.logic.Layout
 import com.iagothz.mergetd.logic.Match
@@ -81,11 +83,16 @@ class MatchRenderer(
         }
         if (match.waveCountdown > 0f) {
             val until = WaveSpawner.wavesUntilBoss(match.wave + 1)
-            val boss = if (WaveSpawner.isBossWave(match.wave + 1)) "" else "  ·  chefe em $until"
+            val boss = if (match.mode == GameMode.BOSS_RUSH || WaveSpawner.isBossWave(match.wave + 1)) "" else "  ·  chefe em $until"
             batch.textCentered(font, "Próxima onda em ${ceil(match.waveCountdown).toInt()}$boss", 360f, 1106f)
-            batch.textCentered(tinyFont, wavePreview(match.wave + 1, match.bossOrder), 360f, 1140f)
+            batch.textCentered(tinyFont, wavePreview(match.wave + 1, match.bossOrder, match.mode), 360f, 1140f)
         }
         boss(match)?.let { batch.textCentered(smallFont, Skin.enemyName(it.kind), 360f, BOSS_BAR.y + BOSS_BAR.height + 18f) }
+        for ((s, r) in synergyChips(match)) {
+            tinyFont.color = Skin.GOLD
+            batch.textCentered(tinyFont, s.title, r.x + r.width / 2 + 3f, r.y + r.height / 2)
+            tinyFont.color = Color.WHITE
+        }
         if (match.challengeDay != null) {
             tinyFont.color = Skin.GOLD
             batch.textCentered(tinyFont, "Desafio do dia", 360f, 1166f)
@@ -94,8 +101,21 @@ class MatchRenderer(
     }
 
     /** "12 soldados · 4 corredores", "Horda! 40 soldados", or "Chefe: Trocador" on a boss wave. */
-    private fun wavePreview(next: Int, bosses: List<EnemyKind>): String {
-        val counts = WaveSpawner.preview(next, bosses)
+    /** Chips for the active synergies, side by side on the board's top rim. */
+    private fun synergyChips(match: Match): List<Pair<Synergy, Rectangle>> {
+        val active = match.synergies().toList()
+        if (active.isEmpty()) return emptyList()
+        val widths = active.map { 22f + it.title.length * 9.5f }
+        var x = 360f - (widths.sum() + 8f * (active.size - 1)) / 2
+        return active.mapIndexed { i, s ->
+            val r = Rectangle(x, BOARD.y + BOARD.height - 14f, widths[i], 28f)
+            x += widths[i] + 8f
+            s to r
+        }
+    }
+
+    private fun wavePreview(next: Int, bosses: List<EnemyKind>, mode: GameMode): String {
+        val counts = WaveSpawner.preview(next, bosses, mode)
         val boss = counts.keys.firstOrNull { it.isBoss }
         if (boss != null) return "Chefe: ${Skin.enemyName(boss)}"
         val special = WaveSpawner.special(next)?.let { "${it.title}! " } ?: ""
@@ -120,11 +140,18 @@ class MatchRenderer(
         shapes.coin(SP_PILL.x + 32f, iy, 14f)
 
         if (match.waveCountdown > 0f) {
-            val frac = (match.waveCountdown / Balance.WAVE_DELAY).coerceIn(0f, 1f)
+            val frac = (match.waveCountdown / match.waveDelay).coerceIn(0f, 1f)
             shapes.color = Skin.PANEL
             shapes.roundedRect(COUNTDOWN_BAR.x, COUNTDOWN_BAR.y, COUNTDOWN_BAR.width, COUNTDOWN_BAR.height, 6f)
             shapes.color = Skin.color(DieType.ELECTRIC)
             shapes.roundedRect(COUNTDOWN_BAR.x, COUNTDOWN_BAR.y, COUNTDOWN_BAR.width * frac, COUNTDOWN_BAR.height, 6f)
+        }
+        val chips = synergyChips(match)
+        for ((s, r) in chips) {
+            shapes.color = Skin.PANEL
+            shapes.roundedRect(r.x, r.y, r.width, r.height, r.height / 2)
+            shapes.color = Skin.GOLD
+            shapes.roundedRect(r.x, r.y, 6f, r.height, 3f)
         }
         boss(match)?.let { b ->
             val frac = (b.hp / b.maxHp).coerceIn(0f, 1f)

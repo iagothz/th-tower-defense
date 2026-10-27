@@ -29,8 +29,11 @@ class Board {
         if (from == to) return false
         val a = this[from] ?: return false
         val b = this[to] ?: return false
+        val clone = cloneOf(a, b)
+        // A 7-pip Clone copies anything; otherwise pips must match.
+        if (clone != null && clone.pips >= Balance.MAX_PIPS) return true
         if (a.pips != b.pips) return false
-        if (cloneOf(a, b) != null) return true
+        if (clone != null) return true
         if (a.pips >= Balance.MAX_PIPS) return false
         return a.type == b.type || a.type.wildcard || b.type.wildcard
     }

@@ -3,6 +3,7 @@ package com.iagothz.mergetd.sim
 import com.iagothz.mergetd.logic.DeckCodec
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.GameMap
+import com.iagothz.mergetd.logic.GameMode
 import java.io.File
 import java.util.stream.Collectors
 import java.util.stream.LongStream
@@ -11,7 +12,7 @@ import kotlin.random.Random
 /**
  * Headless balance report.
  *   ./gradlew :sim:run --args="--games 300 --bot all --decks default"
- * Options: --games N, --bot simple|smart|all, --decks default|random, --seed S, --map <id>|all.
+ * Options: --games N, --bot simple|smart|all, --decks default|random, --seed S, --map <id>|all, --mode <id>.
  */
 fun main(args: Array<String>) {
     val opts = args.toList().chunked(2).associate { it[0].removePrefix("--") to it.getOrElse(1) { "" } }
@@ -22,6 +23,7 @@ fun main(args: Array<String>) {
         "all" -> GameMap.entries.toList()
         else -> listOf(requireNotNull(GameMap.byId(m)) { "unknown map $m" })
     }
+    val mode = opts["mode"]?.let { requireNotNull(GameMode.byId(it)) { "unknown mode $it" } } ?: GameMode.NORMAL
     val bots = when (val b = opts["bot"] ?: "all") {
         "all" -> BOTS.keys.toList()
         else -> listOf(b)
@@ -33,7 +35,7 @@ fun main(args: Array<String>) {
         val started = System.nanoTime()
         val results = LongStream.range(seed, seed + games).parallel().mapToObj { s ->
             val deck = if (randomDecks) DieType.entries.shuffled(Random(s)).take(DeckCodec.SIZE) else DeckCodec.DEFAULT
-            Simulator.play(deck, bot, s, map)
+            Simulator.play(deck, bot, s, map, mode)
         }.collect(Collectors.toList())
         val secs = (System.nanoTime() - started) / 1e9
         printReport(name, map, results, randomDecks, secs)

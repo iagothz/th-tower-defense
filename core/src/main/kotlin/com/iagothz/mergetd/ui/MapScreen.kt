@@ -4,17 +4,19 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
 import com.iagothz.mergetd.logic.Balance
-import com.iagothz.mergetd.logic.Difficulty
 import com.iagothz.mergetd.logic.GameMap
+import com.iagothz.mergetd.logic.GameMode
 import com.iagothz.mergetd.logic.Layout
 import com.iagothz.mergetd.logic.Vec2
 
-/** Four cards, one per map: a miniature of the path, the difficulty and the record there. Tap to pick. */
+/** Picks the match: four map cards (miniature, difficulty, record) above a row of modes. */
 class MapScreen(game: MergeTdGame) : BaseScreen(game) {
     private var selected = game.save.map
+    private var mode = game.save.mode
     private val cards = GameMap.entries.mapIndexed { i, m ->
-        m to Rectangle(24f + (i % 2) * 340f, 830f - (i / 2) * 340f, 332f, 320f)
+        m to Rectangle(24f + (i % 2) * 340f, 870f - (i / 2) * 300f, 332f, 280f)
     }
+    private val modes = GameMode.entries.mapIndexed { i, m -> m to Rectangle(24f + i * 170f, 440f, 162f, 64f) }
     private val confirm = Button(Rectangle(40f, 30f, 310f, 100f), "Confirmar")
     private val back = Button(Rectangle(370f, 30f, 310f, 100f), "Voltar", color = Skin.PANEL)
     private val tap = Tap<Button>()
@@ -36,22 +38,36 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
             shapes.roundedRect(r.x + 3f, r.y - 8f, r.width, r.height, 22f)
             shapes.color = Skin.PANEL
             shapes.roundedRect(r.x, r.y, r.width, r.height, 22f)
-            drawMiniature(m, r.x + r.width / 2, r.y + 22f, PREVIEW_SCALE)
+            drawMiniature(m, r.x + r.width / 2, r.y + 18f, PREVIEW_SCALE)
+        }
+        for ((m, r) in modes) {
+            if (m == mode) {
+                shapes.color = Skin.GOLD
+                shapes.roundedRect(r.x - 4f, r.y - 4f, r.width + 8f, r.height + 8f, 18f)
+            }
+            shapes.bevelRect(r.x, r.y, r.width, r.height, 14f, if (m == mode) MODE_ON else Skin.PANEL)
         }
         confirm.drawShape(shapes)
         back.drawShape(shapes)
         shapes.end()
 
         game.batch.begin()
-        game.batch.textShadowed(game.bigFont, "Mapa", 360f, 1222f)
+        game.batch.textShadowed(game.bigFont, "Partida", 360f, 1222f)
         for ((m, r) in cards) {
-            game.batch.textCentered(game.font, m.title, r.x + r.width / 2, r.y + r.height - 32f)
+            game.batch.textCentered(game.font, m.title, r.x + r.width / 2, r.y + r.height - 30f)
             game.smallFont.color = Skin.difficultyColor(m.difficulty)
-            game.batch.textCentered(game.smallFont, m.difficulty.label, r.x + r.width / 2 - 70f, r.y + r.height - 66f)
+            game.batch.textCentered(game.smallFont, m.difficulty.label, r.x + r.width / 2 - 70f, r.y + r.height - 62f)
             game.smallFont.color = KEY_COLOR
-            game.batch.textCentered(game.smallFont, "recorde ${game.save.bestWave(m)}", r.x + r.width / 2 + 60f, r.y + r.height - 66f)
+            game.batch.textCentered(game.smallFont, "recorde ${game.save.bestWave(m, mode)}", r.x + r.width / 2 + 60f, r.y + r.height - 62f)
             game.smallFont.color = Color.WHITE
         }
+        game.smallFont.color = KEY_COLOR
+        game.batch.textLeft(game.smallFont, "Modo", 24f, 532f)
+        game.smallFont.color = Color.WHITE
+        for ((m, r) in modes) game.batch.textCentered(game.smallFont, m.title, r.x + r.width / 2, r.y + r.height / 2 + 2f)
+        game.tinyFont.color = Skin.GOLD
+        game.batch.textCentered(game.tinyFont, mode.description, 360f, 410f)
+        game.tinyFont.color = Color.WHITE
         confirm.drawText(game.batch, game.font)
         back.drawText(game.batch, game.font)
         game.batch.end()
@@ -89,14 +105,17 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
 
     override fun onTouchUp(p: Vec2) {
         val card = cards.firstOrNull { it.second.contains(p.x, p.y) }?.first
-        if (card != null) {
-            selected = card
+        val chip = modes.firstOrNull { it.second.contains(p.x, p.y) }?.first
+        if (card != null || chip != null) {
+            if (card != null) selected = card
+            if (chip != null) mode = chip
             tap.cancel()
             return
         }
         when (tap.release(buttonAt(p))) {
             confirm -> {
                 game.save.map = selected
+                game.save.mode = mode
                 game.showMenu()
             }
             back -> game.showMenu()
@@ -104,7 +123,8 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
     }
 
     private companion object {
-        const val PREVIEW_SCALE = 0.17f
+        const val PREVIEW_SCALE = 0.15f
         val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
+        val MODE_ON = Color(0.55f, 0.30f, 0.75f, 1f)
     }
 }

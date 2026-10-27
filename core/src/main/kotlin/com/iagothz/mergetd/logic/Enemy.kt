@@ -50,6 +50,8 @@ class Enemy(val kind: EnemyKind, val maxHp: Float) {
     var stolen = 0
     /** Set by the match each step while a Comandante is close. */
     var hasted = false
+    /** Mode speed factor (Rápido), set at spawn. */
+    var speedScale = 1f
     /** The die that last hit this enemy, credited with the kill. */
     var lastHit: Die? = null
 
@@ -61,21 +63,21 @@ class Enemy(val kind: EnemyKind, val maxHp: Float) {
     fun speed(): Float {
         if (stunTime > 0f) return 0f
         val haste = if (hasted) Balance.COMMANDER_HASTE else 1f
-        return Balance.BASE_SPEED * kind.speedMult * (1 - slow) * haste
+        return Balance.BASE_SPEED * kind.speedMult * (1 - slow) * haste * speedScale
     }
 
-    /** Applies [amount] (raised by any curse, cut by [armor]) and credits [by]; returns the damage actually dealt. */
-    fun takeDamage(amount: Float, by: Die?): Float {
-        val dealt = maxOf(0f, amount - armor) * (1 + curse)
+    /** Applies [amount] (raised by any curse, cut by [armor] unless [pierce]) and credits [by]; returns the damage dealt. */
+    fun takeDamage(amount: Float, by: Die?, pierce: Boolean = false): Float {
+        val dealt = maxOf(0f, amount - if (pierce) 0f else armor) * (1 + curse)
         hp -= dealt
         if (by != null) lastHit = by
         return dealt
     }
 
     /** Curses don't stack: the strongest one wins and the duration is refreshed. */
-    fun applyCurse(amount: Float) {
+    fun applyCurse(amount: Float, duration: Float = Balance.CURSE_DURATION) {
         curse = maxOf(curse, amount)
-        curseTime = Balance.CURSE_DURATION
+        curseTime = maxOf(curseTime, duration)
     }
 
     /** A running stun isn't refreshed, and a fresh one is followed by [Balance.STUN_IMMUNITY]: no permanent lock. */
@@ -85,27 +87,27 @@ class Enemy(val kind: EnemyKind, val maxHp: Float) {
     }
 
     /** Moves the enemy back along the path, within its lifetime push budget. */
-    fun pushBack(amount: Float) {
+    fun pushBack(amount: Float, unlimited: Boolean = false) {
         if (immovable) return
         val budget = Balance.GRAVITY_MAX_PUSH * (if (kind.isBoss) Balance.GRAVITY_BOSS_FACTOR else 1f)
-        val step = minOf(amount, budget - pushed).coerceAtLeast(0f)
+        val step = if (unlimited) amount else minOf(amount, budget - pushed).coerceAtLeast(0f)
         pushed += step
         distance = maxOf(0f, distance - step)
     }
 
     /** Slows don't stack: the strongest one wins and the duration is refreshed. */
-    fun applySlow(amount: Float) {
+    fun applySlow(amount: Float, duration: Float = Balance.SLOW_DURATION) {
         if (immovable) return
         slow = maxOf(slow, amount)
-        slowTime = Balance.SLOW_DURATION
+        slowTime = maxOf(slowTime, duration)
     }
 
     /** At the stack cap, the stack closest to expiring is replaced. */
-    fun addPoison(dps: Float) {
+    fun addPoison(dps: Float, duration: Float = Balance.POISON_DURATION) {
         if (poison.size >= Balance.POISON_MAX_STACKS) {
             poison.remove(poison.minBy { it.remaining })
         }
-        poison.add(PoisonStack(dps, Balance.POISON_DURATION))
+        poison.add(PoisonStack(dps, duration))
     }
 
     fun tickEffects(dt: Float) {

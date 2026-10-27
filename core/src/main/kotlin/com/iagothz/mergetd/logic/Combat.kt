@@ -14,16 +14,30 @@ data class ShotEvent(
     val crit: Boolean = false,
 )
 
-/** What the rest of the board adds to every attack (CRIT chance, number of COMBO dice). */
-data class AttackBonus(val critChance: Float = 0f, val comboCount: Int = 1) {
+/**
+ * What the rest of the board adds to every attack: crit chance and multiplier, the number of COMBO dice,
+ * the active synergies, and the strongest base damage on the board (what a 7-pip Mirror copies).
+ */
+data class AttackBonus(
+    val critChance: Float = 0f,
+    val comboCount: Int = 1,
+    val critMult: Float = Balance.CRIT_MULT,
+    val synergies: Set<Synergy> = emptySet(),
+    val strongestDamage: Float = 0f,
+) {
     companion object {
         val NONE = AttackBonus()
     }
 }
 
 object Combat {
-    fun attackInterval(t: DieType, pips: Int): Float =
-        Balance.stats(t).baseInterval / (1 + Balance.ATTACK_SPEED_PER_PIP * (pips - 1))
+    /** A die at the pip cap. */
+    private val Die.maxed: Boolean get() = pips >= Balance.MAX_PIPS
+
+    fun attackInterval(t: DieType, pips: Int): Float {
+        val base = Balance.stats(t).baseInterval / (1 + Balance.ATTACK_SPEED_PER_PIP * (pips - 1))
+        return if (t == DieType.WIND && pips >= Balance.MAX_PIPS) base / 2 else base
+    }
 
     /** Damage before target or board modifiers. */
     fun baseDamage(t: DieType, pips: Int, powerLevel: Int): Float =
@@ -31,7 +45,8 @@ object Combat {
 
     fun hitDamage(t: DieType, pips: Int, powerLevel: Int, target: Enemy): Float {
         val base = baseDamage(t, pips, powerLevel)
-        return if (t == DieType.IRON && target.kind.isBoss) base * Balance.IRON_BOSS_MULT else base
+        if (t != DieType.IRON || !target.kind.isBoss) return base
+        return base * if (pips >= Balance.MAX_PIPS) Balance.IRON_BOSS_MULT_MAX else Balance.IRON_BOSS_MULT
     }
 
     fun selectTarget(t: DieType, enemies: List<Enemy>): Enemy? {
@@ -53,26 +68,34 @@ object Combat {
         rng: Random = Random.Default,
     ): ShotEvent? {
         val target = selectTarget(die.type, enemies) ?: return null
+        val maxed = die.maxed
+        val syn = bonus.synergies
         var damage = hitDamage(die.type, die.pips, powerLevel, target)
         when (die.type) {
             DieType.COMBO -> damage *= 1 + Balance.COMBO_BONUS * (bonus.comboCount - 1)
-            DieType.HUNTER -> damage *= 1 + Balance.HUNTER_BONUS_PER_STACK * die.stacks
-            DieType.LUCK -> damage *= rng.nextFloat() * Balance.LUCK_MAX_MULT
+            DieType.HUNTER -> damage *= 1 + (if (maxed) Balance.HUNTER_BONUS_PER_STACK_MAX else Balance.HUNTER_BONUS_PER_STACK) * die.stacks
+            DieType.LUCK -> damage *= (if (maxed) Balance.LUCK_MIN_MULT_MAX else 0f) + rng.nextFloat() * Balance.LUCK_MAX_MULT
+            DieType.MIRROR -> if (maxed && bonus.strongestDamage > 0f) damage = bonus.strongestDamage
             else -> Unit
         }
+        val pierce = Synergy.PIERCE in syn && (die.type == DieType.IRON || die.type == DieType.SNIPER)
+        if (pierce && target.kind.isBoss) damage *= Balance.PIERCE_BOSS
+        if (Synergy.PREDATOR in syn && (die.type == DieType.HUNTER || die.type == DieType.VAMPIRE)) damage *= Balance.PREDATOR
         val crit = bonus.critChance > 0f && rng.nextFloat() < bonus.critChance
-        if (crit) damage *= Balance.CRIT_MULT
+        if (crit) damage *= bonus.critMult
 
         val targetPos = path.positionAt(target.distance)
         val dealt = linkedMapOf<Enemy, Float>()
         fun deal(e: Enemy, amount: Float) {
-            dealt[e] = (dealt[e] ?: 0f) + e.takeDamage(amount, die)
+            dealt[e] = (dealt[e] ?: 0f) + e.takeDamage(amount, die, pierce)
         }
         val hits = mutableListOf(targetPos)
 
         if (die.type == DieType.QUAKE) {
             enemies.filter { it.alive }.forEach { e ->
-                deal(e, damage)
+                val shattered = Synergy.SHATTER in syn && e.slow > 0f
+                deal(e, if (shattered) damage * 2 else damage)
+                if (maxed) e.applySlow(Balance.QUAKE_SLOW, Balance.QUAKE_SLOW_TIME)
                 if (e !== target) hits += path.positionAt(e.distance)
             }
             return ShotEvent(origin, hits, die.type, dealt, crit)
@@ -80,30 +103,55 @@ object Combat {
         deal(target, damage)
 
         when (die.type) {
-            DieType.FIRE -> enemies
-                .filter { it !== target && it.alive && path.positionAt(it.distance).dst(targetPos) <= Balance.FIRE_SPLASH_RADIUS }
-                .forEach { deal(it, damage * Balance.FIRE_SPLASH_FRACTION) }
-            DieType.ICE -> target.applySlow(
-                minOf(Balance.ICE_SLOW_MAX, Balance.ICE_SLOW_BASE + Balance.ICE_SLOW_PER_PIP * die.pips),
+            DieType.FIRE -> {
+                val radius = Balance.FIRE_SPLASH_RADIUS * (if (maxed) Balance.FIRE_MAX_RADIUS else 1f) * (if (Synergy.BLAZE in syn) Balance.BLAZE_RADIUS else 1f)
+                val fraction = if (maxed) 1f else Balance.FIRE_SPLASH_FRACTION
+                enemies
+                    .filter { it !== target && it.alive && path.positionAt(it.distance).dst(targetPos) <= radius }
+                    .forEach { deal(it, damage * fraction) }
+            }
+            DieType.ICE -> {
+                target.applySlow(minOf(Balance.ICE_SLOW_MAX, Balance.ICE_SLOW_BASE + Balance.ICE_SLOW_PER_PIP * die.pips))
+                if (maxed) target.applyStun(Balance.ICE_FREEZE)
+            }
+            DieType.POISON -> target.addPoison(
+                Balance.POISON_DPS * die.pips * Balance.powerMult(powerLevel) * (if (Synergy.PLAGUE in syn) Balance.PLAGUE_DPS else 1f),
+                Balance.POISON_DURATION * (if (maxed) 2f else 1f),
             )
-            DieType.POISON -> target.addPoison(Balance.POISON_DPS * die.pips * Balance.powerMult(powerLevel))
-            DieType.ELECTRIC -> chain(target, damage, enemies, path, hits, ::deal)
-            DieType.CURSE -> target.applyCurse(Balance.CURSE_BASE + Balance.CURSE_PER_PIP * die.pips)
+            DieType.ELECTRIC -> chain(target, damage, enemies, path, hits, if (maxed) Balance.CHAIN_JUMPS_MAX else Balance.CHAIN_JUMPS, Synergy.SHOCK in syn, ::deal)
+            DieType.CURSE -> target.applyCurse(
+                (Balance.CURSE_BASE + Balance.CURSE_PER_PIP * die.pips) * (if (maxed) Balance.CURSE_MAX_MULT else 1f),
+                Balance.CURSE_DURATION * (if (maxed) 2f else 1f),
+            )
             DieType.GRAVITY -> {
                 val push = (Balance.GRAVITY_PUSH_BASE + Balance.GRAVITY_PUSH_PER_PIP * die.pips) *
                     (if (target.kind.isBoss) Balance.GRAVITY_BOSS_FACTOR else 1f)
-                target.pushBack(push)
+                target.pushBack(push, unlimited = maxed && !target.kind.isBoss)
             }
-            DieType.TIME -> target.applyStun(
-                (Balance.TIME_STUN_BASE + Balance.TIME_STUN_PER_PIP * die.pips) *
-                    (if (target.kind.isBoss) Balance.TIME_BOSS_FACTOR else 1f),
-            )
+            DieType.TIME -> {
+                val seconds = (Balance.TIME_STUN_BASE + Balance.TIME_STUN_PER_PIP * die.pips) *
+                    (if (target.kind.isBoss) Balance.TIME_BOSS_FACTOR else 1f)
+                target.applyStun(seconds)
+                if (maxed) {
+                    enemies
+                        .filter { it !== target && it.alive && path.positionAt(it.distance).dst(targetPos) <= Balance.TIME_AREA }
+                        .forEach { it.applyStun(seconds * (if (it.kind.isBoss) Balance.TIME_BOSS_FACTOR else 1f)) }
+                }
+            }
             DieType.REAPER -> {
-                val threshold = (Balance.REAPER_BASE + Balance.REAPER_PER_PIP * die.pips) * target.maxHp
-                if (!target.kind.isBoss && target.alive && target.hp < threshold) {
+                var threshold = (Balance.REAPER_BASE + Balance.REAPER_PER_PIP * die.pips) * target.maxHp
+                if (target.kind.isBoss) threshold *= if (maxed) Balance.REAPER_BOSS_FACTOR else 0f
+                if (target.alive && target.hp < threshold) {
                     dealt[target] = (dealt[target] ?: 0f) + target.hp
                     target.hp = 0f
                     target.lastHit = die
+                }
+            }
+            DieType.SNIPER -> if (maxed) {
+                val second = enemies.filter { it.alive && it !== target }.maxByOrNull { it.hp }
+                if (second != null) {
+                    deal(second, damage)
+                    hits += path.positionAt(second.distance)
                 }
             }
             else -> Unit
@@ -117,12 +165,14 @@ object Combat {
         enemies: List<Enemy>,
         path: EnemyPath,
         hits: MutableList<Vec2>,
+        jumps: Int,
+        shock: Boolean,
         deal: (Enemy, Float) -> Unit,
     ) {
         val struck = mutableSetOf(first)
         var last = path.positionAt(first.distance)
         var jumpDamage = damage
-        repeat(Balance.CHAIN_JUMPS) {
+        repeat(jumps) {
             val next = enemies
                 .filter { it.alive && it !in struck }
                 .map { it to path.positionAt(it.distance).dst(last) }
@@ -131,6 +181,7 @@ object Combat {
                 ?.first ?: return
             jumpDamage *= Balance.CHAIN_FALLOFF
             deal(next, jumpDamage)
+            if (shock) next.applyStun(Balance.SHOCK_STUN)
             struck += next
             last = path.positionAt(next.distance)
             hits += last

@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.utils.Align
 import com.iagothz.mergetd.logic.DeckCodec
 import com.iagothz.mergetd.logic.DieType
+import com.iagothz.mergetd.logic.Synergy
 import com.iagothz.mergetd.logic.Vec2
 
 /** Tapping a die toggles it in the deck and shows what it does in the panel below. */
@@ -71,6 +72,11 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         }
         for ((t, r) in tiles) game.batch.textCentered(game.tinyFont, Skin.label(t), r.x + r.width / 2, r.y - 16f)
         drawInfo()
+        val pairs = Synergy.forDeck(selected)
+        game.tinyFont.color = Skin.GOLD
+        val line = if (pairs.isEmpty()) "Sinergias do deck: nenhuma ainda (veja os pares na descrição de cada dado)" else "Sinergias do deck: " + pairs.joinToString(", ") { it.title }
+        game.batch.textCentered(game.tinyFont, line, 360f, panel.y + 18f)
+        game.tinyFont.color = Color.WHITE
         confirm.drawText(game.batch, game.font)
         back.drawText(game.batch, game.font)
         game.batch.end()

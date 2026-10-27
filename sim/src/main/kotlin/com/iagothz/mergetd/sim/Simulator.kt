@@ -4,6 +4,7 @@ import com.iagothz.mergetd.logic.Balance
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.EnemyKind
 import com.iagothz.mergetd.logic.GameMap
+import com.iagothz.mergetd.logic.GameMode
 import com.iagothz.mergetd.logic.GameEvent
 import com.iagothz.mergetd.logic.Match
 import kotlin.random.Random
@@ -22,10 +23,11 @@ object Simulator {
         bot: (Long) -> Bot,
         seed: Long,
         map: GameMap = GameMap.DEFAULT,
+        mode: GameMode = GameMode.NORMAL,
         maxWave: Int = MAX_WAVE,
         maxSeconds: Float = MAX_SECONDS,
     ): GameResult {
-        val match = Match(deck, Random(seed), map)
+        val match = Match(deck, Random(seed), map, mode = mode)
         val player = bot(seed)
         val stepsPerAct = (ACT_EVERY / Balance.STEP).toInt()
         var killedBy: EnemyKind? = null

@@ -2,6 +2,7 @@ package com.iagothz.mergetd.ui
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.iagothz.mergetd.logic.Balance
 import com.iagothz.mergetd.logic.DieType
 
 private val base = Color()
@@ -33,6 +34,10 @@ private val PIPS = listOf(
 fun ShapeRenderer.die(type: DieType, pips: Int, cx: Float, cy: Float, size: Float, brightness: Float = 1f, alpha: Float = 1f) {
     val half = size / 2
     val lip = size * 0.052f
+    if (pips >= Balance.MAX_PIPS) {
+        color = ink.set(Skin.GOLD).also { it.a = alpha }
+        roundedRect(cx - half - 4f, cy - half - 4f, size + 8f, size + 8f, size * 0.19f + 4f)
+    }
     base.set(Skin.color(type)).mul(brightness, brightness, brightness, 1f).also { it.a = alpha }
     bevelRect(cx - half, cy - half, size, size, size * 0.19f, base, lip)
     // The body sits on top of the lip, so everything on its face is centred a little higher.

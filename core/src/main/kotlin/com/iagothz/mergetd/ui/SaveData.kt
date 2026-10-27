@@ -4,30 +4,39 @@ import com.badlogic.gdx.Preferences
 import com.iagothz.mergetd.logic.DeckCodec
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.GameMap
+import com.iagothz.mergetd.logic.GameMode
 
 /** Lifetime counters shown on the stats screen. */
 class Totals(val games: Int, val kills: Int, val bosses: Int, val merges: Int, val waves: Int)
 
 class SaveData(private val prefs: Preferences) {
-    /** Best wave on [map]. The record from before maps existed ("bestWave") belongs to the default map. */
-    fun bestWave(map: GameMap): Int {
+    /** Best wave on [map] in [mode]. The record from before maps existed ("bestWave") belongs to the default map. */
+    fun bestWave(map: GameMap, mode: GameMode = GameMode.NORMAL): Int {
+        if (mode != GameMode.NORMAL) return prefs.getInteger("best.${map.id}.${mode.id}", 0)
         val legacy = if (map == GameMap.DEFAULT) prefs.getInteger("bestWave", 0) else 0
         return maxOf(legacy, prefs.getInteger("best.${map.id}", 0))
     }
 
-    /** Saves [wave] as [map]'s record if it beats it; returns whether it did. */
-    fun recordWave(map: GameMap, wave: Int): Boolean {
-        if (wave <= bestWave(map)) return false
-        prefs.putInteger("best.${map.id}", wave)
+    /** Saves [wave] as the record of [map] in [mode] if it beats it; returns whether it did. */
+    fun recordWave(map: GameMap, wave: Int, mode: GameMode = GameMode.NORMAL): Boolean {
+        if (wave <= bestWave(map, mode)) return false
+        prefs.putInteger(if (mode == GameMode.NORMAL) "best.${map.id}" else "best.${map.id}.${mode.id}", wave)
         prefs.flush()
         return true
     }
+
+    var mode: GameMode
+        get() = prefs.getString("mode", null)?.let { GameMode.byId(it) } ?: GameMode.NORMAL
+        set(value) {
+            prefs.putString("mode", value.id)
+            prefs.flush()
+        }
 
     /**
      * Books a finished match: lifetime totals always; the map and deck records for a normal match,
      * or the day's record for a daily challenge ([daily] is its day). Returns whether a record fell.
      */
-    fun recordMatch(map: GameMap, deck: List<DieType>, wave: Int, kills: Int, bosses: Int, merges: Int, daily: Int? = null): Boolean {
+    fun recordMatch(map: GameMap, deck: List<DieType>, wave: Int, kills: Int, bosses: Int, merges: Int, daily: Int? = null, mode: GameMode = GameMode.NORMAL): Boolean {
         val t = totals
         prefs.putInteger("total.games", t.games + 1)
         prefs.putInteger("total.kills", t.kills + kills)
@@ -41,7 +50,7 @@ class SaveData(private val prefs: Preferences) {
             prefs.putInteger(key, wave)
             prefs.flush()
         }
-        return recordWave(map, wave)
+        return recordWave(map, wave, mode)
     }
 
     val totals: Totals

@@ -3,6 +3,7 @@ package com.iagothz.mergetd.ui
 import com.badlogic.gdx.Preferences
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.GameMap
+import com.iagothz.mergetd.logic.GameMode
 import java.lang.reflect.Proxy
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -138,5 +139,18 @@ class SaveDataTest {
         assertTrue(SaveData(prefs).musicOn)
         SaveData(prefs).musicOn = false
         assertFalse(SaveData(prefs).musicOn)
+    }
+
+    @Test
+    fun recordsAreKeptPerMapAndMode() {
+        val save = SaveData(memoryPrefs())
+        assertTrue(save.recordWave(GameMap.RING, 7, GameMode.RUSH))
+        assertEquals(7, save.bestWave(GameMap.RING, GameMode.RUSH))
+        assertEquals(0, save.bestWave(GameMap.RING))
+        assertTrue(save.recordWave(GameMap.RING, 5))
+        assertEquals(5, save.bestWave(GameMap.RING, GameMode.NORMAL))
+        assertEquals(GameMode.NORMAL, save.mode)
+        save.mode = GameMode.SURVIVAL
+        assertEquals(GameMode.SURVIVAL, save.mode)
     }
 }

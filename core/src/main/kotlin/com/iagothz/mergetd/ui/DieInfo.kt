@@ -3,6 +3,7 @@ package com.iagothz.mergetd.ui
 import com.iagothz.mergetd.logic.Balance
 import com.iagothz.mergetd.logic.Combat
 import com.iagothz.mergetd.logic.DieType
+import com.iagothz.mergetd.logic.Synergy
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.roundToInt
@@ -22,6 +23,8 @@ data class DieInfo(val summary: String, val rows: List<Pair<String, String>>) {
                     "${num(Combat.attackInterval(t, MAX))} s ($MAX pips)"
             }
             rows += "Efeito" to effect(t)
+            rows += "7 pips" to maxed(t)
+            synergy(t)?.let { rows += "Sinergia" to it }
             rows += "Power-up" to powerUp(t)
             return DieInfo(summary(t), rows)
         }
@@ -110,6 +113,45 @@ data class DieInfo(val summary: String, val rows: List<Pair<String, String>>) {
                 "e o original continua no lugar; stacks do Caçador não são copiados; dois Clonadores fazem merge normal"
             DieType.BOOST -> "faz merge com qualquer dado de mesmos pips e o resultado é o tipo do outro dado com +1 pip " +
                 "(dois Reforços sorteiam do deck)"
+        }
+
+        /** What the die gains at the pip cap. */
+        fun maxed(t: DieType): String = when (t) {
+            DieType.FIRE -> "explosão com raio ×${num(Balance.FIRE_MAX_RADIUS)} e dano cheio nos vizinhos"
+            DieType.ICE -> "além da lentidão, congela o alvo por ${num(Balance.ICE_FREEZE)} s"
+            DieType.POISON -> "o veneno dura o dobro (${num(Balance.POISON_DURATION * 2)} s)"
+            DieType.ELECTRIC -> "o raio salta para ${Balance.CHAIN_JUMPS_MAX} inimigos"
+            DieType.WIND -> "ataca duas vezes mais rápido"
+            DieType.IRON -> "dano x${num(Balance.IRON_BOSS_MULT_MAX)} contra chefes"
+            DieType.MINE -> "gera o dobro de SP"
+            DieType.SNIPER -> "acerta também o segundo inimigo mais resistente"
+            DieType.MIRROR -> "ataca com o dano do dado mais forte do tabuleiro"
+            DieType.GROWTH -> "a cada ${num(Balance.GROWTH_INTERVAL)} s planta um dado de 1 pip do deck numa célula vazia"
+            DieType.LIGHT -> "acelera também os vizinhos das diagonais"
+            DieType.CRIT -> "os críticos de todo o tabuleiro dão x${num(Balance.CRIT_MULT_MAX)}"
+            DieType.COMBO -> "conta como dois Combos"
+            DieType.CURSE -> "maldição ${pct(Balance.CURSE_MAX_MULT - 1)} mais forte e durando o dobro"
+            DieType.HUNTER -> "cada stack dá +${pct(Balance.HUNTER_BONUS_PER_STACK_MAX)} (e os stacks não têm limite)"
+            DieType.GRAVITY -> "empurra inimigos comuns sem limite"
+            DieType.TIME -> "congela também quem está a até ${num(Balance.TIME_AREA)} do alvo"
+            DieType.TRAP -> "${Balance.TRAP_MAX_PER_DIE_MAX} minas por dado, com raio ×${num(Balance.TRAP_MAX_RADIUS)}"
+            DieType.QUAKE -> "cada tremor deixa todos ${pct(Balance.QUAKE_SLOW)} mais lentos por ${num(Balance.QUAKE_SLOW_TIME)} s"
+            DieType.REAPER -> "executa chefes também, abaixo de metade do limite"
+            DieType.NOVA -> "explosões com raio e dano ×${num(Balance.NOVA_MAX)}, inclusive em cadeia"
+            DieType.LUCK -> "sorteia de ${num(Balance.LUCK_MIN_MULT_MAX)}x a ${num(Balance.LUCK_MIN_MULT_MAX + Balance.LUCK_MAX_MULT)}x: nunca erra"
+            DieType.VAMPIRE -> "SP em dobro e +1 vida a cada ${Balance.VAMPIRE_LIFE_KILLS} abates (máx. ${Balance.MAX_LIVES})"
+            DieType.CLONE -> "clona qualquer dado, de qualquer quantidade de pips"
+            DieType.BOOST -> "a cada ${num(Balance.BOOST_INTERVAL)} s sobe de graça um nível de power-up de um tipo do deck"
+        }
+
+        /** The synergies this type takes part in, each with its partner. */
+        private fun synergy(t: DieType): String? {
+            val mine = Synergy.entries.filter { it.needs(t) }
+            if (mine.isEmpty()) return null
+            return mine.joinToString("; ") { s ->
+                val other = if (s.a == t) s.b else s.a
+                "${s.title} (com ${Skin.fullName(other)}): ${s.description}"
+            }
         }
 
         private fun powerUp(t: DieType): String {

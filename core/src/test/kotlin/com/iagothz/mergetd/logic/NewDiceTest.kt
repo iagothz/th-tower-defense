@@ -80,7 +80,7 @@ class NewDiceTest {
     @Test
     fun gravityHasATotalPushBudgetPerEnemy() {
         val e = enemy(1000f)
-        repeat(5) { attack(Die(DieType.GRAVITY, 7), e) }
+        repeat(5) { attack(Die(DieType.GRAVITY, 6), e) }
         assertEquals(1000f - Balance.GRAVITY_MAX_PUSH, e.distance, 1e-3f)
         val boss = enemy(1000f, 1_000_000f, EnemyKind.BOSS_REGEN)
         repeat(20) { attack(Die(DieType.GRAVITY, 7), boss) }

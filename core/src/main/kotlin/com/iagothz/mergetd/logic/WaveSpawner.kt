@@ -24,7 +24,8 @@ object WaveSpawner {
     /** HP multiplier for every enemy of wave [n]: a horde is many but frail. */
     fun hpScale(n: Int): Float = if (special(n) == SpecialWave.HORDE) Balance.HORDE_HP else 1f
 
-    fun composition(n: Int, bosses: List<EnemyKind> = DEFAULT_BOSS_ORDER): List<EnemyKind> {
+    fun composition(n: Int, bosses: List<EnemyKind> = DEFAULT_BOSS_ORDER, mode: GameMode = GameMode.NORMAL): List<EnemyKind> {
+        if (mode == GameMode.BOSS_RUSH) return listOf(bosses[(n - 1) % bosses.size])
         if (isBossWave(n)) return listOf(bosses[(n / Balance.BOSS_EVERY - 1) % bosses.size])
         when (special(n)) {
             SpecialWave.HORDE -> return List(Balance.HORDE_SIZE) { EnemyKind.NORMAL }
@@ -44,8 +45,8 @@ object WaveSpawner {
     }
 
     /** How many of each kind wave [n] brings, in order of first appearance; what the HUD previews. */
-    fun preview(n: Int, bosses: List<EnemyKind> = DEFAULT_BOSS_ORDER): Map<EnemyKind, Int> =
-        composition(n, bosses).groupingBy { it }.eachCount()
+    fun preview(n: Int, bosses: List<EnemyKind> = DEFAULT_BOSS_ORDER, mode: GameMode = GameMode.NORMAL): Map<EnemyKind, Int> =
+        composition(n, bosses, mode).groupingBy { it }.eachCount()
 
     fun enemyHp(n: Int, kind: EnemyKind): Float =
         Balance.BASE_HP * Balance.HP_GROWTH.pow(n - 1) * kind.hpMult

@@ -16,7 +16,7 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
 
     private val play = Button(Rectangle(160f, 650f, 400f, 100f), "Jogar")
     private val deck = Button(Rectangle(160f, 540f, 195f, 96f), "Deck")
-    private val map = Button(Rectangle(365f, 540f, 195f, 96f), "Mapa")
+    private val map = Button(Rectangle(365f, 540f, 195f, 96f), "Partida")
     private val daily = Button(Rectangle(160f, 434f, 195f, 96f), "Desafio", color = Color(0.55f, 0.30f, 0.75f, 1f))
     private val stats = Button(Rectangle(365f, 434f, 195f, 96f), "Estatísticas", color = Skin.PANEL)
     private val sound = Button(Rectangle(160f, 330f, 126f, 90f), "", color = Skin.PANEL)
@@ -77,7 +77,8 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         game.batch.textShadowed(game.bigFont, "Merge TD", 360f, 960f)
         game.batch.textCentered(game.smallFont, "Junte dados iguais, segure as ondas", 360f, 900f)
         val chosen = game.save.map
-        game.batch.textLeft(game.font, "${chosen.title}: recorde onda ${game.save.bestWave(chosen)}", 212f, 840f)
+        val mode = game.save.mode
+        game.batch.textLeft(game.font, "${chosen.title} · ${mode.title}: recorde ${game.save.bestWave(chosen, mode)}", 212f, 840f)
         for (b in buttons) b.drawText(game.batch, if (b === play || b === deck || b === map) game.font else game.smallFont)
         game.tinyFont.color = Color(1f, 1f, 1f, 0.75f)
         game.batch.textCentered(game.tinyFont, "${today.dateLabel} · ${today.map.title}", daily.rect.x + daily.rect.width / 2, daily.rect.y + 18f)

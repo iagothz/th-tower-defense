@@ -68,9 +68,11 @@ object Balance {
     /** Poison damage per second per pip, before the power multiplier. */
     const val POISON_DPS = 8f
     const val CHAIN_JUMPS = 2
+    const val CHAIN_JUMPS_MAX = 5
     const val CHAIN_RADIUS = 120f
     const val CHAIN_FALLOFF = 0.7f
     const val IRON_BOSS_MULT = 2f
+    const val IRON_BOSS_MULT_MAX = 4f
 
     const val MINE_INTERVAL = 5f
     const val MINE_SP_PER_PIP = 10
@@ -82,6 +84,7 @@ object Balance {
     const val CRIT_CHANCE_PER_PIP = 0.03f
     const val CRIT_MAX = 0.6f
     const val CRIT_MULT = 3f
+    const val CRIT_MULT_MAX = 4f
     /** COMBO: damage bonus for each other COMBO die on the board. */
     const val COMBO_BONUS = 0.3f
     /** CURSE: extra damage taken = BASE + PER_PIP × pips (18% at 1 pip, 36% at 7). */
@@ -89,6 +92,7 @@ object Balance {
     const val CURSE_PER_PIP = 0.03f
     const val CURSE_DURATION = 3f
     const val HUNTER_BONUS_PER_STACK = 0.05f
+    const val HUNTER_BONUS_PER_STACK_MAX = 0.06f
     /** Stack ceiling per pip; a 7-pip Hunter has none. */
     const val HUNTER_STACKS_PER_PIP = 10
 
@@ -110,12 +114,45 @@ object Balance {
     const val TRAP_TRIGGER = 16f
     const val TRAP_RADIUS = 60f
     const val TRAP_MAX_PER_DIE = 3
+    const val TRAP_MAX_PER_DIE_MAX = 6
     /** REAPER: kills a non-boss left under BASE + PER_PIP × pips of its max HP. */
     const val REAPER_BASE = 0.05f
     const val REAPER_PER_PIP = 0.02f
     const val NOVA_RADIUS = 90f
     const val LUCK_MAX_MULT = 4f
     const val VAMPIRE_SP_PER_PIP = 1
+
+    // --- 7-pip abilities (see DieInfo.maxed) ---
+    const val FIRE_MAX_RADIUS = 1.5f
+    const val ICE_FREEZE = 0.5f
+    const val CURSE_MAX_MULT = 1.5f
+    const val TIME_AREA = 60f
+    const val TRAP_MAX_RADIUS = 1.5f
+    const val QUAKE_SLOW = 0.3f
+    const val QUAKE_SLOW_TIME = 1f
+    const val REAPER_BOSS_FACTOR = 0.5f
+    const val NOVA_MAX = 1.5f
+    const val LUCK_MIN_MULT_MAX = 1f
+    const val VAMPIRE_LIFE_KILLS = 100
+    const val MAX_LIVES = 5
+    const val BOOST_INTERVAL = 60f
+
+    // --- Synergies (see Synergy) ---
+    const val BLAZE_RADIUS = 1.5f
+    const val PLAGUE_DPS = 1.5f
+    const val DAZZLE_CRIT = 0.10f
+    const val SHOCK_STUN = 0.2f
+    const val PIERCE_BOSS = 1.25f
+    const val PREDATOR = 1.25f
+    const val AMBUSH_TRIGGER = 2f
+
+    // --- Modes (see GameMode) ---
+    const val BOSS_RUSH_HP = 0.35f
+    const val SURVIVAL_SP = 2
+    const val RUSH_HP = 0.8f
+    const val RUSH_SPEED = 1.5f
+    const val RUSH_DELAY = 1f / 3f
+    const val RUSH_SPAWN = 0.5f
 
     fun powerMult(level: Int): Float = POWER_MULT[level - 1]
 
