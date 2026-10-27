@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.iagothz.mergetd.logic.Cell
+import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.Enemy
 import com.iagothz.mergetd.logic.EnemyPath
 import com.iagothz.mergetd.logic.GameMap
@@ -30,6 +31,13 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
         val bad: Boolean = false,
     )
     class Particle(var x: Float, var y: Float, val vx: Float, val vy: Float, val color: Color, var age: Float = 0f)
+    /** The dragged die gliding to the cell it merged into; the result stays hidden until it arrives. */
+    class Slide(val from: Vec2, val target: Vec2, val to: Cell, val type: DieType, val pips: Int, var age: Float = 0f) {
+        private val t: Float get() = (age / SLIDE_TIME).coerceIn(0f, 1f).let { 1f - (1f - it) * (1f - it) }
+        val x: Float get() = from.x + (target.x - from.x) * t
+        val y: Float get() = from.y + (target.y - from.y) * t
+    }
+
     /** An explosion ring that grows from a third of [max] to [max] while fading. */
     class Ring(val x: Float, val y: Float, val max: Float, val color: Color, var age: Float = 0f) {
         val radius: Float get() = max * (0.33f + 0.67f * (age / RING_TIME).coerceIn(0f, 1f))
@@ -38,6 +46,8 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
     val texts = mutableListOf<FloatingText>()
     val particles = mutableListOf<Particle>()
     val rings = mutableListOf<Ring>()
+    val slides = mutableListOf<Slide>()
+    private val drops = mutableMapOf<Cell, Float>()
     private val flashes = mutableMapOf<Enemy, Float>()
     private val pops = mutableMapOf<Cell, Float>()
     private var shakeLeft = 0f
@@ -62,7 +72,10 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
                     if (texts.size < MAX_TEXTS) texts += FloatingText("+${e.kind.reward}", e.at.x, e.at.y + 10f, reward = true)
                 }
                 is GameEvent.Blast -> rings += Ring(e.at.x, e.at.y, e.radius, Skin.color(e.type))
-                is GameEvent.DieBought -> pops[e.cell] = 0f
+                is GameEvent.DieBought -> {
+                    pops[e.cell] = 0f
+                    drops[e.cell] = 0f
+                }
                 is GameEvent.Merged -> {
                     pops[e.cell] = 0f
                     val c = Layout.cellCenter(e.cell)
@@ -106,6 +119,10 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
         particles.removeAll { it.age >= PARTICLE_TIME }
         rings.forEach { it.age += dt }
         rings.removeAll { it.age >= RING_TIME }
+        slides.forEach { it.age += dt }
+        slides.removeAll { it.age >= SLIDE_TIME }
+        drops.replaceAll { _, t -> t + dt }
+        drops.values.removeAll { it >= DROP_TIME }
         flashes.replaceAll { _, t -> t - dt }
         flashes.values.removeAll { it <= 0f }
         pops.replaceAll { _, t -> t + dt }
@@ -118,6 +135,20 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
     }
 
     fun isFlashing(enemy: Enemy): Boolean = enemy in flashes
+
+    fun slide(from: Cell, to: Cell, type: DieType, pips: Int) {
+        slides += Slide(Layout.cellCenter(from), Layout.cellCenter(to), to, type, pips)
+    }
+
+    /** True while a merged die is still gliding into [cell]; the renderer holds the result back until then. */
+    fun slidingTo(cell: Cell): Boolean = slides.any { it.to == cell }
+
+    /** How far above its cell a freshly bought die still hangs: starts at DROP_HEIGHT and eases down. */
+    fun dropOffset(cell: Cell): Float {
+        val age = drops[cell] ?: return 0f
+        val t = (age / DROP_TIME).coerceIn(0f, 1f)
+        return DROP_HEIGHT * (1f - t) * (1f - t)
+    }
 
     /** 1 when idle; overshoots from 0.6 up to 1 just after a die appears. */
     fun popScale(cell: Cell): Float {
@@ -201,6 +232,9 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
         const val PARTICLES_PER_MERGE = 14
         const val PARTICLE_TIME = 0.45f
         const val RING_TIME = 0.35f
+        const val SLIDE_TIME = 0.14f
+        const val DROP_TIME = 0.25f
+        const val DROP_HEIGHT = 90f
         const val TEXT_TIME = 0.6f
         const val TEXT_RISE = 70f
         const val MAX_TEXTS = 60

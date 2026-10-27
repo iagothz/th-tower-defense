@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.iagothz.mergetd.logic.DailyChallenge
 import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.Match
 
@@ -46,6 +47,7 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
         val dt = Gdx.graphics.deltaTime
         clock += dt
         if (fader.update(dt)) next?.let { apply(it) }
+        sfx.updateMusic()
         super.render()
     }
 
@@ -54,6 +56,15 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
     fun showDeck() = switchTo(DeckScreen(this))
 
     fun showMap() = switchTo(MapScreen(this))
+
+    fun showStats() = switchTo(StatsScreen(this))
+
+    /** Today's challenge: fixed map, deck and seed; its record is per day. */
+    fun startDaily() {
+        save.clearMatch()
+        val c = DailyChallenge.of(DailyChallenge.today())
+        switchTo(MatchScreen(this, previousBest = save.dailyBest(c.day), fresh = c.newMatch()))
+    }
 
     fun startMatch() {
         save.clearMatch()
@@ -72,8 +83,8 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
         return true
     }
 
-    fun showGameOver(map: GameMap, wave: Int, isRecord: Boolean, stats: MatchStats) =
-        switchTo(GameOverScreen(this, map, wave, isRecord, stats))
+    fun showGameOver(map: GameMap, wave: Int, isRecord: Boolean, stats: MatchStats, challengeDay: Int? = null) =
+        switchTo(GameOverScreen(this, map, wave, isRecord, stats, challengeDay))
 
     /** Fades to black, swaps the screen, fades back in. The first screen, or one requested mid-fade, swaps at once. */
     private fun switchTo(screen: Screen) {
@@ -114,6 +125,6 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
     }
 
     companion object {
-        const val VERSION = "0.3.0"
+        const val VERSION = "0.4.0"
     }
 }

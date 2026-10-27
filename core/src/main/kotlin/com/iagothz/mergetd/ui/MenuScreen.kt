@@ -3,6 +3,7 @@ package com.iagothz.mergetd.ui
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
+import com.iagothz.mergetd.logic.DailyChallenge
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.Layout
 import com.iagothz.mergetd.logic.Vec2
@@ -13,15 +14,19 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
     /** A decorative die drifting down behind the menu. */
     private class Drop(var type: DieType, var pips: Int, var x: Float, var y: Float, var size: Float, var speed: Float, val sway: Float)
 
-    private val play = Button(Rectangle(160f, 640f, 400f, 100f), "Jogar")
-    private val deck = Button(Rectangle(160f, 520f, 400f, 100f), "Deck")
-    private val map = Button(Rectangle(160f, 400f, 400f, 100f), "Mapa")
-    private val sound = Button(Rectangle(160f, 280f, 195f, 100f), "", color = Skin.PANEL)
-    private val vibration = Button(Rectangle(365f, 280f, 195f, 100f), "", color = Skin.PANEL)
-    private val buttons = listOf(play, deck, map, sound, vibration)
+    private val play = Button(Rectangle(160f, 650f, 400f, 100f), "Jogar")
+    private val deck = Button(Rectangle(160f, 540f, 195f, 96f), "Deck")
+    private val map = Button(Rectangle(365f, 540f, 195f, 96f), "Mapa")
+    private val daily = Button(Rectangle(160f, 434f, 195f, 96f), "Desafio", color = Color(0.55f, 0.30f, 0.75f, 1f))
+    private val stats = Button(Rectangle(365f, 434f, 195f, 96f), "Estatísticas", color = Skin.PANEL)
+    private val sound = Button(Rectangle(160f, 330f, 126f, 90f), "", color = Skin.PANEL)
+    private val vibration = Button(Rectangle(297f, 330f, 126f, 90f), "", color = Skin.PANEL)
+    private val music = Button(Rectangle(434f, 330f, 126f, 90f), "", color = Skin.PANEL)
+    private val buttons = listOf(play, deck, map, daily, stats, sound, vibration, music)
     private val tap = Tap<Button>()
     private val rng = Random(System.nanoTime())
     private val drops = List(DROPS) { newDrop(rng.nextFloat() * Layout.WORLD_H) }
+    private val today = DailyChallenge.of(DailyChallenge.today())
     private var time = 0f
 
     private fun newDrop(y: Float) = Drop(
@@ -38,6 +43,7 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         time += delta
         sound.text = if (game.save.soundOn) "Som: sim" else "Som: não"
         vibration.text = if (game.save.vibrationOn) "Vibrar: sim" else "Vibrar: não"
+        music.text = if (game.save.musicOn) "Música: sim" else "Música: não"
         buttons.forEach { it.pressed = tap.current === it }
         for (d in drops) {
             d.y -= d.speed * delta
@@ -60,11 +66,7 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.color = Skin.GOLD
         shapes.rectLine(176f, 826f, 176f, 856f, 3f)
         shapes.triangle(177f, 856f, 177f, 840f, 199f, 848f)
-        play.drawShape(shapes)
-        deck.drawShape(shapes)
-        map.drawShape(shapes)
-        sound.drawShape(shapes)
-        vibration.drawShape(shapes)
+        buttons.forEach { it.drawShape(shapes) }
         // Three little dice sitting on the title line.
         shapes.die(DieType.FIRE, 3, 236f, 1046f, 44f)
         shapes.die(DieType.ELECTRIC, 5, 360f, 1058f, 52f)
@@ -76,11 +78,10 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         game.batch.textCentered(game.smallFont, "Junte dados iguais, segure as ondas", 360f, 900f)
         val chosen = game.save.map
         game.batch.textLeft(game.font, "${chosen.title}: recorde onda ${game.save.bestWave(chosen)}", 212f, 840f)
-        play.drawText(game.batch, game.font)
-        deck.drawText(game.batch, game.font)
-        map.drawText(game.batch, game.font)
-        sound.drawText(game.batch, game.font)
-        vibration.drawText(game.batch, game.font)
+        for (b in buttons) b.drawText(game.batch, if (b === play || b === deck || b === map) game.font else game.smallFont)
+        game.tinyFont.color = Color(1f, 1f, 1f, 0.75f)
+        game.batch.textCentered(game.tinyFont, "${today.dateLabel} · ${today.map.title}", daily.rect.x + daily.rect.width / 2, daily.rect.y + 18f)
+        game.tinyFont.color = Color.WHITE
         game.smallFont.color = Color(1f, 1f, 1f, 0.4f)
         game.batch.textCentered(game.smallFont, "v${MergeTdGame.VERSION}", 360f, 40f)
         game.smallFont.color = Color.WHITE
@@ -98,6 +99,8 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
             play -> game.startMatch()
             deck -> game.showDeck()
             map -> game.showMap()
+            daily -> game.startDaily()
+            stats -> game.showStats()
             sound -> {
                 game.save.soundOn = !game.save.soundOn
                 game.sfx.click()
@@ -106,6 +109,7 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
                 game.save.vibrationOn = !game.save.vibrationOn
                 if (game.save.vibrationOn) game.sfx.play(setOf("boss"))
             }
+            music -> game.save.musicOn = !game.save.musicOn
         }
     }
 

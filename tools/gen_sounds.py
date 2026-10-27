@@ -62,3 +62,53 @@ save("wave", tone(0.12, 440, volume=0.3) + tone(0.16, 660, volume=0.3))
 save("boss", [a + b for a, b in zip(tone(0.7, 110, 98, volume=0.3, release=0.2),
                                      tone(0.7, 116, 104, volume=0.3, release=0.2))])
 print("wrote", sorted(p.name for p in OUT.glob("*.wav")))
+
+
+# --- Attack sounds per die family (see SoundPlanner.family) ---
+def mix(*tracks):
+    n = max(len(t) for t in tracks)
+    return [sum(t[i] if i < len(t) else 0.0 for t in tracks) for i in range(n)]
+
+
+save("hit_fire", mix(noise(0.06, volume=0.16, release=0.04), tone(0.06, 220, 90, shape=triangle, volume=0.25)))
+save("hit_ice", tone(0.05, 1900, 1500, shape=triangle, volume=0.28, release=0.03))
+save("hit_zap", tone(0.045, 1400, 500, shape=lambda p: square(p, 0.2), volume=0.16))
+save("hit_wind", noise(0.035, volume=0.10, release=0.03))
+save("hit_heavy", tone(0.09, 130, 55, shape=triangle, volume=0.55, release=0.05))
+save("hit_magic", tone(0.03, 660, shape=triangle, volume=0.25) + tone(0.035, 990, shape=triangle, volume=0.25))
+
+
+# --- Background loop: a calm minor arpeggio, four chords, 19.2 s at 100 BPM ---
+def note_hz(semitones_from_a4):
+    return 440.0 * 2 ** (semitones_from_a4 / 12)
+
+
+def music():
+    eighth = 0.3
+    # Chord tones as semitones from A4: Am, F, C, G (roots an octave down for the bass).
+    chords = [(-12, -9, -5), (-16, -12, -9), (-21, -17, -14), (-14, -10, -7)]
+    out = []
+    for rep in range(2):
+        for ci, chord in enumerate(chords):
+            bar = [0.0] * int(8 * eighth * RATE)
+            bass = tone(8 * eighth, note_hz(chord[0] - 12), shape=triangle, volume=0.11, attack=0.02, release=0.3)
+            bar = mix(bar, bass)
+            pattern = [0, 1, 2, 1, 0, 2, 1, 2] if rep == 0 else [2, 1, 0, 1, 2, 0, 1, 0]
+            for step, idx in enumerate(pattern):
+                octave = 12 if step % 4 == 2 else 0
+                n = tone(eighth * 0.95, note_hz(chord[idx] + octave), shape=triangle, volume=0.075, attack=0.01, release=0.12)
+                start = int(step * eighth * RATE)
+                for i, s in enumerate(n):
+                    if start + i < len(bar):
+                        bar[start + i] += s
+                if step % 2 == 1:
+                    hat = noise(0.02, volume=0.03, release=0.015)
+                    for i, s in enumerate(hat):
+                        if start + i < len(bar):
+                            bar[start + i] += s
+            out.extend(bar)
+    return out
+
+
+save("music", music())
+print("wrote", sorted(p.name for p in OUT.glob("*.wav")))

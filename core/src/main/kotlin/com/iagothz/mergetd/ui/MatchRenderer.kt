@@ -57,6 +57,7 @@ class MatchRenderer(
         drawTraps(match)
         drawBoard(match, drag, effects)
         drawEnemies(match, effects)
+        for (s in effects.slides) shapes.die(s.type, s.pips, s.x, s.y, DIE)
         drawTraces()
         effects.drawShapes(shapes)
         val from = drag.dragging
@@ -83,6 +84,11 @@ class MatchRenderer(
             batch.textCentered(tinyFont, wavePreview(match.wave + 1, match.bossOrder), 360f, 1140f)
         }
         boss(match)?.let { batch.textCentered(smallFont, Skin.enemyName(it.kind), 360f, BOSS_BAR.y + BOSS_BAR.height + 18f) }
+        if (match.challengeDay != null) {
+            tinyFont.color = Skin.GOLD
+            batch.textCentered(tinyFont, "Desafio do dia", 360f, 1166f)
+            tinyFont.color = Color.WHITE
+        }
     }
 
     /** "12 soldados · 4 corredores", "Horda! 40 soldados", or "Chefe: Trocador" on a boss wave. */
@@ -178,9 +184,11 @@ class MatchRenderer(
             shapes.color = Skin.CELL
             shapes.roundedRect(c.x - half, c.y - half, Layout.CELL, Layout.CELL, 16f)
             val die = match.board[cell] ?: continue
+            if (effects.slidingTo(cell)) continue
+            val lifted = Vec2(c.x, c.y + effects.dropOffset(cell))
             when {
                 cell == drag.dragging -> drawDie(die, c, 0.35f)
-                else -> drawDie(die, c, if (die.disabled) 0.4f else 1f, effects.popScale(cell))
+                else -> drawDie(die, lifted, if (die.disabled) 0.4f else 1f, effects.popScale(cell))
             }
         }
     }

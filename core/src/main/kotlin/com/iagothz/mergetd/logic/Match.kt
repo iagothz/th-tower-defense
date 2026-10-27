@@ -7,7 +7,13 @@ import kotlin.random.Random
 /** A TRAP mine waiting on the path; [owner] is credited with its kills. */
 class Trap(val distance: Float, val damage: Float, val owner: Die?)
 
-class Match(val deck: List<DieType>, private val rng: Random = Random.Default, val map: GameMap = GameMap.DEFAULT) {
+/** [challengeDay] is set for a daily challenge (its day since the epoch); it changes only how the result is booked. */
+class Match(
+    val deck: List<DieType>,
+    private val rng: Random = Random.Default,
+    val map: GameMap = GameMap.DEFAULT,
+    val challengeDay: Int? = null,
+) {
     val board = Board()
     val path: EnemyPath get() = map.path
     var sp = Balance.START_SP
@@ -128,6 +134,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default, v
         line("v", SNAPSHOT_VERSION)
         line("deck", DeckCodec.encode(deck))
         line("map", map.id)
+        line("daily", challengeDay ?: -1)
         line("bosses", bossOrder.joinToString(",") { it.name })
         line("wave", wave)
         line("sp", sp)
@@ -324,7 +331,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default, v
             val shot = Combat.attack(die, Layout.cellCenter(cell), powerLevel(die.type), enemyList, path, bonus, rng)
             if (shot != null) {
                 shots += shot
-                shot.damage.forEach { (enemy, amount) -> events += GameEvent.Hit(enemy, amount, shot.crit) }
+                shot.damage.forEach { (enemy, amount) -> events += GameEvent.Hit(enemy, amount, shot.crit, shot.type) }
             }
             shot != null
         }
@@ -361,7 +368,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default, v
             if (!e.alive || path.positionAt(e.distance).dst(center) > radius) continue
             // Ghosts walk over mines; a Supernova still catches them.
             if (type == DieType.TRAP && e.kind == EnemyKind.GHOST) continue
-            events += GameEvent.Hit(e, e.takeDamage(damage, by))
+            events += GameEvent.Hit(e, e.takeDamage(damage, by), type = type)
         }
     }
 
@@ -417,7 +424,8 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default, v
 
             // Saves from before maps have no "map" line and were always played on the default map.
             val map = scalars["map"]?.let { requireNotNull(GameMap.byId(it)) { "unknown map $it" } } ?: GameMap.DEFAULT
-            val m = Match(scalars.getValue("deck").split(",").map(::type), rng, map)
+            val daily = scalars["daily"]?.toInt()?.takeIf { it >= 0 }
+            val m = Match(scalars.getValue("deck").split(",").map(::type), rng, map, daily)
             m.wave = scalars.getValue("wave").toInt()
             m.sp = scalars.getValue("sp").toInt()
             m.lives = scalars.getValue("lives").toInt()

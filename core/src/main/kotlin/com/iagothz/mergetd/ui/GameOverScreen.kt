@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.utils.Align
+import com.iagothz.mergetd.logic.DailyChallenge
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.Layout
@@ -18,6 +19,7 @@ class GameOverScreen(
     private val wave: Int,
     private val isRecord: Boolean,
     private val stats: MatchStats,
+    private val challengeDay: Int? = null,
 ) : BaseScreen(game) {
     private class Confetto(var x: Float, var y: Float, val speed: Float, val sway: Float, val color: Color, val w: Float, val h: Float)
 
@@ -34,13 +36,14 @@ class GameOverScreen(
     )
 
     private val rows: List<Pair<String, String>> = listOf(
-        "Mapa" to map.title,
+        (if (challengeDay != null) "Desafio do dia" else "Mapa") to
+            (if (challengeDay != null) DailyChallenge.of(challengeDay).dateLabel else map.title),
         "Onda alcançada" to "$wave",
         "Inimigos derrotados" to "${stats.kills}",
         "Chefes derrotados" to "${stats.bosses}",
         "Merges" to "${stats.merges}",
         "Dados comprados" to "${stats.bought}",
-        "Recorde" to "onda ${game.save.bestWave(map)}",
+        "Recorde" to "onda ${if (challengeDay != null) game.save.dailyBest(challengeDay) else game.save.bestWave(map)}",
     )
 
     override fun draw(delta: Float) {

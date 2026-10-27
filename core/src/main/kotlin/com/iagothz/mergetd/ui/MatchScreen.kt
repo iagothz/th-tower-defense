@@ -23,10 +23,12 @@ class MatchScreen(
     game: MergeTdGame,
     restored: Match? = null,
     private val previousBest: Int = game.save.bestWave(game.save.map),
+    /** A fresh daily challenge: starts running, no tutorial, booked against the day's record. */
+    fresh: Match? = null,
 ) : BaseScreen(game) {
     private enum class Confirm(val question: String) { RESTART("Reiniciar a partida?"), QUIT("Sair da partida?") }
 
-    private val match = restored ?: Match(game.save.deck, map = game.save.map)
+    private val match = restored ?: fresh ?: Match(game.save.deck, map = game.save.map)
     private val drag = DragController(match)
     private val hold = LongPress()
     private val renderer = MatchRenderer(game.shapes, game.batch, game.font, game.smallFont, game.tinyFont)
@@ -62,7 +64,8 @@ class MatchScreen(
         paused = true
         onTouchCancelled()
         if (game.devMode || match.isGameOver) return
-        game.save.recordWave(match.map, match.wave)
+        val day = match.challengeDay
+        if (day != null) game.save.recordDaily(day, match.wave) else game.save.recordWave(match.map, match.wave)
         game.save.saveMatch(match.snapshot(), previousBest)
     }
 
@@ -276,8 +279,12 @@ class MatchScreen(
 
     override fun onTouchUp(p: Vec2) {
         hold.up()
-        if (drag.dragging != null) {
-            drag.up(p)
+        val from = drag.dragging
+        if (from != null) {
+            val die = match.board[from]
+            val to = Layout.cellAt(p)
+            val result = if (to != null && match.canMerge(from, to)) match.board.resultCell(from, to) else null
+            if (drag.up(p) && die != null && result != null && result != from) effects.slide(from, result, die.type, die.pips)
             return
         }
         when (val b = buttonTap.release(buttonAt(p))) {
@@ -324,18 +331,23 @@ class MatchScreen(
     /** Leaves the match on purpose: the wave reached still counts for the record. */
     private fun abandon(restartAfter: Boolean) {
         if (restartAfter) {
-            game.save.clearMatch()
-            if (!game.devMode) game.save.recordWave(match.map, match.wave)
-            game.startMatch()
+            book()
+            if (match.challengeDay != null) game.startDaily() else game.startMatch()
         } else {
             finish()
         }
     }
 
-    private fun finish() {
+    /** Clears the saved match and, outside dev mode, books the result (totals plus the relevant record). */
+    private fun book() {
         game.save.clearMatch()
-        if (!game.devMode) game.save.recordWave(match.map, match.wave)
-        game.showGameOver(match.map, match.wave, !game.devMode && match.wave > previousBest, stats)
+        if (game.devMode) return
+        game.save.recordMatch(match.map, match.deck, match.wave, stats.kills, stats.bosses, stats.merges, match.challengeDay)
+    }
+
+    private fun finish() {
+        book()
+        game.showGameOver(match.map, match.wave, !game.devMode && match.wave > previousBest, stats, match.challengeDay)
     }
 
     private companion object {

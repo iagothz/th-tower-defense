@@ -1,6 +1,7 @@
 package com.iagothz.mergetd.ui
 
 import com.badlogic.gdx.Preferences
+import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.GameMap
 import java.lang.reflect.Proxy
 import kotlin.test.Test
@@ -20,6 +21,7 @@ class SaveDataTest {
                 "getBoolean" -> values[args[0] as String] ?: args.getOrNull(1) ?: false
                 "putInteger", "putString", "putBoolean" -> { values[args[0] as String] = args[1]; proxy }
                 "remove" -> { values.remove(args[0] as String); null }
+                "get" -> values.toMap()
                 "flush" -> null
                 else -> throw UnsupportedOperationException(method.name)
             }
@@ -92,5 +94,49 @@ class SaveDataTest {
         assertFalse(SaveData(prefs).tutorialDone)
         SaveData(prefs).tutorialDone = true
         assertTrue(SaveData(prefs).tutorialDone)
+    }
+
+    @Test
+    fun lifetimeTotalsAccumulateAcrossMatches() {
+        val save = SaveData(memoryPrefs())
+        val deck = listOf(DieType.FIRE, DieType.ICE, DieType.POISON, DieType.ELECTRIC, DieType.WIND)
+        save.recordMatch(GameMap.RING, deck, wave = 12, kills = 100, bosses = 1, merges = 20)
+        save.recordMatch(GameMap.RING, deck, wave = 8, kills = 50, bosses = 0, merges = 9)
+        val t = save.totals
+        assertEquals(2, t.games)
+        assertEquals(150, t.kills)
+        assertEquals(1, t.bosses)
+        assertEquals(29, t.merges)
+        assertEquals(20, t.waves)
+        assertEquals(12, save.bestWave(GameMap.RING))
+    }
+
+    @Test
+    fun bestWavePerDeckIsKeptAndRanked() {
+        val save = SaveData(memoryPrefs())
+        val a = listOf(DieType.FIRE, DieType.ICE, DieType.POISON, DieType.ELECTRIC, DieType.WIND)
+        val b = listOf(DieType.IRON, DieType.SNIPER, DieType.CURSE, DieType.HUNTER, DieType.MINE)
+        save.recordMatch(GameMap.HORSESHOE, a, 10, 0, 0, 0)
+        save.recordMatch(GameMap.HORSESHOE, b, 25, 0, 0, 0)
+        save.recordMatch(GameMap.HORSESHOE, a, 7, 0, 0, 0)
+        assertEquals(listOf(b to 25, a to 10), save.deckRecords())
+    }
+
+    @Test
+    fun dailyRecordsArePerDayAndListedNewestFirst() {
+        val save = SaveData(memoryPrefs())
+        assertEquals(0, save.dailyBest(20_750))
+        assertTrue(save.recordDaily(20_750, 9))
+        assertFalse(save.recordDaily(20_750, 5))
+        assertTrue(save.recordDaily(20_751, 14))
+        assertEquals(listOf(20_751 to 14, 20_750 to 9), save.dailyHistory())
+    }
+
+    @Test
+    fun musicIsOnByDefaultAndPersists() {
+        val prefs = memoryPrefs()
+        assertTrue(SaveData(prefs).musicOn)
+        SaveData(prefs).musicOn = false
+        assertFalse(SaveData(prefs).musicOn)
     }
 }

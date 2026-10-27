@@ -5,6 +5,7 @@ import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.Enemy
 import com.iagothz.mergetd.logic.EnemyKind
 import com.iagothz.mergetd.logic.GameEvent
+import com.iagothz.mergetd.logic.Layout
 import com.iagothz.mergetd.logic.SpecialWave
 import com.iagothz.mergetd.logic.Vec2
 import kotlin.math.sqrt
@@ -122,5 +123,30 @@ class EffectsTest {
     fun stolenSpShowsAsARedNumber() {
         fx.consume(listOf(GameEvent.Stolen(150)))
         assertEquals(listOf("-150 SP"), fx.texts.map { it.text })
+    }
+
+    @Test
+    fun boughtDiceDropInFromAbove() {
+        val cell = Cell(1, 1)
+        assertEquals(0f, fx.dropOffset(cell))
+        fx.consume(listOf(GameEvent.DieBought(cell)))
+        assertTrue(fx.dropOffset(cell) > 30f)
+        fx.update(Effects.DROP_TIME + 0.01f)
+        assertEquals(0f, fx.dropOffset(cell))
+    }
+
+    @Test
+    fun mergedDieSlidesToItsTargetThenTheResultAppears() {
+        val from = Cell(0, 0)
+        val to = Cell(0, 1)
+        fx.slide(from, to, DieType.FIRE, 2)
+        assertTrue(fx.slidingTo(to))
+        assertEquals(1, fx.slides.size)
+        fx.update(Effects.SLIDE_TIME / 2)
+        val mid = fx.slides.single()
+        assertTrue(mid.x > Layout.cellCenter(from).x && mid.x < Layout.cellCenter(to).x, "x=${mid.x}")
+        fx.update(Effects.SLIDE_TIME)
+        assertFalse(fx.slidingTo(to))
+        assertTrue(fx.slides.isEmpty())
     }
 }

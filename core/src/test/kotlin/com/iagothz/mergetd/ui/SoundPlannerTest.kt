@@ -8,6 +8,7 @@ import com.iagothz.mergetd.logic.GameEvent
 import com.iagothz.mergetd.logic.Vec2
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class SoundPlannerTest {
     private val enemy = Enemy(EnemyKind.NORMAL, 10f)
@@ -45,5 +46,18 @@ class SoundPlannerTest {
         assertEquals(setOf("hit"), planner.plan(hit, 1.0f))
         assertEquals(emptySet(), planner.plan(hit, 1.0f + SoundPlanner.HIT_GAP / 2))
         assertEquals(setOf("hit"), planner.plan(hit, 1.0f + SoundPlanner.HIT_GAP + 0.01f))
+    }
+
+    @Test
+    fun hitsSoundLikeTheirDieFamily() {
+        assertEquals(setOf("hit_fire"), SoundPlanner().plan(listOf(GameEvent.Hit(enemy, 3f, type = DieType.FIRE)), 0f))
+        assertEquals(setOf("hit_ice"), SoundPlanner().plan(listOf(GameEvent.Hit(enemy, 3f, type = DieType.TIME)), 0f))
+        assertEquals(setOf("hit_zap"), SoundPlanner().plan(listOf(GameEvent.Hit(enemy, 3f, type = DieType.ELECTRIC)), 0f))
+        assertEquals(setOf("hit_heavy"), SoundPlanner().plan(listOf(GameEvent.Hit(enemy, 3f, type = DieType.IRON)), 0f))
+        assertEquals(setOf("hit_wind"), SoundPlanner().plan(listOf(GameEvent.Hit(enemy, 3f, type = DieType.WIND)), 0f))
+        assertEquals(setOf("hit_magic"), SoundPlanner().plan(listOf(GameEvent.Hit(enemy, 3f, type = DieType.CURSE)), 0f))
+        for (t in DieType.entries.filter { it.attacks }) {
+            assertTrue(SoundPlanner.family(t) in SoundPlanner.FAMILIES, "$t")
+        }
     }
 }

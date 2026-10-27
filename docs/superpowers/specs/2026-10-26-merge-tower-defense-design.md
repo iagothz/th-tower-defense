@@ -128,6 +128,15 @@ O tabuleiro, o HUD e os botões nunca mudam de lugar; cada mapa é um caminho di
 | Anel | do topo pelo meio, desce pela direita, passa por baixo do tabuleiro, sobe pela esquerda | 2674 | 25 | Fácil | gelo |
 | Reta | cruza em cima e desce pela direita | 1332 | 16 | Difícil | vulcão |
 
+## Meta, tutorial e áudio
+
+- **Tutorial** na primeira partida (`Tutorial`): Comprar → juntar → power-up, cada balão some ao fazer; Pular; `tutorialDone` no save.
+- **Dica de fim de jogo** (`Tips`) conforme o último inimigo que vazou (`MatchStats.killedBy`).
+- **Estatísticas** (`StatsScreen`): totais (`total.*`), recorde por mapa, melhores decks (`deckbest.<deck>`) e últimos desafios.
+- **Desafio do dia** (`DailyChallenge.of(dia)`): o dia desde 1970 sorteia mapa e 5 dados e fixa a seed (`dia × 1 000 003`); `Match.challengeDay` vai no save (`daily`), e o resultado conta só para `daily.<dia>` e os totais.
+- **Animações**: o dado comprado cai de 90 unidades acima (`Effects.dropOffset`); no merge o dado arrastado desliza até o alvo por 0,14 s e o resultado só aparece depois (`Effects.slide`).
+- **Áudio**: som de ataque por família (`SoundPlanner.family`: fogo, gelo, raio, vento, pesado, mágico) e um loop de 19 s (`sounds/music.wav`) gerado por `tools/gen_sounds.py`, com botão Música no menu.
+
 ## Inimigos
 
 | Inimigo | Vida (relativa) | Velocidade | Observação |
