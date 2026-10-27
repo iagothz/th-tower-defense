@@ -33,7 +33,7 @@ th-tower-defense/
 ```
 
 - **`logic`** é Kotlin puro. A classe `Match` expõe ações (`buyDie()`, `merge(from, to)`, `powerUp(type)`) e `update(dt)`, que avança em passos fixos de 1/60 s. O RNG é injetado (`Random` com seed) para os testes serem determinísticos. Todos os números ficam em `Balance.kt`.
-- **`ui`** lê o estado de `Match` e desenha com `ShapeRenderer` e `BitmapFont`. As cores e formas de cada tipo ficam numa `Skin`, que pode ser substituída por sprites depois.
+- **`ui`** lê o estado de `Match` e desenha com `ShapeRenderer` (com MSAA 4x) e `BitmapFont`. As cores de cada tipo ficam em `Skin` (nenhum par de dados a menos de 0,2 de distância RGB, garantido por teste), os ícones em `DieGlyph` (primitivas num quadrado unitário) e o desenho do dado em `DieDraw`; tudo isso pode ser trocado por sprites depois. `Effects` cuida do feedback (números, anéis de explosão, partículas, banner), `Backdrop` do fundo e `Fader` da transição entre telas.
 - **Persistência:** `Preferences` do libGDX, guardando `bestWave` e `deck` (lista de 5 IDs de tipo).
 - **Ambiente:** Android SDK 36, build-tools 35/36. O AGP exige JDK 17 ou 21; se o JDK 25 do Android Studio for rejeitado, configurar uma toolchain Gradle 17/21.
 
@@ -68,7 +68,7 @@ th-tower-defense/
 - Cada dado que ataca dispara contra o inimigo mais avançado no caminho. O Sniper é a exceção (ver abaixo).
 - Intervalo de ataque = `baseInterval(tipo) / (1 + 0.15 × (pips − 1))`.
 - Dano = `baseDamage(tipo) × pips × powerMult(nível)`.
-- Projéteis são instantâneos (hitscan), com um traço visual curto.
+- Projéteis são instantâneos (hitscan). O traço visual varia por tipo (raio em zigue-zague, bala do Sniper, anel do Fogo), mas é só cosmético.
 
 **Power-up por tipo**
 - Níveis 1 a 5; custo para subir: 100 / 200 / 400 / 700 SP.

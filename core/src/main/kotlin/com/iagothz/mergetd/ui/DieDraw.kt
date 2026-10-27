@@ -1,0 +1,46 @@
+package com.iagothz.mergetd.ui
+
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.iagothz.mergetd.logic.DieType
+
+private val base = Color()
+private val ink = Color()
+
+private val C = 0 to 0
+private val TL = -1 to 1
+private val TR = 1 to 1
+private val BL = -1 to -1
+private val BR = 1 to -1
+private val ML = -1 to 0
+private val MR = 1 to 0
+
+/** Pip offsets (as fractions of a quarter die) for 1..7 pips. */
+private val PIPS = listOf(
+    listOf(C),
+    listOf(TL, BR),
+    listOf(TL, C, BR),
+    listOf(TL, TR, BL, BR),
+    listOf(TL, TR, C, BL, BR),
+    listOf(TL, TR, ML, MR, BL, BR),
+    listOf(TL, TR, ML, C, MR, BL, BR),
+)
+
+/**
+ * A die of [type] with [pips], [size] wide and centred on (cx, cy): bevelled body, glyph watermark, pips.
+ * [brightness] below 1 dims it (silenced dice, drag ghosts); [alpha] fades it (menu decoration).
+ */
+fun ShapeRenderer.die(type: DieType, pips: Int, cx: Float, cy: Float, size: Float, brightness: Float = 1f, alpha: Float = 1f) {
+    val half = size / 2
+    val lip = size * 0.052f
+    base.set(Skin.color(type)).mul(brightness, brightness, brightness, 1f).also { it.a = alpha }
+    bevelRect(cx - half, cy - half, size, size, size * 0.19f, base, lip)
+    // The body sits on top of the lip, so everything on its face is centred a little higher.
+    val fy = cy + lip / 2
+    ink.set(Skin.glyphColor(type)).mul(brightness, brightness, brightness, 1f).also { it.a = alpha }
+    glyph(type, cx, fy, half * 0.62f, ink, base)
+    color = ink.set(Skin.pipColor(type)).mul(brightness, brightness, brightness, 1f).also { it.a = alpha }
+    val step = size * 0.25f
+    val r = size * 0.0885f
+    for ((dx, dy) in PIPS[pips - 1]) circle(cx + dx * step, fy + dy * step, r, 14)
+}

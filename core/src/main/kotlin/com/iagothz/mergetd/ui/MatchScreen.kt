@@ -23,6 +23,7 @@ class MatchScreen(
     private val renderer = MatchRenderer(game.shapes, game.batch, game.font, game.smallFont)
     private val buttonTap = Tap<Button>()
     private val effects = Effects()
+    private val stats = MatchStats()
     private val sounds = SoundPlanner()
     private var clock = 0f
     private var paused = restored != null
@@ -54,6 +55,7 @@ class MatchScreen(
             renderer.update(match, delta)
             val events = match.drainEvents()
             effects.consume(events)
+            stats.consume(events)
             effects.update(delta)
             game.sfx.play(sounds.plan(events, clock))
             if (match.isGameOver) {
@@ -185,6 +187,6 @@ class MatchScreen(
     private fun finish() {
         game.save.clearMatch()
         if (!game.devMode) game.save.recordWave(match.wave)
-        game.showGameOver(match.wave, !game.devMode && match.wave > previousBest)
+        game.showGameOver(match.wave, !game.devMode && match.wave > previousBest, stats)
     }
 }

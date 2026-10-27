@@ -19,6 +19,12 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
     lateinit var smallFont: BitmapFont
     lateinit var save: SaveData
     lateinit var sfx: Sfx
+    val backdrop = Backdrop()
+    val fader = Fader()
+    /** Seconds since launch, for ambient animation. */
+    var clock = 0f
+        private set
+    private var next: Screen? = null
 
     override fun create() {
         shapes = ShapeRenderer()
@@ -31,6 +37,13 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
         save = SaveData(Gdx.app.getPreferences("merge-td"))
         sfx = Sfx(save)
         if (devMode || !resumeSavedMatch()) showMenu()
+    }
+
+    override fun render() {
+        val dt = Gdx.graphics.deltaTime
+        clock += dt
+        if (fader.update(dt)) next?.let { apply(it) }
+        super.render()
     }
 
     fun showMenu() = switchTo(MenuScreen(this))
@@ -54,12 +67,23 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
         return true
     }
 
-    fun showGameOver(wave: Int, isRecord: Boolean) = switchTo(GameOverScreen(this, wave, isRecord))
+    fun showGameOver(wave: Int, isRecord: Boolean, stats: MatchStats) =
+        switchTo(GameOverScreen(this, wave, isRecord, stats))
 
-    private fun switchTo(next: Screen) {
-        val old = screen
-        setScreen(next)
+    /** Fades to black, swaps the screen, fades back in. The first screen, or one requested mid-fade, swaps at once. */
+    private fun switchTo(screen: Screen) {
+        if (this.screen == null || !fader.start()) {
+            apply(screen)
+            return
+        }
+        next = screen
+    }
+
+    private fun apply(screen: Screen) {
+        val old = this.screen
+        setScreen(screen)
         old?.dispose()
+        next = null
     }
 
     /** Rasterizes the TTF at [size] world pixels, including Portuguese accented letters. */
@@ -81,5 +105,9 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
         bigFont.dispose()
         smallFont.dispose()
         sfx.dispose()
+    }
+
+    companion object {
+        const val VERSION = "0.2.0"
     }
 }

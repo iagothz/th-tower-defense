@@ -19,6 +19,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     private val confirm = Button(Rectangle(40f, 30f, 310f, 100f), "Confirmar")
     private val back = Button(Rectangle(370f, 30f, 310f, 100f), "Voltar", color = Skin.PANEL)
     private val tap = Tap<Button>()
+    private val slots = List(DeckCodec.SIZE) { Rectangle(186f + it * 72f, 1112f, 60f, 60f) }
 
     override fun draw(delta: Float) {
         confirm.enabled = selected.size == DeckCodec.SIZE
@@ -41,6 +42,17 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
                 shapes.rectLine(r.x + r.width - 4f, r.y + r.height - 8f, r.x + r.width + 5f, r.y + r.height + 5f, 3.5f)
             }
         }
+        for ((i, r) in slots.withIndex()) {
+            val t = selected.getOrNull(i)
+            if (t == null) {
+                shapes.color = Skin.CELL
+                shapes.roundedRect(r.x, r.y, r.width, r.height, 12f)
+            } else {
+                shapes.die(t, 1, r.x + r.width / 2, r.y + r.height / 2, r.width)
+            }
+        }
+        shapes.color = Skin.SHADOW
+        shapes.roundedRect(panel.x + 3f, panel.y - 8f, panel.width, panel.height, 18f)
         shapes.color = Skin.PANEL
         shapes.roundedRect(panel.x, panel.y, panel.width, panel.height, 18f)
         shapes.color = Skin.color(shown)
@@ -51,8 +63,12 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.end()
 
         game.batch.begin()
-        game.batch.textCentered(game.bigFont, "Deck", 360f, 1215f)
-        game.batch.textCentered(game.font, "Escolha 5 dados (${selected.size}/5)", 360f, 1145f)
+        game.batch.textShadowed(game.bigFont, "Deck", 360f, 1222f)
+        if (selected.size < DeckCodec.SIZE) {
+            game.smallFont.color = KEY_COLOR
+            game.batch.textLeft(game.smallFont, "escolha ${DeckCodec.SIZE - selected.size}", 556f, 1142f)
+            game.smallFont.color = Color.WHITE
+        }
         for ((t, r) in tiles) game.batch.textCentered(game.smallFont, Skin.label(t), r.x + r.width / 2, r.y - 20f)
         drawInfo()
         confirm.drawText(game.batch, game.font)
@@ -88,7 +104,13 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     override fun onTouchUp(p: Vec2) {
         val tile = tiles.firstOrNull { it.second.contains(p.x, p.y) }?.first
         if (tile != null) shown = tile
+        val slot = slots.indexOfFirst { it.contains(p.x, p.y) }
         when {
+            slot in selected.indices -> {
+                shown = selected[slot]
+                selected.removeAt(slot)
+                tap.cancel()
+            }
             tile != null && tile in selected -> selected.remove(tile)
             tile != null && selected.size < DeckCodec.SIZE -> selected.add(tile)
             tile != null -> tap.cancel()

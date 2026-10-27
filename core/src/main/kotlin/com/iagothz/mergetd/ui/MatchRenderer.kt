@@ -146,6 +146,12 @@ class MatchRenderer(
 
     private fun drawBoard(match: Match, drag: DragController, effects: Effects) {
         val highlights = drag.highlights().toSet()
+        shapes.color = Skin.SHADOW
+        shapes.roundedRect(BOARD.x + 3f, BOARD.y - 8f, BOARD.width, BOARD.height, 26f)
+        shapes.color = Skin.BOARD_RIM
+        shapes.roundedRect(BOARD.x, BOARD.y, BOARD.width, BOARD.height, 26f)
+        shapes.color = Skin.BOARD
+        shapes.roundedRect(BOARD.x + 4f, BOARD.y + 4f, BOARD.width - 8f, BOARD.height - 8f, 22f)
         for (cell in match.board.cells()) {
             val c = Layout.cellCenter(cell)
             val half = Layout.CELL / 2
@@ -164,19 +170,7 @@ class MatchRenderer(
     }
 
     private fun drawDie(die: Die, c: Vec2, brightness: Float, scale: Float = 1f) {
-        val size = DIE * scale
-        val half = size / 2
-        val lip = 5f * scale
-        val base = tmp.set(Skin.color(die.type)).mul(brightness, brightness, brightness, 1f)
-        shapes.bevelRect(c.x - half, c.y - half, size, size, 18f * scale, base, lip)
-        // The body sits on top of the lip, so everything on its face is centred a little higher.
-        val cy = c.y + lip / 2
-        val ink = tmp2.set(Skin.glyphColor(die.type)).mul(brightness, brightness, brightness, 1f)
-        shapes.glyph(die.type, c.x, cy, half * 0.62f, ink, base)
-        shapes.color = tmp2.set(Skin.pipColor(die.type)).mul(brightness, brightness, brightness, 1f)
-        for ((dx, dy) in PIPS[die.pips - 1]) {
-            shapes.circle(c.x + dx * PIP_STEP * scale, cy + dy * PIP_STEP * scale, PIP_R * scale, 14)
-        }
+        shapes.die(die.type, die.pips, c.x, c.y, DIE * scale, brightness)
     }
 
     private fun drawEnemies(match: Match, effects: Effects) {
@@ -331,8 +325,13 @@ class MatchRenderer(
         const val SHOT_TTL = 0.1f
         const val PATH_WIDTH = 40f
         const val DIE = Layout.CELL - 8f
-        const val PIP_STEP = 24f
-        const val PIP_R = 8.5f
+        private const val BOARD_PAD = 18f
+        val BOARD = Rectangle(
+            Layout.GRID_X - BOARD_PAD,
+            Layout.GRID_Y - BOARD_PAD,
+            Balance.COLS * (Layout.CELL + Layout.GAP) - Layout.GAP + 2 * BOARD_PAD,
+            Balance.ROWS * (Layout.CELL + Layout.GAP) - Layout.GAP + 2 * BOARD_PAD,
+        )
 
         const val HUD_Y = 1210f
         val WAVE_PILL = Rectangle(16f, HUD_Y - 28f, 180f, 56f)
@@ -340,24 +339,5 @@ class MatchRenderer(
         val SP_PILL = Rectangle(408f, HUD_Y - 28f, 196f, 56f)
         val COUNTDOWN_BAR = Rectangle(160f, 1072f, 400f, 12f)
         val BOSS_BAR = Rectangle(80f, 1120f, 560f, 22f)
-
-        private val C = 0 to 0
-        private val TL = -1 to 1
-        private val TR = 1 to 1
-        private val BL = -1 to -1
-        private val BR = 1 to -1
-        private val ML = -1 to 0
-        private val MR = 1 to 0
-
-        /** Pip offsets (in PIP_STEP units) for 1..7 pips. */
-        val PIPS = listOf(
-            listOf(C),
-            listOf(TL, BR),
-            listOf(TL, C, BR),
-            listOf(TL, TR, BL, BR),
-            listOf(TL, TR, C, BL, BR),
-            listOf(TL, TR, ML, MR, BL, BR),
-            listOf(TL, TR, ML, C, MR, BL, BR),
-        )
     }
 }

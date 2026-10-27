@@ -3,6 +3,8 @@ package com.iagothz.mergetd.ui
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.ScreenAdapter
+import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.ScreenUtils
 import com.badlogic.gdx.utils.viewport.FitViewport
@@ -65,7 +67,19 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
         viewport.camera.update()
         game.shapes.projectionMatrix = viewport.camera.combined
         game.batch.projectionMatrix = viewport.camera.combined
+        Gdx.gl.glEnable(GL20.GL_BLEND)
+        game.shapes.begin(ShapeRenderer.ShapeType.Filled)
+        game.backdrop.draw(game.shapes, game.clock)
+        game.shapes.end()
         draw(delta)
+        val fade = game.fader.alpha
+        if (fade > 0f) {
+            Gdx.gl.glEnable(GL20.GL_BLEND)
+            game.shapes.begin(ShapeRenderer.ShapeType.Filled)
+            game.shapes.setColor(0f, 0f, 0f, fade)
+            game.shapes.rect(-20f, -20f, Layout.WORLD_W + 40f, Layout.WORLD_H + 40f)
+            game.shapes.end()
+        }
     }
 
     abstract fun draw(delta: Float)

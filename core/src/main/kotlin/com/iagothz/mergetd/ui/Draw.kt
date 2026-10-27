@@ -95,6 +95,12 @@ fun SpriteBatch.textLeft(font: BitmapFont, text: String, x: Float, y: Float) {
     font.draw(this, text, x, y + layout.height / 2)
 }
 
+/** Draws [text] with its right edge at [x], vertically centred on [y]. */
+fun SpriteBatch.textRight(font: BitmapFont, text: String, x: Float, y: Float) {
+    layout.setText(font, text)
+    font.draw(this, text, x - layout.width, y + layout.height / 2)
+}
+
 /** [text] with a dark offset copy underneath, for text drawn over the board. */
 fun SpriteBatch.textShadowed(font: BitmapFont, text: String, x: Float, y: Float, ink: Color = Color.WHITE) {
     val a = ink.a

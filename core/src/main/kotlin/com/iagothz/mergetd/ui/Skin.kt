@@ -10,6 +10,9 @@ object Skin {
     val PANEL = Color(0.16f, 0.17f, 0.22f, 1f)
     /** Empty board cell; a touch lighter than the panel it sits on. */
     val CELL = Color(0.20f, 0.21f, 0.27f, 1f)
+    /** Frame around the grid and its rim. */
+    val BOARD = Color(0.12f, 0.13f, 0.18f, 1f)
+    val BOARD_RIM = Color(0.26f, 0.28f, 0.36f, 1f)
     val PATH = Color(0.24f, 0.21f, 0.17f, 1f)
     val PATH_EDGE = Color(0.16f, 0.13f, 0.10f, 1f)
     val SHADOW = Color(0f, 0f, 0f, 0.35f)
