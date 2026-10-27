@@ -56,9 +56,9 @@ class Board {
             return true
         }
         val type = when {
-            // The Boost guarantees the other die's type; the Mirror and ordinary merges roll the deck.
-            a.type == DieType.BOOST && b.type != DieType.BOOST -> b.type
-            b.type == DieType.BOOST && a.type != DieType.BOOST -> a.type
+            // The Boost guarantees the other die's type (so two Boosts make a Boost); the Mirror and ordinary merges roll the deck.
+            a.type == DieType.BOOST -> b.type
+            b.type == DieType.BOOST -> a.type
             else -> deck.random(rng)
         }
         this[from] = null

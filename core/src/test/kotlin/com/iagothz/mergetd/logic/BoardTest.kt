@@ -88,9 +88,10 @@ class BoardTest {
         assertEquals(DieType.ICE, reversed[b]!!.type)
         assertEquals(4, reversed[b]!!.pips)
 
+        // Two Boosts make a bigger Boost: each guarantees the other's type.
         val two = board(Die(DieType.BOOST, 3), Die(DieType.BOOST, 3))
         assertTrue(two.merge(a, b, deck, rng))
-        assertTrue(two[b]!!.type in deck)
+        assertEquals(DieType.BOOST, two[b]!!.type)
         assertEquals(4, two[b]!!.pips)
 
         val withMirror = board(Die(DieType.BOOST, 2), Die(DieType.MIRROR, 2))

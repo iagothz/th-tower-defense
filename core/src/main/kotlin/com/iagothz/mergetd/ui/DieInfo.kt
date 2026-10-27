@@ -99,7 +99,7 @@ data class DieInfo(val summary: String, val rows: List<Pair<String, String>>) {
             DieType.LUCK -> S.f("cada ataque causa de 0x a %sx o dano normal (média %sx)", num(Balance.LUCK_MAX_MULT), num(Balance.LUCK_MAX_MULT / 2))
             DieType.VAMPIRE -> S.f("+%d SP por pip a cada inimigo que matar, além da recompensa normal", Balance.VAMPIRE_SP_PER_PIP)
             DieType.CLONE -> S["arrastado sobre um dado de mesmos pips (ou o contrário), vira uma cópia dele, tipo e pips, e o original continua no lugar; stacks do Caçador não são copiados; dois Clonadores fazem merge normal"]
-            DieType.BOOST -> S["faz merge com qualquer dado de mesmos pips e o resultado é o tipo do outro dado com +1 pip (dois Reforços sorteiam do deck)"]
+            DieType.BOOST -> S["faz merge com qualquer dado de mesmos pips e o resultado é o tipo do outro dado com +1 pip (dois Reforços viram um Reforço)"]
         }
 
         /** What the die gains at the pip cap. */

@@ -113,7 +113,7 @@ th-tower-defense/
 | Sorte | verde-limão | Dano sorteado de 0x a 4x a cada ataque |
 | Vampiro | vinho | +1 SP por pip a cada abate, além da recompensa |
 | Clonador | lilás | Ataque fraco. Arrastado sobre um dado de mesmos pips (ou o contrário), vira uma cópia dele (tipo e pips, sem stacks) e o original fica; funciona até com 7 pips; dois Clonadores fazem merge normal |
-| Reforço | verde-petróleo | Ataque fraco. Coringa garantido: faz merge com qualquer dado de mesmos pips e o resultado é o tipo do outro dado com +1 pip; dois Reforços sorteiam do deck |
+| Reforço | verde-petróleo | Ataque fraco. Coringa garantido: faz merge com qualquer dado de mesmos pips e o resultado é o tipo do outro dado com +1 pip; dois Reforços viram um Reforço |
 
 Os valores base (dano e intervalo) ficam em `Balance.kt`. O dado que deu o último golpe recebe o crédito do abate (Vampiro, Caçador, Supernova). Gravidade e Tempo têm limites para nenhum inimigo ficar preso para sempre.
 

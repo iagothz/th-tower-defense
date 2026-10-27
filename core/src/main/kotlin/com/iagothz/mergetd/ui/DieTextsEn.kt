@@ -64,8 +64,8 @@ object DieTextsEn {
         "+%d SP por pip a cada inimigo que matar, além da recompensa normal" to "+%d SP per pip for every enemy it kills, on top of the normal reward",
         "arrastado sobre um dado de mesmos pips (ou o contrário), vira uma cópia dele, tipo e pips, e o original continua no lugar; stacks do Caçador não são copiados; dois Clonadores fazem merge normal" to
             "dropped on a die of the same pips (or the other way round), it becomes a copy of it, type and pips, and the original stays; Hunter stacks aren't copied; two Cloners merge normally",
-        "faz merge com qualquer dado de mesmos pips e o resultado é o tipo do outro dado com +1 pip (dois Reforços sorteiam do deck)" to
-            "merges with any die of the same pips and the result is the other die's type with +1 pip (two Boosts roll from the deck)",
+        "faz merge com qualquer dado de mesmos pips e o resultado é o tipo do outro dado com +1 pip (dois Reforços viram um Reforço)" to
+            "merges with any die of the same pips and the result is the other die's type with +1 pip (two Boosts make a Boost)",
         // 7 pips
         "explosão com raio ×%s e dano cheio nos vizinhos" to "blast radius ×%s with full damage on the neighbours",
         "além da lentidão, congela o alvo por %s s" to "besides the slow, freezes the target for %s s",
