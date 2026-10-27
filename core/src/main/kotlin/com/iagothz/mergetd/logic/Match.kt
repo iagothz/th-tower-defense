@@ -7,8 +7,9 @@ import kotlin.random.Random
 /** A TRAP mine waiting on the path; [owner] is credited with its kills. */
 class Trap(val distance: Float, val damage: Float, val owner: Die?)
 
-class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
+class Match(val deck: List<DieType>, private val rng: Random = Random.Default, val map: GameMap = GameMap.DEFAULT) {
     val board = Board()
+    val path: EnemyPath get() = map.path
     var sp = Balance.START_SP
     var lives = Balance.START_LIVES
     var wave = 0
@@ -123,6 +124,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
         fun line(key: String, value: Any) = append(key).append('=').append(value).append('\n')
         line("v", SNAPSHOT_VERSION)
         line("deck", DeckCodec.encode(deck))
+        line("map", map.id)
         line("wave", wave)
         line("sp", sp)
         line("lives", lives)
@@ -213,7 +215,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
             e.tickEffects(dt)
             if (!e.alive) continue
             e.distance += e.speed() * dt
-            if (e.distance >= Layout.PATH.length) {
+            if (e.distance >= path.length) {
                 lives = maxOf(0, lives - e.kind.lifeDamage)
                 events += GameEvent.Leaked(e.kind)
                 iter.remove()
@@ -279,7 +281,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
         val fired = if (die.type == DieType.TRAP) {
             plantTrap(die)
         } else {
-            val shot = Combat.attack(die, Layout.cellCenter(cell), powerLevel(die.type), enemyList, Layout.PATH, bonus, rng)
+            val shot = Combat.attack(die, Layout.cellCenter(cell), powerLevel(die.type), enemyList, path, bonus, rng)
             if (shot != null) {
                 shots += shot
                 shot.damage.forEach { (enemy, amount) -> events += GameEvent.Hit(enemy, amount, shot.crit) }
@@ -297,7 +299,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
     private fun plantTrap(die: Die): Boolean {
         val leader = enemyList.filter { it.alive }.maxByOrNull { it.distance } ?: return false
         if (trapList.count { it.owner === die } >= Balance.TRAP_MAX_PER_DIE) return false
-        val at = minOf(leader.distance + Balance.TRAP_AHEAD, Layout.PATH.length - 1f)
+        val at = minOf(leader.distance + Balance.TRAP_AHEAD, path.length - 1f)
         trapList += Trap(at, Combat.baseDamage(DieType.TRAP, die.pips, powerLevel(DieType.TRAP)), die)
         return true
     }
@@ -308,7 +310,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
             val trap = iter.next()
             if (enemyList.none { it.alive && abs(it.distance - trap.distance) <= Balance.TRAP_TRIGGER }) continue
             iter.remove()
-            blast(Layout.PATH.positionAt(trap.distance), Balance.TRAP_RADIUS, trap.damage, trap.owner, DieType.TRAP)
+            blast(path.positionAt(trap.distance), Balance.TRAP_RADIUS, trap.damage, trap.owner, DieType.TRAP)
         }
     }
 
@@ -316,7 +318,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
     private fun blast(center: Vec2, radius: Float, damage: Float, by: Die?, type: DieType) {
         events += GameEvent.Blast(center, radius, type)
         for (e in enemyList) {
-            if (!e.alive || Layout.PATH.positionAt(e.distance).dst(center) > radius) continue
+            if (!e.alive || path.positionAt(e.distance).dst(center) > radius) continue
             events += GameEvent.Hit(e, e.takeDamage(damage, by))
         }
     }
@@ -328,7 +330,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
             if (dead.isEmpty()) return
             enemyList.removeAll { !it.alive }
             for (e in dead) {
-                val at = Layout.PATH.positionAt(e.distance)
+                val at = path.positionAt(e.distance)
                 sp += e.kind.reward
                 events += GameEvent.Killed(e.kind, at)
                 val killer = e.lastHit ?: continue
@@ -364,7 +366,9 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
             fun type(id: String) = requireNotNull(DieType.byId(id)) { "unknown die $id" }
             fun list(key: String) = scalars.getValue(key).split(",").filter { it.isNotEmpty() }
 
-            val m = Match(scalars.getValue("deck").split(",").map(::type), rng)
+            // Saves from before maps have no "map" line and were always played on the default map.
+            val map = scalars["map"]?.let { requireNotNull(GameMap.byId(it)) { "unknown map $it" } } ?: GameMap.DEFAULT
+            val m = Match(scalars.getValue("deck").split(",").map(::type), rng, map)
             m.wave = scalars.getValue("wave").toInt()
             m.sp = scalars.getValue("sp").toInt()
             m.lives = scalars.getValue("lives").toInt()

@@ -82,4 +82,16 @@ class MatchSnapshotTest {
         assertEquals(0.2f, e.curse)
         assertTrue(e.stunTime > 90f)
     }
+
+    @Test
+    fun roundTripKeepsTheMapAndOldSavesOpenOnTheDefault() {
+        val m = Match(DeckCodec.DEFAULT, Random(3), GameMap.RING)
+        m.buyDie()
+        val text = m.snapshot()
+        assertTrue("map=ring" in text.lines(), text)
+        assertEquals(GameMap.RING, assertNotNull(Match.restore(text)).map)
+
+        val legacy = text.lines().filterNot { it.startsWith("map=") }.joinToString("\n")
+        assertEquals(GameMap.DEFAULT, assertNotNull(Match.restore(legacy)).map)
+    }
 }

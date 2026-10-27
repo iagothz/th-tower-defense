@@ -13,10 +13,11 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
     /** A decorative die drifting down behind the menu. */
     private class Drop(var type: DieType, var pips: Int, var x: Float, var y: Float, var size: Float, var speed: Float, val sway: Float)
 
-    private val play = Button(Rectangle(160f, 620f, 400f, 110f), "Jogar")
-    private val deck = Button(Rectangle(160f, 470f, 400f, 110f), "Deck")
-    private val sound = Button(Rectangle(160f, 320f, 400f, 110f), "", color = Skin.PANEL)
-    private val buttons = listOf(play, deck, sound)
+    private val play = Button(Rectangle(160f, 640f, 400f, 100f), "Jogar")
+    private val deck = Button(Rectangle(160f, 520f, 400f, 100f), "Deck")
+    private val map = Button(Rectangle(160f, 400f, 400f, 100f), "Mapa")
+    private val sound = Button(Rectangle(160f, 280f, 400f, 100f), "", color = Skin.PANEL)
+    private val buttons = listOf(play, deck, map, sound)
     private val tap = Tap<Button>()
     private val rng = Random(System.nanoTime())
     private val drops = List(DROPS) { newDrop(rng.nextFloat() * Layout.WORLD_H) }
@@ -53,12 +54,13 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         for (d in drops) shapes.die(d.type, d.pips, d.x + sin(time * 0.7f + d.sway) * 12f, d.y, d.size, 0.75f, 0.45f)
         shapes.color = Skin.PANEL
-        shapes.roundedRect(200f, 812f, 320f, 56f, 28f)
+        shapes.roundedRect(140f, 812f, 440f, 56f, 28f)
         shapes.color = Skin.GOLD
-        shapes.rectLine(236f, 826f, 236f, 856f, 3f)
-        shapes.triangle(237f, 856f, 237f, 840f, 259f, 848f)
+        shapes.rectLine(176f, 826f, 176f, 856f, 3f)
+        shapes.triangle(177f, 856f, 177f, 840f, 199f, 848f)
         play.drawShape(shapes)
         deck.drawShape(shapes)
+        map.drawShape(shapes)
         sound.drawShape(shapes)
         // Three little dice sitting on the title line.
         shapes.die(DieType.FIRE, 3, 236f, 1046f, 44f)
@@ -69,9 +71,11 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         game.batch.begin()
         game.batch.textShadowed(game.bigFont, "Merge TD", 360f, 960f)
         game.batch.textCentered(game.smallFont, "Junte dados iguais, segure as ondas", 360f, 900f)
-        game.batch.textLeft(game.font, "Recorde: onda ${game.save.bestWave}", 272f, 840f)
+        val chosen = game.save.map
+        game.batch.textLeft(game.font, "${chosen.title}: recorde onda ${game.save.bestWave(chosen)}", 212f, 840f)
         play.drawText(game.batch, game.font)
         deck.drawText(game.batch, game.font)
+        map.drawText(game.batch, game.font)
         sound.drawText(game.batch, game.font)
         game.smallFont.color = Color(1f, 1f, 1f, 0.4f)
         game.batch.textCentered(game.smallFont, "v${MergeTdGame.VERSION}", 360f, 40f)
@@ -89,6 +93,7 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         when (tap.release(buttonAt(p))) {
             play -> game.startMatch()
             deck -> game.showDeck()
+            map -> game.showMap()
             sound -> {
                 game.save.soundOn = !game.save.soundOn
                 game.sfx.click()

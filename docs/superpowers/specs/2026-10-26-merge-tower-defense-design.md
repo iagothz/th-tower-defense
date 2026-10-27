@@ -34,7 +34,7 @@ th-tower-defense/
 
 - **`logic`** é Kotlin puro. A classe `Match` expõe ações (`buyDie()`, `merge(from, to)`, `powerUp(type)`) e `update(dt)`, que avança em passos fixos de 1/60 s. O RNG é injetado (`Random` com seed) para os testes serem determinísticos. Todos os números ficam em `Balance.kt`.
 - **`ui`** lê o estado de `Match` e desenha com `ShapeRenderer` (com MSAA 4x) e `BitmapFont`. As cores de cada tipo ficam em `Skin` (nenhum par de dados a menos de 0,2 de distância RGB, garantido por teste), os ícones em `DieGlyph` (primitivas num quadrado unitário) e o desenho do dado em `DieDraw`; tudo isso pode ser trocado por sprites depois. `Effects` cuida do feedback (números, anéis de explosão, partículas, banner), `Backdrop` do fundo e `Fader` da transição entre telas.
-- **Persistência:** `Preferences` do libGDX, guardando `bestWave` e `deck` (lista de 5 IDs de tipo).
+- **Persistência:** `Preferences` do libGDX, guardando o recorde por mapa (`best.<id>`; o antigo `bestWave` vale para a Ferradura), `map`, `deck` (lista de 5 IDs de tipo) e a partida em andamento.
 - **Ambiente:** Android SDK 36, build-tools 35/36. O AGP exige JDK 17 ou 21; se o JDK 25 do Android Studio for rejeitado, configurar uma toolchain Gradle 17/21.
 
 ## Regras da partida
@@ -116,6 +116,17 @@ th-tower-defense/
 | Reforço | verde-petróleo | Ataque fraco. Coringa garantido: faz merge com qualquer dado de mesmos pips e o resultado é o tipo do outro dado com +1 pip; dois Reforços sorteiam do deck |
 
 Os valores base (dano e intervalo) ficam em `Balance.kt`. O dado que deu o último golpe recebe o crédito do abate (Vampiro, Caçador, Supernova). Gravidade e Tempo têm limites para nenhum inimigo ficar preso para sempre.
+
+## Mapas
+
+O tabuleiro, o HUD e os botões nunca mudam de lugar; cada mapa é um caminho diferente nas faixas livres em volta (x=44 e x=676 ao lado do tabuleiro, y=880..1020 acima, y=245 abaixo) com um tema de chão e céu. O jogador escolhe na tela **Mapa**; o recorde é guardado por mapa, e o recorde de antes dos mapas vale para a Ferradura. A partida salva guarda o mapa; um save sem mapa abre na Ferradura. A dificuldade é medida no simulador (bot smart, deck padrão, 1000 partidas), não pelo comprimento.
+
+| Mapa | Traçado | Comprimento | Mediana | Dificuldade | Tema |
+|---|---|---|---|---|---|
+| Ferradura | sobe pela esquerda, cruza em cima, desce pela direita | 1984 | 22 | Normal | floresta |
+| Serpente | duas passagens pela área de cima, desce pela esquerda | 2104 | 22 | Normal | deserto |
+| Anel | do topo pelo meio, desce pela direita, passa por baixo do tabuleiro, sobe pela esquerda | 2674 | 25 | Fácil | gelo |
+| Reta | cruza em cima e desce pela direita | 1332 | 16 | Difícil | vulcão |
 
 ## Inimigos
 

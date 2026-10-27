@@ -24,8 +24,8 @@ class Backdrop {
     private val tmp = Color()
 
     /** Call inside a Filled batch with blending on. [time] is the clock in seconds. */
-    fun draw(shapes: ShapeRenderer, time: Float) {
-        shapes.rect(0f, 0f, Layout.WORLD_W, Layout.WORLD_H, BOTTOM, BOTTOM, TOP, TOP)
+    fun draw(shapes: ShapeRenderer, time: Float, theme: MapTheme) {
+        shapes.rect(0f, 0f, Layout.WORLD_W, Layout.WORLD_H, theme.skyBottom, theme.skyBottom, theme.skyTop, theme.skyTop)
         for (s in stars) {
             val twinkle = 0.35f + 0.65f * (0.5f + 0.5f * sin(time * s.speed + s.phase))
             shapes.color = tmp.set(0.75f, 0.8f, 0.95f, 0.55f * twinkle)
@@ -35,7 +35,5 @@ class Backdrop {
 
     private companion object {
         const val STARS = 70
-        val TOP = Color(0.10f, 0.11f, 0.19f, 1f)
-        val BOTTOM = Color(0.05f, 0.06f, 0.09f, 1f)
     }
 }

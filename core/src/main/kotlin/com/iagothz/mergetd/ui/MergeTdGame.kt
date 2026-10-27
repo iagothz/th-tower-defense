@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.Match
 
 /** [devMode] enables desktop-only cheat keys and disables record saving. */
@@ -52,6 +53,8 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
 
     fun showDeck() = switchTo(DeckScreen(this))
 
+    fun showMap() = switchTo(MapScreen(this))
+
     fun startMatch() {
         save.clearMatch()
         switchTo(MatchScreen(this))
@@ -69,8 +72,8 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
         return true
     }
 
-    fun showGameOver(wave: Int, isRecord: Boolean, stats: MatchStats) =
-        switchTo(GameOverScreen(this, wave, isRecord, stats))
+    fun showGameOver(map: GameMap, wave: Int, isRecord: Boolean, stats: MatchStats) =
+        switchTo(GameOverScreen(this, map, wave, isRecord, stats))
 
     /** Fades to black, swaps the screen, fades back in. The first screen, or one requested mid-fade, swaps at once. */
     private fun switchTo(screen: Screen) {

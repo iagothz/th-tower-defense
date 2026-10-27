@@ -16,13 +16,13 @@ import com.iagothz.mergetd.logic.Vec2
 class MatchScreen(
     game: MergeTdGame,
     restored: Match? = null,
-    private val previousBest: Int = game.save.bestWave,
+    private val previousBest: Int = game.save.bestWave(game.save.map),
 ) : BaseScreen(game) {
-    private val match = restored ?: Match(game.save.deck)
+    private val match = restored ?: Match(game.save.deck, map = game.save.map)
     private val drag = DragController(match)
     private val renderer = MatchRenderer(game.shapes, game.batch, game.font, game.smallFont)
     private val buttonTap = Tap<Button>()
-    private val effects = Effects()
+    private val effects = Effects(path = match.path)
     private val stats = MatchStats()
     private val sounds = SoundPlanner()
     private var clock = 0f
@@ -39,12 +39,14 @@ class MatchScreen(
     private val quit = Button(Rectangle(160f, 540f, 400f, 110f), "Sair", color = Color(0.7f, 0.25f, 0.25f, 1f))
     private val allButtons = listOf(buy, pauseButton, resume, quit) + powerButtons.map { it.second }
 
+    override val theme get() = Skin.theme(match.map)
+
     /** App going to the background: stop, drop any gesture, and save the match and record in case we're killed. */
     override fun pause() {
         paused = true
         onTouchCancelled()
         if (game.devMode || match.isGameOver) return
-        game.save.recordWave(match.wave)
+        game.save.recordWave(match.map, match.wave)
         game.save.saveMatch(match.snapshot(), previousBest)
     }
 
@@ -186,7 +188,7 @@ class MatchScreen(
 
     private fun finish() {
         game.save.clearMatch()
-        if (!game.devMode) game.save.recordWave(match.wave)
-        game.showGameOver(match.wave, !game.devMode && match.wave > previousBest, stats)
+        if (!game.devMode) game.save.recordWave(match.map, match.wave)
+        game.showGameOver(match.map, match.wave, !game.devMode && match.wave > previousBest, stats)
     }
 }

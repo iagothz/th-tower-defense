@@ -69,7 +69,7 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
         game.batch.projectionMatrix = viewport.camera.combined
         Gdx.gl.glEnable(GL20.GL_BLEND)
         game.shapes.begin(ShapeRenderer.ShapeType.Filled)
-        game.backdrop.draw(game.shapes, game.clock)
+        game.backdrop.draw(game.shapes, game.clock, theme)
         game.shapes.end()
         draw(delta)
         val fade = game.fader.alpha
@@ -83,6 +83,9 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
     }
 
     abstract fun draw(delta: Float)
+
+    /** Sky colours behind this screen: the chosen map's, unless the screen knows better. */
+    open val theme: MapTheme get() = Skin.theme(game.save.map)
 
     /** Camera offset for this frame, in world units. */
     open fun cameraShake(): Vec2 = NO_SHAKE

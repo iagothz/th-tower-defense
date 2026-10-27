@@ -2,6 +2,7 @@ package com.iagothz.mergetd.sim
 
 import com.iagothz.mergetd.logic.DeckCodec
 import com.iagothz.mergetd.logic.DieType
+import com.iagothz.mergetd.logic.GameMap
 import java.io.File
 import java.util.stream.Collectors
 import java.util.stream.LongStream
@@ -10,30 +11,34 @@ import kotlin.random.Random
 /**
  * Headless balance report.
  *   ./gradlew :sim:run --args="--games 300 --bot all --decks default"
- * Options: --games N, --bot simple|smart|all, --decks default|random, --seed S.
+ * Options: --games N, --bot simple|smart|all, --decks default|random, --seed S, --map <id>|all.
  */
 fun main(args: Array<String>) {
     val opts = args.toList().chunked(2).associate { it[0].removePrefix("--") to it.getOrElse(1) { "" } }
     val games = opts["games"]?.toInt() ?: 300
     val seed = opts["seed"]?.toLong() ?: 1L
     val randomDecks = opts["decks"] == "random"
+    val maps = when (val m = opts["map"] ?: GameMap.DEFAULT.id) {
+        "all" -> GameMap.entries.toList()
+        else -> listOf(requireNotNull(GameMap.byId(m)) { "unknown map $m" })
+    }
     val bots = when (val b = opts["bot"] ?: "all") {
         "all" -> BOTS.keys.toList()
         else -> listOf(b)
     }
 
-    val csv = StringBuilder("bot,seed,deck,wave,killed_by\n")
-    for (name in bots) {
+    val csv = StringBuilder("bot,map,seed,deck,wave,killed_by\n")
+    for (map in maps) for (name in bots) {
         val bot = BOTS.getValue(name)
         val started = System.nanoTime()
         val results = LongStream.range(seed, seed + games).parallel().mapToObj { s ->
             val deck = if (randomDecks) DieType.entries.shuffled(Random(s)).take(DeckCodec.SIZE) else DeckCodec.DEFAULT
-            Simulator.play(deck, bot, s)
+            Simulator.play(deck, bot, s, map)
         }.collect(Collectors.toList())
         val secs = (System.nanoTime() - started) / 1e9
-        printReport(name, results, randomDecks, secs)
+        printReport(name, map, results, randomDecks, secs)
         results.forEach { r ->
-            csv.append("$name,${r.seed},${DeckCodec.encode(r.deck).replace(',', ' ')},${r.wave},${r.killedBy ?: ""}\n")
+            csv.append("$name,${map.id},${r.seed},${DeckCodec.encode(r.deck).replace(',', ' ')},${r.wave},${r.killedBy ?: ""}\n")
         }
     }
     val out = File("sim/build/sim-results.csv")
@@ -42,11 +47,11 @@ fun main(args: Array<String>) {
     println("CSV: ${out.path}")
 }
 
-private fun printReport(bot: String, results: List<GameResult>, randomDecks: Boolean, secs: Double) {
+private fun printReport(bot: String, map: GameMap, results: List<GameResult>, randomDecks: Boolean, secs: Double) {
     val waves = results.map { it.wave }
     val deck = if (randomDecks) "sorteados" else DeckCodec.encode(DeckCodec.DEFAULT)
     println()
-    println("== Bot: $bot | decks: $deck | ${results.size} partidas | ${"%.1f".format(secs)} s ==")
+    println("== Bot: $bot | mapa: ${map.id} | decks: $deck | ${results.size} partidas | ${"%.1f".format(secs)} s ==")
     println(
         "Onda final: p10 ${Stats.percentile(waves, 10)} | mediana ${Stats.percentile(waves, 50)} | " +
             "p90 ${Stats.percentile(waves, 90)} | maior ${waves.max()}",

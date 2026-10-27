@@ -270,4 +270,15 @@ class MatchTest {
         assertEquals(100f - Balance.stats(DieType.MIRROR).baseDamage, enemy.hp)
         assertTrue(enemy.hp < 100f)
     }
+
+    /** The match walks its own map's path, so the leak point moves with the map. */
+    @Test
+    fun matchFollowsItsMap() {
+        val m = Match(DeckCodec.DEFAULT, Random(7), GameMap.STRAIGHT)
+        assertEquals(GameMap.STRAIGHT.path, m.path)
+        m.debugAddEnemy(Enemy(EnemyKind.NORMAL, 100f).also { it.distance = GameMap.STRAIGHT.path.length - 0.1f })
+        m.update(Balance.STEP)
+        assertEquals(Balance.START_LIVES - 1, m.lives)
+        assertTrue(m.enemies.isEmpty())
+    }
 }

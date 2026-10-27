@@ -1,6 +1,7 @@
 package com.iagothz.mergetd.ui
 
 import com.badlogic.gdx.Preferences
+import com.iagothz.mergetd.logic.GameMap
 import java.lang.reflect.Proxy
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -34,15 +35,36 @@ class SaveDataTest {
     }
 
     @Test
-    fun recordWaveOnlyIncreases() {
+    fun recordWaveOnlyIncreasesAndIsPerMap() {
         val save = SaveData(memoryPrefs())
-        assertTrue(save.recordWave(5))
-        assertEquals(5, save.bestWave)
-        assertFalse(save.recordWave(3))
-        assertEquals(5, save.bestWave)
-        assertFalse(save.recordWave(5))
-        assertTrue(save.recordWave(6))
-        assertEquals(6, save.bestWave)
+        assertTrue(save.recordWave(GameMap.RING, 5))
+        assertEquals(5, save.bestWave(GameMap.RING))
+        assertEquals(0, save.bestWave(GameMap.STRAIGHT))
+        assertFalse(save.recordWave(GameMap.RING, 3))
+        assertFalse(save.recordWave(GameMap.RING, 5))
+        assertTrue(save.recordWave(GameMap.RING, 6))
+        assertEquals(6, save.bestWave(GameMap.RING))
+    }
+
+    /** The record from before maps existed belongs to the Horseshoe, the only map there was. */
+    @Test
+    fun legacyRecordCountsForTheHorseshoe() {
+        val prefs = memoryPrefs()
+        prefs.putInteger("bestWave", 21)
+        val save = SaveData(prefs)
+        assertEquals(21, save.bestWave(GameMap.HORSESHOE))
+        assertEquals(0, save.bestWave(GameMap.SERPENT))
+        assertFalse(save.recordWave(GameMap.HORSESHOE, 20))
+        assertTrue(save.recordWave(GameMap.HORSESHOE, 22))
+        assertEquals(22, save.bestWave(GameMap.HORSESHOE))
+    }
+
+    @Test
+    fun selectedMapDefaultsToTheHorseshoeAndPersists() {
+        val prefs = memoryPrefs()
+        assertEquals(GameMap.HORSESHOE, SaveData(prefs).map)
+        SaveData(prefs).map = GameMap.SERPENT
+        assertEquals(GameMap.SERPENT, SaveData(prefs).map)
     }
 
     @Test

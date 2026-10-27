@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.iagothz.mergetd.logic.Cell
 import com.iagothz.mergetd.logic.Enemy
+import com.iagothz.mergetd.logic.EnemyPath
+import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.GameEvent
 import com.iagothz.mergetd.logic.Layout
 import com.iagothz.mergetd.logic.Vec2
@@ -17,7 +19,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /** Short-lived juice driven by [GameEvent]s: damage numbers, flashes, particles, rings, pops, shake and wave banners. */
-class Effects(private val rng: Random = Random.Default) {
+class Effects(private val rng: Random = Random.Default, private val path: EnemyPath = GameMap.DEFAULT.path) {
     class FloatingText(
         val text: String,
         val x: Float,
@@ -77,7 +79,7 @@ class Effects(private val rng: Random = Random.Default) {
         for ((enemy, amount) in hits) {
             flashes[enemy] = FLASH_TIME
             if (texts.size >= MAX_TEXTS) continue
-            val p = Layout.PATH.positionAt(enemy.distance)
+            val p = path.positionAt(enemy.distance)
             texts += FloatingText(amount.roundToInt().coerceAtLeast(1).toString(), p.x, p.y + 30f, crit = enemy in crits)
         }
     }

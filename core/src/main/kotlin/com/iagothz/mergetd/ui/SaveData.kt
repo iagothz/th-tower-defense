@@ -3,12 +3,27 @@ package com.iagothz.mergetd.ui
 import com.badlogic.gdx.Preferences
 import com.iagothz.mergetd.logic.DeckCodec
 import com.iagothz.mergetd.logic.DieType
+import com.iagothz.mergetd.logic.GameMap
 
 class SaveData(private val prefs: Preferences) {
-    var bestWave: Int
-        get() = prefs.getInteger("bestWave", 0)
+    /** Best wave on [map]. The record from before maps existed ("bestWave") belongs to the default map. */
+    fun bestWave(map: GameMap): Int {
+        val legacy = if (map == GameMap.DEFAULT) prefs.getInteger("bestWave", 0) else 0
+        return maxOf(legacy, prefs.getInteger("best.${map.id}", 0))
+    }
+
+    /** Saves [wave] as [map]'s record if it beats it; returns whether it did. */
+    fun recordWave(map: GameMap, wave: Int): Boolean {
+        if (wave <= bestWave(map)) return false
+        prefs.putInteger("best.${map.id}", wave)
+        prefs.flush()
+        return true
+    }
+
+    var map: GameMap
+        get() = prefs.getString("map", null)?.let { GameMap.byId(it) } ?: GameMap.DEFAULT
         set(value) {
-            prefs.putInteger("bestWave", value)
+            prefs.putString("map", value.id)
             prefs.flush()
         }
 
@@ -18,13 +33,6 @@ class SaveData(private val prefs: Preferences) {
             prefs.putBoolean("sound", value)
             prefs.flush()
         }
-
-    /** Saves [wave] if it beats the best; returns whether it did. */
-    fun recordWave(wave: Int): Boolean {
-        if (wave <= bestWave) return false
-        bestWave = wave
-        return true
-    }
 
     var deck: List<DieType>
         get() = DeckCodec.decode(prefs.getString("deck", null))

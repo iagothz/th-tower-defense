@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
 import com.iagothz.mergetd.logic.DieType
+import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.Layout
 import com.iagothz.mergetd.logic.Vec2
 import kotlin.math.abs
@@ -12,15 +13,16 @@ import kotlin.random.Random
 
 class GameOverScreen(
     game: MergeTdGame,
+    private val map: GameMap,
     private val wave: Int,
     private val isRecord: Boolean,
     private val stats: MatchStats,
 ) : BaseScreen(game) {
     private class Confetto(var x: Float, var y: Float, val speed: Float, val sway: Float, val color: Color, val w: Float, val h: Float)
 
-    private val menu = Button(Rectangle(160f, 180f, 400f, 110f), "Menu")
+    private val menu = Button(Rectangle(160f, 160f, 400f, 110f), "Menu")
     private val tap = Tap<Button>()
-    private val panel = Rectangle(70f, 330f, 580f, 470f)
+    private val panel = Rectangle(70f, 300f, 580f, 540f)
     private val rng = Random(System.nanoTime())
     private val confetti = if (isRecord) List(CONFETTI) { newConfetto(rng.nextFloat() * Layout.WORLD_H) } else emptyList()
     private var time = 0f
@@ -31,12 +33,13 @@ class GameOverScreen(
     )
 
     private val rows: List<Pair<String, String>> = listOf(
+        "Mapa" to map.title,
         "Onda alcançada" to "$wave",
         "Inimigos derrotados" to "${stats.kills}",
         "Chefes derrotados" to "${stats.bosses}",
         "Merges" to "${stats.merges}",
         "Dados comprados" to "${stats.bought}",
-        "Recorde" to "onda ${game.save.bestWave}",
+        "Recorde" to "onda ${game.save.bestWave(map)}",
     )
 
     override fun draw(delta: Float) {
@@ -68,12 +71,12 @@ class GameOverScreen(
         shapes.end()
 
         game.batch.begin()
-        game.batch.textShadowed(game.bigFont, "Fim de jogo", 360f, 1000f)
+        game.batch.textShadowed(game.bigFont, "Fim de jogo", 360f, 1020f)
         if (isRecord) {
             val pulse = 0.8f + 0.2f * sin(time * 4f)
-            game.batch.textShadowed(game.font, "Novo recorde!", 360f, 900f, Color(1f, 0.85f * pulse + 0.1f, 0.3f, 1f))
+            game.batch.textShadowed(game.font, "Novo recorde!", 360f, 920f, Color(1f, 0.85f * pulse + 0.1f, 0.3f, 1f))
         }
-        var y = panel.y + panel.height - 52f
+        var y = panel.y + panel.height - 48f
         for ((key, value) in rows) {
             game.smallFont.color = KEY_COLOR
             game.batch.textLeft(game.smallFont, key, panel.x + 32f, y)
@@ -81,7 +84,7 @@ class GameOverScreen(
             game.font.color = if (key == "Onda alcançada") Skin.GOLD else Color.WHITE
             game.batch.textRight(game.font, value, panel.x + panel.width - 32f, y)
             game.font.color = Color.WHITE
-            y -= 72f
+            y -= 70f
         }
         menu.drawText(game.batch, game.font)
         game.batch.end()

@@ -50,7 +50,7 @@ class MatchRenderer(
 
     /** Call inside a Filled ShapeRenderer batch. */
     fun drawShapes(match: Match, drag: DragController, effects: Effects) {
-        drawPath()
+        drawPath(match)
         drawTraps(match)
         drawBoard(match, drag, effects)
         drawEnemies(match, effects)
@@ -114,16 +114,17 @@ class MatchRenderer(
         }
     }
 
-    private fun drawPath() {
-        val pts = Layout.PATH.points
-        for ((c, w) in listOf(Skin.PATH_EDGE to PATH_WIDTH + 8f, Skin.PATH to PATH_WIDTH)) {
+    private fun drawPath(match: Match) {
+        val pts = match.path.points
+        val theme = Skin.theme(match.map)
+        for ((c, w) in listOf(theme.edge to PATH_WIDTH + 8f, theme.ground to PATH_WIDTH)) {
             shapes.color = c
             for ((a, b) in pts.zipWithNext()) shapes.rectLine(a.x, a.y, b.x, b.y, w)
             pts.forEach { shapes.rect(it.x - w / 2, it.y - w / 2, w, w) }
         }
         val start = pts.first()
         val end = pts.last()
-        shapes.color = Skin.PATH_EDGE
+        shapes.color = theme.edge
         shapes.circle(start.x, start.y, 20f, 24)
         shapes.circle(end.x, end.y, 20f, 24)
         shapes.color = Color(0.3f, 0.75f, 0.35f, 1f)
@@ -134,8 +135,8 @@ class MatchRenderer(
 
     private fun drawTraps(match: Match) {
         for (t in match.traps) {
-            val p = Layout.PATH.positionAt(t.distance)
-            shapes.color = Skin.PATH_EDGE
+            val p = match.path.positionAt(t.distance)
+            shapes.color = Skin.theme(match.map).edge
             shapes.circle(p.x, p.y, 13f, 16)
             shapes.color = Skin.color(DieType.TRAP)
             shapes.circle(p.x, p.y, 11f, 16)
@@ -175,10 +176,10 @@ class MatchRenderer(
 
     private fun drawEnemies(match: Match, effects: Effects) {
         for (e in match.enemies) {
-            val p = Layout.PATH.positionAt(e.distance)
+            val p = match.path.positionAt(e.distance)
             val r = Skin.enemyRadius(e.kind)
             val sides = Skin.enemySides(e.kind)
-            val ahead = Layout.PATH.positionAt(e.distance + 4f)
+            val ahead = match.path.positionAt(e.distance + 4f)
             val heading = atan2(ahead.y - p.y, ahead.x - p.x)
             if (e.curse > 0f) {
                 shapes.color = Skin.color(DieType.CURSE)

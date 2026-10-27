@@ -9,10 +9,8 @@ object Layout {
     const val GRID_X = 84f
     const val GRID_Y = 464f
 
-    /** A U around the board, far enough from the edges that a boss (radius 32) is fully visible. */
-    val PATH = EnemyPath(
-        listOf(Vec2(44f, 180f), Vec2(44f, 856f), Vec2(676f, 856f), Vec2(676f, 180f)),
-    )
+    /** The default map's path; a running match uses [Match.path], which depends on its [GameMap]. */
+    val PATH: EnemyPath get() = GameMap.DEFAULT.path
 
     fun cellCenter(c: Cell): Vec2 = Vec2(
         GRID_X + c.col * (CELL + GAP) + CELL / 2,

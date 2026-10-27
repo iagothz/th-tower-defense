@@ -3,12 +3,13 @@ package com.iagothz.mergetd.sim
 import com.iagothz.mergetd.logic.Balance
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.EnemyKind
+import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.GameEvent
 import com.iagothz.mergetd.logic.Match
 import kotlin.random.Random
 
 /** [wave] is the wave the game ended on (or the cap); [killedBy] is the kind of the last enemy that leaked. */
-data class GameResult(val wave: Int, val killedBy: EnemyKind?, val deck: List<DieType>, val seed: Long)
+data class GameResult(val wave: Int, val killedBy: EnemyKind?, val deck: List<DieType>, val seed: Long, val map: GameMap)
 
 object Simulator {
     const val MAX_WAVE = 100
@@ -20,10 +21,11 @@ object Simulator {
         deck: List<DieType>,
         bot: (Long) -> Bot,
         seed: Long,
+        map: GameMap = GameMap.DEFAULT,
         maxWave: Int = MAX_WAVE,
         maxSeconds: Float = MAX_SECONDS,
     ): GameResult {
-        val match = Match(deck, Random(seed))
+        val match = Match(deck, Random(seed), map)
         val player = bot(seed)
         val stepsPerAct = (ACT_EVERY / Balance.STEP).toInt()
         var killedBy: EnemyKind? = null
@@ -34,7 +36,7 @@ object Simulator {
             repeat(stepsPerAct) { match.update(Balance.STEP) }
             for (e in match.drainEvents()) if (e is GameEvent.Leaked) killedBy = e.kind
         }
-        return GameResult(minOf(match.wave, maxWave), if (match.isGameOver) killedBy else null, deck, seed)
+        return GameResult(minOf(match.wave, maxWave), if (match.isGameOver) killedBy else null, deck, seed, map)
     }
 }
 

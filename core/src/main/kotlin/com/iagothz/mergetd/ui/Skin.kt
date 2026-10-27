@@ -1,8 +1,13 @@
 package com.iagothz.mergetd.ui
 
 import com.badlogic.gdx.graphics.Color
+import com.iagothz.mergetd.logic.Difficulty
 import com.iagothz.mergetd.logic.DieType
+import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.EnemyKind
+
+/** Ground and sky colours of one map. */
+class MapTheme(val ground: Color, val edge: Color, val skyTop: Color, val skyBottom: Color)
 
 /** All per-type visuals live here so shapes can later be swapped for sprites. */
 object Skin {
@@ -13,8 +18,24 @@ object Skin {
     /** Frame around the grid and its rim. */
     val BOARD = Color(0.12f, 0.13f, 0.18f, 1f)
     val BOARD_RIM = Color(0.26f, 0.28f, 0.36f, 1f)
-    val PATH = Color(0.24f, 0.21f, 0.17f, 1f)
-    val PATH_EDGE = Color(0.16f, 0.13f, 0.10f, 1f)
+    private val themes = mapOf(
+        // Forest: earth under a blue night.
+        GameMap.HORSESHOE to MapTheme(Color(0.24f, 0.21f, 0.17f, 1f), Color(0.16f, 0.13f, 0.10f, 1f), Color(0.10f, 0.11f, 0.19f, 1f), Color(0.05f, 0.06f, 0.09f, 1f)),
+        // Desert: sand under a warm dusk.
+        GameMap.SERPENT to MapTheme(Color(0.42f, 0.34f, 0.20f, 1f), Color(0.26f, 0.20f, 0.11f, 1f), Color(0.20f, 0.11f, 0.14f, 1f), Color(0.07f, 0.05f, 0.06f, 1f)),
+        // Ice: pale blue ground under a deep navy.
+        GameMap.RING to MapTheme(Color(0.42f, 0.52f, 0.62f, 1f), Color(0.24f, 0.32f, 0.42f, 1f), Color(0.07f, 0.12f, 0.24f, 1f), Color(0.03f, 0.05f, 0.10f, 1f)),
+        // Volcano: dark cinder under a wine sky.
+        GameMap.STRAIGHT to MapTheme(Color(0.30f, 0.14f, 0.12f, 1f), Color(0.18f, 0.07f, 0.06f, 1f), Color(0.20f, 0.07f, 0.09f, 1f), Color(0.07f, 0.03f, 0.04f, 1f)),
+    )
+
+    fun theme(map: GameMap): MapTheme = themes.getValue(map)
+
+    fun difficultyColor(d: Difficulty): Color = when (d) {
+        Difficulty.EASY -> Color(0.45f, 0.85f, 0.45f, 1f)
+        Difficulty.NORMAL -> GOLD
+        Difficulty.HARD -> HEART
+    }
     val SHADOW = Color(0f, 0f, 0f, 0.35f)
     val GOLD = Color(0.98f, 0.80f, 0.25f, 1f)
     val HEART = Color(0.92f, 0.28f, 0.36f, 1f)
