@@ -128,6 +128,12 @@ O tabuleiro, o HUD e os botões nunca mudam de lugar; cada mapa é um caminho di
 | Anel | do topo pelo meio, desce pela direita, passa por baixo do tabuleiro, sobe pela esquerda | 2674 | 25 | Fácil | gelo |
 | Reta | cruza em cima e desce pela direita | 1332 | 16 | Difícil | vulcão |
 
+## Sinergias, 7 pips e modos
+
+- **Sinergias** (`Synergy`): oito pares ativos enquanto os dois tipos estão no tabuleiro sem silêncio: Incêndio (Fogo+Vento, raio ×1,5), Estilhaço (Gelo+Terremoto, ×2 em lentos), Praga (Veneno+Maldição, veneno ×1,5), Ofuscar (Luz+Crítico, +10% crítico), Choque (Elétrico+Tempo, saltos congelam 0,2 s), Perfurante (Ferro+Sniper, ignoram armadura, +25% em chefes), Predador (Caçador+Vampiro, +25%), Emboscada (Gravidade+Armadilha, disparo das minas ×2). Etiquetas na borda do tabuleiro; lista na tela Deck e na descrição do dado.
+- **7 pips**: cada tipo ganha uma habilidade própria (anel dourado no dado; linha "7 pips" em `DieInfo.maxed`). Constantes em `Balance` (`*_MAX`, `ICE_FREEZE`, `TIME_AREA`, `BOOST_INTERVAL`...).
+- **Modos** (`GameMode`), escolhidos na tela Partida e guardados no save: Normal; Boss Rush (um chefe por onda, 35% da vida); Sobrevivência (1 vida, SP ×2); Rápido (intervalo 1 s, spawn 2× mais rápido, inimigos ×1,3 de velocidade e ×0,6 de vida). Recorde por mapa e modo (`best.<mapa>.<modo>`). Simulador com deck padrão: Normal 20, Boss Rush 14, Sobrevivência 20, Rápido 21.
+
 ## Meta, tutorial e áudio
 
 - **Tutorial** na primeira partida (`Tutorial`): Comprar → juntar → power-up, cada balão some ao fazer; Pular; `tutorialDone` no save.

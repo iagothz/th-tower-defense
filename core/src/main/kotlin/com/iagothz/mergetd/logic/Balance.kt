@@ -149,8 +149,8 @@ object Balance {
     // --- Modes (see GameMode) ---
     const val BOSS_RUSH_HP = 0.35f
     const val SURVIVAL_SP = 2
-    const val RUSH_HP = 0.8f
-    const val RUSH_SPEED = 1.5f
+    const val RUSH_HP = 0.6f
+    const val RUSH_SPEED = 1.3f
     const val RUSH_DELAY = 1f / 3f
     const val RUSH_SPAWN = 0.5f
 

@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.utils.Align
+import com.iagothz.mergetd.logic.Balance
 import com.iagothz.mergetd.logic.Cell
 import com.iagothz.mergetd.logic.Combat
 import com.iagothz.mergetd.logic.Die
@@ -226,7 +227,11 @@ class MatchScreen(
         val info = DieInfo.of(t)
         y -= game.smallFont.draw(batch, info.summary, left, y, INFO.width - 48f, Align.left, true).height + 10f
         game.smallFont.color = KEY_COLOR
-        game.smallFont.draw(batch, info.rows.first { it.first == "Efeito" }.second, left, y, INFO.width - 48f, Align.left, true)
+        y -= game.smallFont.draw(batch, info.rows.first { it.first == "Efeito" }.second, left, y, INFO.width - 48f, Align.left, true).height + 8f
+        if (die.pips >= Balance.MAX_PIPS) {
+            game.smallFont.color = Skin.GOLD
+            game.smallFont.draw(batch, "7 pips: " + info.rows.first { it.first == "7 pips" }.second, left, y, INFO.width - 48f, Align.left, true)
+        }
         game.smallFont.color = Color.WHITE
     }
 

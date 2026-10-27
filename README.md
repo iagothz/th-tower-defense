@@ -15,7 +15,9 @@ Tower defense de merge no estilo Random Dice, para jogar offline no Android. Fei
 - As ondas são infinitas, com um chefe a cada 10 ondas (7 chefes, em ordem sorteada por partida) e uma onda especial a cada 5 (Horda, Tanques, Corrida). Na primeira partida um tutorial de 3 passos mostra o básico. Você tem 3 vidas; o recorde é a maior onda alcançada.
 - Se você trocar de app no meio da partida, o jogo pausa e salva. Mesmo que o Android feche o jogo, ao abrir de novo a partida volta de onde parou.
 - **Desafio do dia**: o dia sorteia mapa, 5 dados e a seed; o recorde é por dia e os últimos ficam em **Estatísticas**, junto com totais, recorde por mapa e melhores decks.
-- Na tela **Mapa**, escolha entre 4 caminhos (Ferradura, Serpente, Anel e Reta), com dificuldade e recorde próprios.
+- **Sinergias**: oito pares de dados (Fogo+Vento, Gelo+Terremoto, Veneno+Maldição, Luz+Crítico, Elétrico+Tempo, Ferro+Sniper, Caçador+Vampiro, Gravidade+Armadilha) ligam um bônus enquanto os dois estão no tabuleiro. Todo dado ganha uma habilidade própria em **7 pips**.
+- **Modos** na tela Partida: Normal, Boss Rush, Sobrevivência e Rápido, com recorde por mapa e modo.
+- Na tela **Partida**, escolha entre 4 caminhos (Ferradura, Serpente, Anel e Reta), com dificuldade e recorde próprios.
 - Na tela **Deck**, escolha 5 dos 25 tipos de dado. Tocar num dado mostra o que ele faz: alvo, dano, velocidade, efeito e power-up.
 
 ## Requisitos
