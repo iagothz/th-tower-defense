@@ -94,4 +94,15 @@ class MatchSnapshotTest {
         val legacy = text.lines().filterNot { it.startsWith("map=") }.joinToString("\n")
         assertEquals(GameMap.DEFAULT, assertNotNull(Match.restore(legacy)).map)
     }
+
+    @Test
+    fun roundTripKeepsTheBossOrderAndStolenSp() {
+        val m = Match(DeckCodec.DEFAULT, Random(5))
+        m.debugAddEnemy(Enemy(EnemyKind.BOSS_THIEF, 500f).also { it.distance = 100f; it.stolen = 70; it.armor = 3f })
+        val restored = assertNotNull(Match.restore(m.snapshot()))
+        assertEquals(m.bossOrder, restored.bossOrder)
+        assertEquals(70, restored.enemies.single().stolen)
+        assertEquals(3f, restored.enemies.single().armor)
+        assertEquals(m.snapshot(), restored.snapshot())
+    }
 }

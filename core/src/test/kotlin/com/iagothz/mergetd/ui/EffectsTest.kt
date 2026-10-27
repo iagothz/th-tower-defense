@@ -5,6 +5,7 @@ import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.Enemy
 import com.iagothz.mergetd.logic.EnemyKind
 import com.iagothz.mergetd.logic.GameEvent
+import com.iagothz.mergetd.logic.SpecialWave
 import com.iagothz.mergetd.logic.Vec2
 import kotlin.math.sqrt
 import kotlin.random.Random
@@ -109,5 +110,17 @@ class EffectsTest {
         assertTrue(fx.rings.single().radius > r0)
         fx.update(Effects.RING_TIME)
         assertTrue(fx.rings.isEmpty())
+    }
+
+    @Test
+    fun specialWavesGetTheirOwnBanner() {
+        fx.consume(listOf(GameEvent.WaveStarted(5, boss = false, special = SpecialWave.HORDE)))
+        assertEquals("Horda!", fx.banner)
+    }
+
+    @Test
+    fun stolenSpShowsAsARedNumber() {
+        fx.consume(listOf(GameEvent.Stolen(150)))
+        assertEquals(listOf("-150 SP"), fx.texts.map { it.text })
     }
 }

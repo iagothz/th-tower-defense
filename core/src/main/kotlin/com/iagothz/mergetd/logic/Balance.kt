@@ -37,6 +37,24 @@ object Balance {
     const val SILENCE_DURATION = 5f
     /** Fraction of max HP healed per second by the regenerating boss. */
     const val REGEN_PER_SEC = 0.02f
+    /** Waves 5, 15, 25... are special (never boss waves). */
+    const val SPECIAL_EVERY = 5
+    const val HORDE_SIZE = 40
+    const val HORDE_HP = 0.5f
+    const val HEALER_FROM_WAVE = 8
+    const val GHOST_FROM_WAVE = 12
+    /** HEALER: fraction of max HP restored per second to enemies within RADIUS path units. */
+    const val HEALER_RADIUS = 90f
+    const val HEALER_PER_SEC = 0.02f
+    /** BOSS_ARMORED ignores this fraction of a plain soldier's HP (of its wave) on every hit. */
+    const val ARMOR_FRACTION = 0.15f
+    /** BOSS_THIEF takes this fraction of the player's SP every ability tick. */
+    const val THIEF_FRACTION = 0.15f
+    /** BOSS_SPLITTER leaves two tanks with this fraction of its max HP each. */
+    const val SPLITTER_FRACTION = 0.25f
+    /** BOSS_COMMANDER: enemies within RADIUS path units move HASTE times faster. */
+    const val COMMANDER_RADIUS = 150f
+    const val COMMANDER_HASTE = 1.4f
 
     const val ATTACK_SPEED_PER_PIP = 0.15f
     const val FIRE_SPLASH_RADIUS = 70f

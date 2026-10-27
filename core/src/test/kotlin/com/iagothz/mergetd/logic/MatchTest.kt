@@ -232,7 +232,7 @@ class MatchTest {
         val m = match()
         m.lives = 1000
         m.board[Cell(0, 0)] = Die(DieType.MINE, 1)
-        m.debugStartWave(10)
+        m.debugAddEnemy(Enemy(EnemyKind.BOSS_SILENCER, 100_000f).also { it.distance = 100f })
         m.advance(6.1f)
         assertTrue(m.board[Cell(0, 0)]!!.disabled)
     }
@@ -245,7 +245,7 @@ class MatchTest {
         val b = Die(DieType.MINE, 2)
         m.board[Cell(0, 0)] = a
         m.board[Cell(2, 4)] = b
-        m.debugStartWave(20)
+        m.debugAddEnemy(Enemy(EnemyKind.BOSS_SWAPPER, 100_000f).also { it.distance = 100f })
         m.advance(6.1f)
         assertEquals(b, m.board[Cell(0, 0)])
         assertEquals(a, m.board[Cell(2, 4)])

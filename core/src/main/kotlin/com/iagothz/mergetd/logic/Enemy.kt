@@ -10,9 +10,21 @@ enum class EnemyKind(
     NORMAL(1f, 1f, 10, 1),
     FAST(0.5f, 2f, 10, 1),
     TANK(3f, 0.6f, 20, 1),
+    /** Heals the enemies around it (Balance.HEALER_*). */
+    HEALER(1.2f, 0.9f, 15, 1),
+    /** Immune to slows, stuns, pushes and traps. */
+    GHOST(0.8f, 1.3f, 15, 1),
     BOSS_SILENCER(40f, 0.5f, 100, 2, isBoss = true),
     BOSS_SWAPPER(40f, 0.5f, 100, 2, isBoss = true),
     BOSS_REGEN(40f, 0.5f, 100, 2, isBoss = true),
+    /** Leaves two tanks behind when it dies. */
+    BOSS_SPLITTER(40f, 0.5f, 100, 2, isBoss = true),
+    /** Shrugs off the first [Enemy.armor] of every hit. */
+    BOSS_ARMORED(40f, 0.5f, 100, 2, isBoss = true),
+    /** Steals SP every ability tick; killing it gives it all back. */
+    BOSS_THIEF(40f, 0.5f, 100, 2, isBoss = true),
+    /** Enemies near it move faster. */
+    BOSS_COMMANDER(40f, 0.5f, 100, 2, isBoss = true),
 }
 
 data class PoisonStack(val dps: Float, var remaining: Float)
@@ -32,16 +44,29 @@ class Enemy(val kind: EnemyKind, val maxHp: Float) {
     var stunImmune = 0f
     /** Total distance Gravity has pushed this enemy back. */
     var pushed = 0f
+    /** Flat damage ignored on every direct hit (Blindado); poison ticks bypass it. */
+    var armor = 0f
+    /** SP taken from the player so far (Ladrão), refunded on its death. */
+    var stolen = 0
+    /** Set by the match each step while a Comandante is close. */
+    var hasted = false
     /** The die that last hit this enemy, credited with the kill. */
     var lastHit: Die? = null
 
     val alive: Boolean get() = hp > 0f
 
-    fun speed(): Float = if (stunTime > 0f) 0f else Balance.BASE_SPEED * kind.speedMult * (1 - slow)
+    /** Ghosts can't be slowed, frozen or pushed. */
+    private val immovable: Boolean get() = kind == EnemyKind.GHOST
 
-    /** Applies [amount] (raised by any curse) and credits [by]; returns the damage actually dealt. */
+    fun speed(): Float {
+        if (stunTime > 0f) return 0f
+        val haste = if (hasted) Balance.COMMANDER_HASTE else 1f
+        return Balance.BASE_SPEED * kind.speedMult * (1 - slow) * haste
+    }
+
+    /** Applies [amount] (raised by any curse, cut by [armor]) and credits [by]; returns the damage actually dealt. */
     fun takeDamage(amount: Float, by: Die?): Float {
-        val dealt = amount * (1 + curse)
+        val dealt = maxOf(0f, amount - armor) * (1 + curse)
         hp -= dealt
         if (by != null) lastHit = by
         return dealt
@@ -55,12 +80,13 @@ class Enemy(val kind: EnemyKind, val maxHp: Float) {
 
     /** A running stun isn't refreshed, and a fresh one is followed by [Balance.STUN_IMMUNITY]: no permanent lock. */
     fun applyStun(seconds: Float) {
-        if (stunTime > 0f || stunImmune > 0f) return
+        if (immovable || stunTime > 0f || stunImmune > 0f) return
         stunTime = seconds
     }
 
     /** Moves the enemy back along the path, within its lifetime push budget. */
     fun pushBack(amount: Float) {
+        if (immovable) return
         val budget = Balance.GRAVITY_MAX_PUSH * (if (kind.isBoss) Balance.GRAVITY_BOSS_FACTOR else 1f)
         val step = minOf(amount, budget - pushed).coerceAtLeast(0f)
         pushed += step
@@ -69,6 +95,7 @@ class Enemy(val kind: EnemyKind, val maxHp: Float) {
 
     /** Slows don't stack: the strongest one wins and the duration is refreshed. */
     fun applySlow(amount: Float) {
+        if (immovable) return
         slow = maxOf(slow, amount)
         slowTime = Balance.SLOW_DURATION
     }

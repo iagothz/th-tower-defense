@@ -27,6 +27,7 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
         var age: Float = 0f,
         val crit: Boolean = false,
         val reward: Boolean = false,
+        val bad: Boolean = false,
     )
     class Particle(var x: Float, var y: Float, val vx: Float, val vy: Float, val color: Color, var age: Float = 0f)
     /** An explosion ring that grows from a third of [max] to [max] while fading. */
@@ -68,8 +69,15 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
                     burst(c, Skin.GOLD, PARTICLES_PER_MERGE)
                 }
                 is GameEvent.Leaked -> shake(LEAK_SHAKE, 0.25f)
+                is GameEvent.Stolen -> if (texts.size < MAX_TEXTS) {
+                    texts += FloatingText("-${e.amount} SP", Layout.WORLD_W / 2, 1150f, bad = true)
+                }
                 is GameEvent.WaveStarted -> {
-                    banner = if (e.boss) "Chefe!" else "Onda ${e.wave}"
+                    banner = when {
+                        e.boss -> "Chefe!"
+                        e.special != null -> "${e.special.title}!"
+                        else -> "Onda ${e.wave}"
+                    }
                     bannerAge = 0f
                     if (e.boss) shake(6f, 0.4f)
                 }
@@ -160,6 +168,7 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
             when {
                 t.crit -> batch.textShadowed(medium, t.text, t.x, t.y, tmp.set(1f, 0.6f, 0.15f, fade))
                 t.reward -> batch.textShadowed(small, t.text, t.x + 26f, t.y, tmp.set(Skin.GOLD).also { it.a = fade })
+                t.bad -> batch.textShadowed(medium, t.text, t.x, t.y, tmp.set(Skin.HEART).also { it.a = fade })
                 else -> batch.textShadowed(small, t.text, t.x, t.y, tmp.set(1f, 1f, 1f, fade))
             }
         }

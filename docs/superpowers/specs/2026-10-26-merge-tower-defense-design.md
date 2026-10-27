@@ -138,6 +138,14 @@ O tabuleiro, o HUD e os botões nunca mudam de lugar; cada mapa é um caminho di
 | Chefe Silenciador | 40 | 0.5 | A cada 6 s, desativa um dado aleatório por 5 s |
 | Chefe Trocador | 40 | 0.5 | A cada 6 s, troca a posição de 2 dados aleatórios |
 | Chefe Regenerador | 40 | 0.5 | Cura 2% da vida máxima por segundo |
+| Curandeiro (onda 8+) | 1.2 | 0.9 | Cura 2% da vida máxima por segundo dos inimigos a até 90 dele no caminho |
+| Fantasma (onda 12+) | 0.8 | 1.3 | Ignora lentidão, congelamento, empurrão e armadilhas (a Supernova ainda pega) |
+| Chefe Divisor | 40 | 0.5 | Ao morrer deixa dois tanques com 25% da vida dele cada |
+| Chefe Blindado | 40 | 0.5 | Ignora os primeiros 15% da vida de um soldado daquela onda em cada golpe direto; veneno passa |
+| Chefe Ladrão | 40 | 0.5 | A cada 6 s rouba 15% do SP; matá-lo devolve tudo |
+| Chefe Comandante | 40 | 0.5 | Inimigos a até 150 dele no caminho andam 40% mais rápido |
+
+A ordem dos 7 chefes é sorteada por partida (onda 10, 20, 30... seguem a lista; fica no save). Ondas 5, 15, 25... são especiais, rodando **Horda** (40 soldados com metade da vida), **Tanques** (um terço da onda, só tanques) e **Corrida** (só corredores); o banner e a prévia dizem qual. Com o deck padrão no simulador, a mediana caiu de 22 para 20 com tudo isso.
 
 ## Deck
 

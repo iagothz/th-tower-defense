@@ -16,6 +16,9 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default, v
         private set
 
     private val enemyList = mutableListOf<Enemy>()
+    /** Which boss comes on waves 10, 20, 30...: shuffled once per match, kept in the save. */
+    var bossOrder: List<EnemyKind> = WaveSpawner.DEFAULT_BOSS_ORDER.shuffled(rng)
+        private set
     val enemies: List<Enemy> get() = enemyList
 
     private val shots = mutableListOf<ShotEvent>()
@@ -125,6 +128,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default, v
         line("v", SNAPSHOT_VERSION)
         line("deck", DeckCodec.encode(deck))
         line("map", map.id)
+        line("bosses", bossOrder.joinToString(",") { it.name })
         line("wave", wave)
         line("sp", sp)
         line("lives", lives)
@@ -139,7 +143,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default, v
             line("die", listOf(c.row, c.col, d.type.id, d.pips, d.cooldown, d.timer, d.disabledFor, d.stacks).joinToString(","))
         }
         for (e in enemyList) {
-            val fields = listOf(e.kind.name, e.maxHp, e.hp, e.distance, e.slow, e.slowTime, e.abilityTimer, e.curse, e.curseTime, e.stunTime, e.stunImmune, e.pushed) +
+            val fields = listOf(e.kind.name, e.maxHp, e.hp, e.distance, e.slow, e.slowTime, e.abilityTimer, e.curse, e.curseTime, e.stunTime, e.stunImmune, e.pushed, e.stolen, e.armor) +
                 e.poison.map { "${it.dps}:${it.remaining}" }
             line("enemy", fields.joinToString(","))
         }
@@ -154,6 +158,9 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default, v
     internal fun debugAddEnemy(e: Enemy) {
         enemyList += e
     }
+
+    /** Spawns one [kind] exactly as the current wave would. */
+    internal fun debugSpawn(kind: EnemyKind) = spawn(kind)
 
     // Desktop dev-mode cheats (never wired in the Android build).
 
@@ -176,13 +183,14 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default, v
         wave = n
         inWave = true
         spawnQueue.clear()
-        spawnQueue.addAll(WaveSpawner.composition(n))
+        spawnQueue.addAll(WaveSpawner.composition(n, bossOrder))
         spawnTimer = 0f
-        events += GameEvent.WaveStarted(n, WaveSpawner.isBossWave(n))
+        events += GameEvent.WaveStarted(n, WaveSpawner.isBossWave(n), WaveSpawner.special(n))
     }
 
     private fun step(dt: Float) {
         updateSpawner(dt)
+        auras(dt)
         moveEnemies(dt)
         triggerTraps()
         bossAbilities(dt)
@@ -198,13 +206,37 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default, v
         }
         spawnTimer -= dt
         if (spawnQueue.isNotEmpty() && spawnTimer <= 0f) {
-            val kind = spawnQueue.removeFirst()
-            enemyList += Enemy(kind, WaveSpawner.enemyHp(wave, kind))
+            spawn(spawnQueue.removeFirst())
             spawnTimer += Balance.SPAWN_INTERVAL
         }
         if (spawnQueue.isEmpty() && enemyList.isEmpty()) {
             inWave = false
             countdown = Balance.WAVE_DELAY
+        }
+    }
+
+    private fun spawn(kind: EnemyKind) {
+        enemyList += Enemy(kind, WaveSpawner.enemyHp(wave, kind) * WaveSpawner.hpScale(wave)).apply {
+            if (kind == EnemyKind.BOSS_ARMORED) armor = Balance.ARMOR_FRACTION * WaveSpawner.enemyHp(wave, EnemyKind.NORMAL)
+        }
+    }
+
+    /** Healers mend their neighbours; a Commander hastes its escort. Both work by distance along the path. */
+    private fun auras(dt: Float) {
+        for (e in enemyList) e.hasted = false
+        for (src in enemyList) {
+            if (!src.alive) continue
+            when (src.kind) {
+                EnemyKind.HEALER -> for (e in enemyList) {
+                    if (e !== src && e.alive && abs(e.distance - src.distance) <= Balance.HEALER_RADIUS) {
+                        e.hp = minOf(e.maxHp, e.hp + Balance.HEALER_PER_SEC * e.maxHp * dt)
+                    }
+                }
+                EnemyKind.BOSS_COMMANDER -> for (e in enemyList) {
+                    if (e !== src && abs(e.distance - src.distance) <= Balance.COMMANDER_RADIUS) e.hasted = true
+                }
+                else -> Unit
+            }
         }
     }
 
@@ -238,6 +270,14 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default, v
                 EnemyKind.BOSS_SWAPPER -> {
                     val cells = board.occupied().map { it.first }.shuffled(rng)
                     if (cells.size >= 2) board.swap(cells[0], cells[1])
+                }
+                EnemyKind.BOSS_THIEF -> {
+                    val taken = (sp * Balance.THIEF_FRACTION).roundToInt()
+                    if (taken > 0) {
+                        sp -= taken
+                        e.stolen += taken
+                        events += GameEvent.Stolen(taken)
+                    }
                 }
                 else -> Unit
             }
@@ -308,7 +348,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default, v
         val iter = trapList.iterator()
         while (iter.hasNext()) {
             val trap = iter.next()
-            if (enemyList.none { it.alive && abs(it.distance - trap.distance) <= Balance.TRAP_TRIGGER }) continue
+            if (enemyList.none { it.alive && it.kind != EnemyKind.GHOST && abs(it.distance - trap.distance) <= Balance.TRAP_TRIGGER }) continue
             iter.remove()
             blast(path.positionAt(trap.distance), Balance.TRAP_RADIUS, trap.damage, trap.owner, DieType.TRAP)
         }
@@ -319,6 +359,8 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default, v
         events += GameEvent.Blast(center, radius, type)
         for (e in enemyList) {
             if (!e.alive || path.positionAt(e.distance).dst(center) > radius) continue
+            // Ghosts walk over mines; a Supernova still catches them.
+            if (type == DieType.TRAP && e.kind == EnemyKind.GHOST) continue
             events += GameEvent.Hit(e, e.takeDamage(damage, by))
         }
     }
@@ -331,8 +373,15 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default, v
             enemyList.removeAll { !it.alive }
             for (e in dead) {
                 val at = path.positionAt(e.distance)
-                sp += e.kind.reward
+                sp += e.kind.reward + e.stolen
                 events += GameEvent.Killed(e.kind, at)
+                if (e.kind == EnemyKind.BOSS_SPLITTER) {
+                    for (side in listOf(-1f, 1f)) {
+                        enemyList += Enemy(EnemyKind.TANK, e.maxHp * Balance.SPLITTER_FRACTION).apply {
+                            distance = (e.distance + side * 20f).coerceIn(0f, path.length - 1f)
+                        }
+                    }
+                }
                 val killer = e.lastHit ?: continue
                 when (killer.type) {
                     DieType.VAMPIRE -> sp += Balance.VAMPIRE_SP_PER_PIP * killer.pips
@@ -345,7 +394,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default, v
     }
 
     companion object {
-        private const val SNAPSHOT_VERSION = 2
+        private const val SNAPSHOT_VERSION = 3
 
         /** Rebuilds a match from [snapshot] text; null if the text is damaged or from another version. */
         fun restore(text: String, rng: Random = Random.Default): Match? =
@@ -382,6 +431,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default, v
                 m.powerLevels[type(id)] = level.toInt()
             }
             m.spawnQueue.addAll(list("queue").map { EnemyKind.valueOf(it) })
+            m.bossOrder = list("bosses").map { EnemyKind.valueOf(it) }
             for ((key, value) in entries) {
                 val f = value.split(",")
                 when (key) {
@@ -402,7 +452,9 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default, v
                         stunTime = f[9].toFloat()
                         stunImmune = f[10].toFloat()
                         pushed = f[11].toFloat()
-                        for (stack in f.drop(12)) {
+                        stolen = f[12].toInt()
+                        armor = f[13].toFloat()
+                        for (stack in f.drop(14)) {
                             val (dps, remaining) = stack.split(":")
                             poison += PoisonStack(dps.toFloat(), remaining.toFloat())
                         }

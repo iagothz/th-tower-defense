@@ -9,6 +9,7 @@ import com.iagothz.mergetd.logic.Balance
 import com.iagothz.mergetd.logic.Die
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.Enemy
+import com.iagothz.mergetd.logic.EnemyKind
 import com.iagothz.mergetd.logic.Layout
 import com.iagothz.mergetd.logic.Match
 import com.iagothz.mergetd.logic.ShotEvent
@@ -76,17 +77,18 @@ class MatchRenderer(
         }
         if (match.waveCountdown > 0f) {
             batch.textCentered(font, "Próxima onda em ${ceil(match.waveCountdown).toInt()}", 360f, 1106f)
-            batch.textCentered(smallFont, wavePreview(match.wave + 1), 360f, 1142f)
+            batch.textCentered(smallFont, wavePreview(match.wave + 1, match.bossOrder), 360f, 1142f)
         }
         boss(match)?.let { batch.textCentered(smallFont, Skin.enemyName(it.kind), 360f, BOSS_BAR.y + BOSS_BAR.height + 18f) }
     }
 
     /** "12 soldados · 4 corredores · chefe em 3 ondas", or "Chefe: Trocador" on a boss wave. */
-    private fun wavePreview(next: Int): String {
-        val counts = WaveSpawner.preview(next)
+    private fun wavePreview(next: Int, bosses: List<EnemyKind>): String {
+        val counts = WaveSpawner.preview(next, bosses)
         val boss = counts.keys.firstOrNull { it.isBoss }
         if (boss != null) return "Chefe: ${Skin.enemyName(boss)}"
-        val parts = counts.entries.joinToString(" · ") { (kind, n) -> "$n ${Skin.enemyPlural(kind)}" }
+        val special = WaveSpawner.special(next)?.let { "${it.title}! " } ?: ""
+        val parts = special + counts.entries.joinToString(" · ") { (kind, n) -> "$n ${Skin.enemyPlural(kind)}" }
         val until = WaveSpawner.wavesUntilBoss(next)
         return "$parts · chefe em $until ${if (until == 1) "onda" else "ondas"}"
     }
@@ -205,15 +207,23 @@ class MatchRenderer(
             if (e.slow > 0f) body.lerp(0.5f, 0.8f, 1f, 1f, 0.5f)
             if (e.stunTime > 0f) body.lerp(Skin.color(DieType.TIME), 0.6f)
             if (effects.isFlashing(e)) body.set(Color.WHITE)
-            shapes.color = tmp2.set(body).mul(0.4f, 0.4f, 0.45f, 1f)
-            shapes.polygon(p.x, p.y, r + 3f, sides, heading)
-            shapes.color = body
+            val ghost = e.kind == EnemyKind.GHOST
+            val outline = if (e.kind == EnemyKind.BOSS_ARMORED) 7f else 3f
+            shapes.color = tmp2.set(body).mul(0.4f, 0.4f, 0.45f, 1f).also { if (ghost) it.a = 0.45f }
+            shapes.polygon(p.x, p.y, r + outline, sides, heading)
+            shapes.color = tmp2.set(body).also { if (ghost) it.a = 0.55f }
             shapes.polygon(p.x, p.y, r, sides, heading)
+            if (e.kind == EnemyKind.HEALER) {
+                shapes.color = Color(0.85f, 0.25f, 0.3f, 1f)
+                shapes.rectLine(p.x - 9f, p.y, p.x + 9f, p.y, 5f)
+                shapes.rectLine(p.x, p.y - 9f, p.x, p.y + 9f, 5f)
+            }
             if (e.kind.isBoss) {
                 shapes.color = tmp2.set(body).lerp(Color.WHITE, 0.3f)
                 shapes.circle(p.x, p.y, r * 0.5f, 20)
                 shapes.color = Skin.GOLD
-                for (dx in listOf(-14f, 0f, 14f)) {
+                val spikes = if (e.kind == EnemyKind.BOSS_COMMANDER) listOf(-22f, -11f, 0f, 11f, 22f) else listOf(-14f, 0f, 14f)
+                for (dx in spikes) {
                     shapes.triangle(p.x + dx - 7f, p.y + r - 2f, p.x + dx + 7f, p.y + r - 2f, p.x + dx, p.y + r + 14f)
                 }
             }

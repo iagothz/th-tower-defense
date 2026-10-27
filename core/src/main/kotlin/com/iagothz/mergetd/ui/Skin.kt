@@ -118,6 +118,12 @@ object Skin {
         EnemyKind.BOSS_SILENCER to Color(0.45f, 0.32f, 0.68f, 1f),
         EnemyKind.BOSS_SWAPPER to Color(0.85f, 0.28f, 0.48f, 1f),
         EnemyKind.BOSS_REGEN to Color(0.32f, 0.66f, 0.38f, 1f),
+        EnemyKind.HEALER to Color(0.95f, 0.90f, 0.80f, 1f),
+        EnemyKind.GHOST to Color(0.70f, 0.80f, 0.95f, 1f),
+        EnemyKind.BOSS_SPLITTER to Color(0.80f, 0.55f, 0.20f, 1f),
+        EnemyKind.BOSS_ARMORED to Color(0.50f, 0.52f, 0.58f, 1f),
+        EnemyKind.BOSS_THIEF to Color(0.25f, 0.25f, 0.35f, 1f),
+        EnemyKind.BOSS_COMMANDER to Color(0.85f, 0.70f, 0.25f, 1f),
     )
 
     private val enemyNames = mapOf(
@@ -127,6 +133,12 @@ object Skin {
         EnemyKind.BOSS_SILENCER to "Silenciador",
         EnemyKind.BOSS_SWAPPER to "Trocador",
         EnemyKind.BOSS_REGEN to "Regenerador",
+        EnemyKind.HEALER to "Curandeiro",
+        EnemyKind.GHOST to "Fantasma",
+        EnemyKind.BOSS_SPLITTER to "Divisor",
+        EnemyKind.BOSS_ARMORED to "Blindado",
+        EnemyKind.BOSS_THIEF to "Ladrão",
+        EnemyKind.BOSS_COMMANDER to "Comandante",
     )
 
     fun color(t: DieType): Color = dieColors.getValue(t)
@@ -149,12 +161,15 @@ object Skin {
         EnemyKind.NORMAL -> "soldados"
         EnemyKind.FAST -> "corredores"
         EnemyKind.TANK -> "tanques"
+        EnemyKind.HEALER -> "curandeiros"
+        EnemyKind.GHOST -> "fantasmas"
         else -> enemyName(k)
     }
 
     fun enemyRadius(k: EnemyKind): Float = when {
         k.isBoss -> 28f
         k == EnemyKind.TANK -> 22f
+        k == EnemyKind.HEALER -> 18f
         else -> 16f
     }
 
@@ -162,6 +177,9 @@ object Skin {
     fun enemySides(k: EnemyKind): Int = when (k) {
         EnemyKind.FAST -> 3
         EnemyKind.TANK -> 6
+        EnemyKind.BOSS_SPLITTER -> 4
+        EnemyKind.BOSS_ARMORED -> 8
+        EnemyKind.BOSS_THIEF -> 5
         else -> 24
     }
 }
