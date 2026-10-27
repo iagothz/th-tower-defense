@@ -196,6 +196,14 @@ class SaveData(private val prefs: Preferences) {
             prefs.flush()
         }
 
+    /** Keys of the one-time hints already shown (see [Hints]). */
+    var hints: Set<String>
+        get() = prefs.getString("hints", "").split(",").filter { it.isNotBlank() }.toSet()
+        set(value) {
+            prefs.putString("hints", value.joinToString(","))
+            prefs.flush()
+        }
+
     var tutorialDone: Boolean
         get() = prefs.getBoolean("tutorialDone", false)
         set(value) {

@@ -19,12 +19,14 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     private val panel = Rectangle(24f, 150f, 672f, 430f)
     private val confirm = Button(Rectangle(40f, 30f, 310f, 100f), S["Confirmar"])
     private val back = Button(Rectangle(370f, 30f, 310f, 100f), S["Voltar"], color = Skin.PANEL)
+    private val enemies = Button(Rectangle(24f, 1190f, 190f, 56f), S["Inimigos"], color = Skin.PANEL)
     private val tap = Tap<Button>()
     private val slots = List(DeckCodec.SIZE) { Rectangle(186f + it * 72f, 1112f, 60f, 60f) }
 
     override fun draw(delta: Float) {
         confirm.enabled = selected.size == DeckCodec.SIZE
         confirm.pressed = tap.current === confirm
+        enemies.pressed = tap.current === enemies
         back.pressed = tap.current === back
         val shapes = game.shapes
         shapes.begin(ShapeRenderer.ShapeType.Filled)
@@ -61,6 +63,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.glyph(shown, panel.x + 48f, panel.y + panel.height - 42f, 18f, Skin.color(shown), Skin.PANEL)
         confirm.drawShape(shapes)
         back.drawShape(shapes)
+        enemies.drawShape(shapes)
         shapes.end()
 
         game.batch.begin()
@@ -78,6 +81,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         game.batch.textCentered(game.tinyFont, line, 360f, panel.y + 18f)
         game.tinyFont.color = Color.WHITE
         confirm.drawText(game.batch, game.font)
+        enemies.drawText(game.batch, game.smallFont)
         back.drawText(game.batch, game.font)
         game.batch.end()
     }
@@ -101,7 +105,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         }
     }
 
-    private fun buttonAt(p: Vec2) = listOf(confirm, back).firstOrNull { it.contains(p.x, p.y) }
+    private fun buttonAt(p: Vec2) = listOf(confirm, back, enemies).firstOrNull { it.contains(p.x, p.y) }
 
     override fun onTouchDown(p: Vec2) = tap.press(buttonAt(p))
 
@@ -126,6 +130,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
                     game.showMenu()
                 }
                 back -> game.showMenu()
+                enemies -> game.showEnemies()
             }
         }
     }

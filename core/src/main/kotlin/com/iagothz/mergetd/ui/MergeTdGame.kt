@@ -60,6 +60,8 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
 
     fun showDeck() = switchTo(DeckScreen(this))
 
+    fun showEnemies() = switchTo(EnemiesScreen(this))
+
     fun showMap() = switchTo(MapScreen(this))
 
     fun showStats() = switchTo(StatsScreen(this))

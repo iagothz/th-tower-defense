@@ -42,6 +42,7 @@ class MatchScreen(
     private val buttonTap = Tap<Button>()
     private val effects = Effects(path = match.path)
     private val stats = MatchStats()
+    private val hints = Hints(game.save.hints.toMutableSet()) { game.save.hints = it }
     private val missions = DailyMissions.of(DailyChallenge.today())
     private val tracker = MissionTracker(missions, match)
     private val tutorial = Tutorial(active = restored == null && fresh == null && !game.save.tutorialDone)
@@ -114,6 +115,7 @@ class MatchScreen(
             stats.consume(events)
             stats.observe(match)
             tracker.consume(events)
+            if (tutorial.step == null) hints.update(delta, events, match)
             tutorial.consume(events)
             tutorial.update(delta)
             if (tutorial.finished && !game.save.tutorialDone) game.save.tutorialDone = true
@@ -193,8 +195,12 @@ class MatchScreen(
         }
         game.smallFont.color = Color.WHITE
         game.font.color = Color.WHITE
-        if (info != null) drawDieInfo(info.first, info.second)
+        if (info != null) {
+            hints.noteHold()
+            drawDieInfo(info.first, info.second)
+        }
         batch.end()
+        drawHint()
 
         // The balloon goes over the HUD text, so it gets its own pass.
         if (tutorial.step != null) {
@@ -227,6 +233,22 @@ class MatchScreen(
         shapes.rect(w, -400f, 400f, h + 800f)
         shapes.rect(0f, -400f, w, 400f)
         shapes.rect(0f, h, w, 400f)
+    }
+
+    /** A one-time tip in a strip just above the board, while [Hints] has one to show. */
+    private fun drawHint() {
+        val text = hints.text ?: return
+        if (paused || ending != null) return
+        val shapes = game.shapes
+        shapes.begin(ShapeRenderer.ShapeType.Filled)
+        shapes.color = tmpColor.set(0.08f, 0.09f, 0.14f, 0.92f)
+        shapes.roundedRect(HINT.x, HINT.y, HINT.width, HINT.height, 14f)
+        shapes.color = Skin.GOLD
+        shapes.roundedRect(HINT.x, HINT.y, 6f, HINT.height, 3f)
+        shapes.end()
+        game.batch.begin()
+        game.tinyFont.draw(game.batch, text, HINT.x + 22f, HINT.y + HINT.height - 14f, HINT.width - 36f, Align.left, true)
+        game.batch.end()
     }
 
     /** The balloon's panel plus a pulsing gold ring around the step's target; the balloon sits in the sky. */
@@ -479,6 +501,8 @@ class MatchScreen(
         val KEY_COLOR = Color(0.75f, 0.77f, 0.85f, 1f)
         /** Die info card, in the sky above the board. */
         val INFO = Rectangle(24f, 840f, 672f, 270f)
+        /** One-time hint strip, just above the board. */
+        val HINT = Rectangle(40f, 834f, 640f, 64f)
         /** Tutorial balloon, same place; the two never show together for long. */
         val TUTORIAL = Rectangle(24f, 1000f, 672f, 150f)
         val POWER_ROW = Rectangle(26f, 50f, 668f, 120f)

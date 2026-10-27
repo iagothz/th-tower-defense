@@ -233,4 +233,12 @@ class SaveDataTest {
         assertEquals(200, save.xp)
         assertEquals(listOf(10, 8, 2), SaveData(prefs).missionProgress(day, missions))
     }
+
+    @Test
+    fun hintsSeenPersistAsASet() {
+        val prefs = memoryPrefs()
+        assertTrue(SaveData(prefs).hints.isEmpty())
+        SaveData(prefs).hints = setOf("undo", "hold")
+        assertEquals(setOf("undo", "hold"), SaveData(prefs).hints)
+    }
 }
