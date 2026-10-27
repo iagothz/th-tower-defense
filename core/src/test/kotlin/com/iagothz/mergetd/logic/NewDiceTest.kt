@@ -209,11 +209,25 @@ class NewDiceTest {
         m.debugAddEnemy(enemy(500f, 1f))
         m.update(Balance.STEP)
         assertEquals(1, hunter.stacks)
-        hunter.stacks = Balance.HUNTER_MAX_STACKS
+        hunter.stacks = Balance.hunterCap(1)
         hunter.cooldown = 0f
         m.debugAddEnemy(enemy(500f, 1f))
         m.update(Balance.STEP)
-        assertEquals(Balance.HUNTER_MAX_STACKS, hunter.stacks)
+        assertEquals(Balance.hunterCap(1), hunter.stacks)
+    }
+
+    /** 10 stacks per pip, and no ceiling at all once the Hunter reaches 7 pips. */
+    @Test
+    fun hunterCapGrowsWithPipsAndVanishesAtSeven() {
+        assertEquals(10, Balance.hunterCap(1))
+        assertEquals(60, Balance.hunterCap(6))
+        assertEquals(Int.MAX_VALUE, Balance.hunterCap(7))
+        val m = match()
+        val hunter = Die(DieType.HUNTER, 7).apply { stacks = 500 }
+        m.board[Cell(1, 2)] = hunter
+        m.debugAddEnemy(enemy(500f, 1f))
+        m.update(Balance.STEP)
+        assertEquals(501, hunter.stacks)
     }
 
     @Test
@@ -264,16 +278,20 @@ class NewDiceTest {
         assertTrue(board.merge(Cell(0, 0), Cell(0, 1), listOf(DieType.HUNTER), Random(1)))
         assertEquals(12, board[Cell(0, 1)]!!.stacks)
 
-        board[Cell(1, 0)] = Die(DieType.MIRROR, 3)
+        board[Cell(1, 0)] = Die(DieType.BOOST, 3)
         board[Cell(1, 1)] = Die(DieType.HUNTER, 3).apply { stacks = 39 }
-        board[Cell(1, 2)] = Die(DieType.HUNTER, 3).apply { stacks = 30 }
         assertTrue(board.merge(Cell(1, 0), Cell(1, 1), listOf(DieType.FIRE), Random(1)))
         assertEquals(39, board[Cell(1, 1)]!!.stacks)
 
-        board[Cell(2, 0)] = Die(DieType.HUNTER, 1).apply { stacks = 30 }
-        board[Cell(2, 1)] = Die(DieType.HUNTER, 1).apply { stacks = 30 }
+        board[Cell(2, 0)] = Die(DieType.HUNTER, 1).apply { stacks = 10 }
+        board[Cell(2, 1)] = Die(DieType.HUNTER, 1).apply { stacks = 10 }
         assertTrue(board.merge(Cell(2, 0), Cell(2, 1), listOf(DieType.HUNTER), Random(1)))
-        assertEquals(Balance.HUNTER_MAX_STACKS, board[Cell(2, 1)]!!.stacks)
+        assertEquals(Balance.hunterCap(2), board[Cell(2, 1)]!!.stacks)
+
+        board[Cell(1, 2)] = Die(DieType.HUNTER, 6).apply { stacks = 60 }
+        board[Cell(1, 3)] = Die(DieType.HUNTER, 6).apply { stacks = 60 }
+        assertTrue(board.merge(Cell(1, 2), Cell(1, 3), listOf(DieType.HUNTER), Random(1)))
+        assertEquals(120, board[Cell(1, 3)]!!.stacks)
 
         board[Cell(2, 2)] = Die(DieType.HUNTER, 4).apply { stacks = 30 }
         board[Cell(2, 3)] = Die(DieType.HUNTER, 4).apply { stacks = 30 }

@@ -43,8 +43,8 @@ data class DieInfo(val summary: String, val rows: List<Pair<String, String>>) {
             DieType.IRON -> "Especialista em chefes."
             DieType.MINE -> "Minerador: não ataca, gera SP com o tempo."
             DieType.SNIPER -> "Tiro forte e lento em quem tem mais vida."
-            DieType.MIRROR -> "Coringa de merge, com ataque fraco."
-            DieType.GROWTH -> "Ganha pips sozinho com o tempo."
+            DieType.MIRROR -> "Coringa: combina com qualquer dado; o resultado é sorteado."
+            DieType.GROWTH -> "Ganha pips sozinho e vira um dado do deck."
             DieType.LIGHT -> "Ataque fraco; acelera os dados vizinhos."
             DieType.CRIT -> "Dá chance de crítico a todo o tabuleiro."
             DieType.COMBO -> "Fraco sozinho, forte em grupo."
@@ -58,6 +58,8 @@ data class DieInfo(val summary: String, val rows: List<Pair<String, String>>) {
             DieType.NOVA -> "Inimigos mortos por ela explodem."
             DieType.LUCK -> "Dano sorteado a cada ataque."
             DieType.VAMPIRE -> "Ganha SP extra ao matar."
+            DieType.CLONE -> "Vira uma cópia de outro dado."
+            DieType.BOOST -> "Coringa garantido: o resultado mantém o tipo do outro dado."
         }
 
         private fun effect(t: DieType) = when (t) {
@@ -73,9 +75,10 @@ data class DieInfo(val summary: String, val rows: List<Pair<String, String>>) {
             DieType.IRON -> "dano x${num(Balance.IRON_BOSS_MULT)} contra chefes"
             DieType.MINE -> "gera ${Balance.MINE_SP_PER_PIP} SP por pip a cada ${num(Balance.MINE_INTERVAL)} s"
             DieType.SNIPER -> "ignora a fila e mira o inimigo mais resistente"
-            DieType.MIRROR -> "faz merge com qualquer dado de mesmos pips; o resultado vira o tipo do outro dado " +
-                "(dois Espelhos viram um tipo aleatório)"
-            DieType.GROWTH -> "ganha +1 pip a cada ${num(Balance.GROWTH_INTERVAL)} s, até $MAX"
+            DieType.MIRROR -> "faz merge com qualquer dado de mesmos pips; o resultado é sorteado entre os 5 tipos " +
+                "do deck, como num merge normal"
+            DieType.GROWTH -> "a cada ${num(Balance.GROWTH_INTERVAL)} s ganha +1 pip e vira um dos 5 tipos do deck, " +
+                "sorteado (pode continuar Crescimento); para em $MAX pips"
             DieType.LIGHT -> "os dados de cima, de baixo e dos lados atacam +${pct(Balance.LIGHT_SPEED_PER_PIP)} " +
                 "mais rápido por pip da Luz; várias Luzes somam"
             DieType.CRIT -> "cada pip dá +${pct(Balance.CRIT_CHANCE_PER_PIP)} de chance de crítico " +
@@ -83,8 +86,10 @@ data class DieInfo(val summary: String, val rows: List<Pair<String, String>>) {
             DieType.COMBO -> "+${pct(Balance.COMBO_BONUS)} de dano para cada outro Combo no tabuleiro"
             DieType.CURSE -> "o alvo recebe ${pct(curse(1))} (1 pip) a ${pct(curse(MAX))} ($MAX pips) a mais " +
                 "de dano de tudo, inclusive veneno, por ${num(Balance.CURSE_DURATION)} s"
-            DieType.HUNTER -> "+1 stack por abate; cada stack dá +${pct(Balance.HUNTER_BONUS_PER_STACK)} de dano " +
-                "(máx. ${Balance.HUNTER_MAX_STACKS}); merge de Caçadores soma os stacks se o resultado for Caçador"
+            DieType.HUNTER -> "+1 stack por abate; cada stack dá +${pct(Balance.HUNTER_BONUS_PER_STACK)} de dano; " +
+                "limite de ${Balance.HUNTER_STACKS_PER_PIP} stacks por pip (${Balance.hunterCap(1)} com 1 pip, " +
+                "${Balance.hunterCap(MAX - 1)} com ${MAX - 1}) e sem limite com $MAX pips; " +
+                "merge de Caçadores soma os stacks se o resultado for Caçador"
             DieType.GRAVITY -> "o alvo volta ${num(push(1))} (1 pip) a ${num(push(MAX))} ($MAX pips) no caminho; " +
                 "chefes voltam ${pct(Balance.GRAVITY_BOSS_FACTOR)} disso"
             DieType.TIME -> "o alvo fica parado de ${num(stun(1))} s (1 pip) a ${num(stun(MAX))} s ($MAX pips); " +
@@ -101,6 +106,10 @@ data class DieInfo(val summary: String, val rows: List<Pair<String, String>>) {
                 "(média ${num(Balance.LUCK_MAX_MULT / 2)}x)"
             DieType.VAMPIRE -> "+${Balance.VAMPIRE_SP_PER_PIP} SP por pip a cada inimigo que matar, " +
                 "além da recompensa normal"
+            DieType.CLONE -> "arrastado sobre um dado de mesmos pips (ou o contrário), vira uma cópia dele, tipo e pips, " +
+                "e o original continua no lugar; stacks do Caçador não são copiados; dois Clonadores fazem merge normal"
+            DieType.BOOST -> "faz merge com qualquer dado de mesmos pips e o resultado é o tipo do outro dado com +1 pip " +
+                "(dois Reforços sorteiam do deck)"
         }
 
         private fun powerUp(t: DieType): String {

@@ -21,21 +21,41 @@ class Board {
 
     fun occupied(): List<Pair<Cell, Die>> = allCells.mapNotNull { c -> this[c]?.let { c to it } }
 
+    /**
+     * Same pips always. Same type merges; a wildcard (Mirror, Boost, Clone) pairs with anything.
+     * Cloning doesn't add a pip, so it is the one pairing still allowed at 7.
+     */
     fun canMerge(from: Cell, to: Cell): Boolean {
         if (from == to) return false
         val a = this[from] ?: return false
         val b = this[to] ?: return false
-        if (a.pips != b.pips || a.pips >= Balance.MAX_PIPS) return false
-        return a.type == b.type || a.type == DieType.MIRROR || b.type == DieType.MIRROR
+        if (a.pips != b.pips) return false
+        if (cloneOf(a, b) != null) return true
+        if (a.pips >= Balance.MAX_PIPS) return false
+        return a.type == b.type || a.type.wildcard || b.type.wildcard
+    }
+
+    /** The cell whose die changes when [from] is dropped on [to]: the Clone's own cell, or [to]. */
+    fun resultCell(from: Cell, to: Cell): Cell {
+        val a = this[from] ?: return to
+        val b = this[to] ?: return to
+        return if (cloneOf(a, b) === a) from else to
     }
 
     fun merge(from: Cell, to: Cell, deck: List<DieType>, rng: Random): Boolean {
         if (!canMerge(from, to)) return false
         val a = this[from]!!
         val b = this[to]!!
+        val clone = cloneOf(a, b)
+        if (clone != null) {
+            val source = if (clone === a) b else a
+            this[if (clone === a) from else to] = Die(source.type, source.pips).apply { disabledFor = clone.disabledFor }
+            return true
+        }
         val type = when {
-            a.type == DieType.MIRROR && b.type != DieType.MIRROR -> b.type
-            b.type == DieType.MIRROR && a.type != DieType.MIRROR -> a.type
+            // The Boost guarantees the other die's type; the Mirror and ordinary merges roll the deck.
+            a.type == DieType.BOOST && b.type != DieType.BOOST -> b.type
+            b.type == DieType.BOOST && a.type != DieType.BOOST -> a.type
             else -> deck.random(rng)
         }
         this[from] = null
@@ -44,10 +64,17 @@ class Board {
             disabledFor = maxOf(a.disabledFor, b.disabledFor)
             // A Hunter keeps the kills of the Hunters that formed it.
             if (type == DieType.HUNTER) {
-                stacks = minOf(Balance.HUNTER_MAX_STACKS, listOf(a, b).filter { it.type == DieType.HUNTER }.sumOf { it.stacks })
+                stacks = minOf(Balance.hunterCap(pips), listOf(a, b).filter { it.type == DieType.HUNTER }.sumOf { it.stacks })
             }
         }
         return true
+    }
+
+    /** The Clone in a pair of exactly one Clone and one other die, else null. */
+    private fun cloneOf(a: Die, b: Die): Die? = when {
+        a.type == DieType.CLONE && b.type != DieType.CLONE -> a
+        b.type == DieType.CLONE && a.type != DieType.CLONE -> b
+        else -> null
     }
 
     fun swap(a: Cell, b: Cell) {

@@ -15,8 +15,18 @@ class BotTest {
 
     /** Fills every empty cell with dice that can't merge with each other (unique type+pips, no Mirror). */
     private fun Board.fillUnmergeable(skip: Set<Pair<DieType, Int>> = emptySet()) {
-        val attackers = DieType.entries.filter { it.attacks && it != DieType.MIRROR }
+        val attackers = DieType.entries.filter { it.attacks && it != DieType.MIRROR && it != DieType.CLONE }
         val combos = attackers.flatMap { t -> (1..7).map { t to it } }.filter { it !in skip }.iterator()
+        for (c in emptyCells()) {
+            val (t, p) = combos.next()
+            this[c] = Die(t, p)
+        }
+    }
+
+    /** Like [fillUnmergeable], but with at most 4 pips, so a 5-pip die stays the strongest on the board. */
+    private fun Board.fillLowUnmergeable(skip: Set<Pair<DieType, Int>> = emptySet()) {
+        val attackers = DieType.entries.filter { it.attacks && it != DieType.MIRROR && it != DieType.CLONE }
+        val combos = attackers.flatMap { t -> (1..4).map { t to it } }.filter { it !in skip }.iterator()
         for (c in emptyCells()) {
             val (t, p) = combos.next()
             this[c] = Die(t, p)
@@ -74,5 +84,25 @@ class BotTest {
         m.sp = 1000
         SmartBot().act(m)
         assertEquals(2, m.powerLevel(DieType.FIRE))
+    }
+
+    @Test
+    fun smartBotClonesOnlyTheStrongestDie() {
+        val weak = match()
+        weak.sp = 0
+        weak.board[Cell(0, 0)] = Die(DieType.CLONE, 2)
+        weak.board[Cell(0, 1)] = Die(DieType.FIRE, 2)
+        weak.board[Cell(0, 2)] = Die(DieType.SNIPER, 5)
+        weak.board.fillLowUnmergeable(setOf(DieType.FIRE to 2))
+        SmartBot().act(weak)
+        assertEquals(DieType.CLONE, weak.board[Cell(0, 0)]!!.type)
+
+        val strong = match()
+        strong.sp = 0
+        strong.board[Cell(0, 0)] = Die(DieType.CLONE, 5)
+        strong.board[Cell(0, 1)] = Die(DieType.SNIPER, 5)
+        strong.board.fillLowUnmergeable()
+        SmartBot().act(strong)
+        assertEquals(2, strong.board.occupied().count { it.second.type == DieType.SNIPER && it.second.pips == 5 })
     }
 }

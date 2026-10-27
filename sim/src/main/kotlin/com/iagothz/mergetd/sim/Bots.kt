@@ -1,5 +1,6 @@
 package com.iagothz.mergetd.sim
 
+import com.iagothz.mergetd.logic.Board
 import com.iagothz.mergetd.logic.Cell
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.Match
@@ -14,6 +15,8 @@ private fun Match.mergeablePairs(): List<Pair<Cell, Cell>> {
     val cells = board.occupied().map { it.first }
     return cells.flatMap { a -> cells.filter { b -> canMerge(a, b) }.map { b -> a to b } }
 }
+
+private fun Board.isClonePair(a: Cell, b: Cell): Boolean = (this[a]!!.type == DieType.CLONE) != (this[b]!!.type == DieType.CLONE)
 
 /** Buys whenever it can and merges a random pair whenever one exists. Never powers up. */
 class SimpleBot(private val rng: Random) : Bot {
@@ -32,7 +35,11 @@ class SmartBot : Bot {
         while (m.buyDie()) Unit
         if (m.board.emptyCells().isNotEmpty()) return
 
-        val best = m.mergeablePairs().maxByOrNull { (a, _) -> m.board[a]!!.pips }
+        // A Clone is only worth spending on the strongest dice on the board.
+        val maxPips = m.board.occupied().maxOf { it.second.pips }
+        val best = m.mergeablePairs()
+            .filter { (a, b) -> !m.board.isClonePair(a, b) || m.board[a]!!.pips >= maxPips }
+            .maxByOrNull { (a, _) -> m.board[a]!!.pips }
         if (best != null) {
             m.merge(best.first, best.second)
             m.buyDie()

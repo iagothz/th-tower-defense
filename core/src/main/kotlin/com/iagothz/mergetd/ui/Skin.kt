@@ -44,12 +44,14 @@ object Skin {
         DieType.NOVA to Color(0.95f, 0.40f, 0.85f, 1f),
         DieType.LUCK to Color(0.60f, 0.88f, 0.28f, 1f),
         DieType.VAMPIRE to Color(0.62f, 0.10f, 0.22f, 1f),
+        DieType.CLONE to Color(0.80f, 0.70f, 0.95f, 1f),
+        DieType.BOOST to Color(0.10f, 0.55f, 0.50f, 1f),
     )
 
     /** Dice bright enough that white pips would vanish on them. */
     private val lightDice = setOf(
         DieType.ICE, DieType.ELECTRIC, DieType.MIRROR, DieType.LIGHT, DieType.TIME,
-        DieType.LUCK, DieType.GROWTH, DieType.MINE,
+        DieType.LUCK, DieType.GROWTH, DieType.MINE, DieType.CLONE,
     )
 
     private val labels = mapOf(
@@ -76,6 +78,8 @@ object Skin {
         DieType.NOVA to "Nova",
         DieType.LUCK to "Sorte",
         DieType.VAMPIRE to "Vampiro",
+        DieType.CLONE to "Clonador",
+        DieType.BOOST to "Reforço",
     )
 
     private val fullNames = mapOf(

@@ -69,7 +69,10 @@ object Balance {
     const val CURSE_PER_PIP = 0.03f
     const val CURSE_DURATION = 3f
     const val HUNTER_BONUS_PER_STACK = 0.05f
-    const val HUNTER_MAX_STACKS = 40
+    /** Stack ceiling per pip; a 7-pip Hunter has none. */
+    const val HUNTER_STACKS_PER_PIP = 10
+
+    fun hunterCap(pips: Int): Int = if (pips >= MAX_PIPS) Int.MAX_VALUE else HUNTER_STACKS_PER_PIP * pips
     /** GRAVITY: path units pushed back = BASE + PER_PIP × pips, × BOSS_FACTOR for bosses. */
     const val GRAVITY_PUSH_BASE = 40f
     const val GRAVITY_PUSH_PER_PIP = 10f
@@ -105,7 +108,7 @@ object Balance {
         DieType.IRON -> DieStats(18f, 1.0f)
         DieType.MINE -> DieStats(0f, 0f)
         DieType.SNIPER -> DieStats(60f, 2.5f)
-        DieType.MIRROR -> DieStats(12f, 1.0f)
+        DieType.MIRROR -> DieStats(16f, 1.0f)
         DieType.GROWTH -> DieStats(8f, 1.0f)
         DieType.LIGHT -> DieStats(8f, 1.0f)
         DieType.CRIT -> DieStats(10f, 1.0f)
@@ -119,6 +122,8 @@ object Balance {
         DieType.REAPER -> DieStats(15f, 1.2f)
         DieType.NOVA -> DieStats(18f, 1.2f)
         DieType.LUCK -> DieStats(10f, 1.0f)
+        DieType.CLONE -> DieStats(12f, 1.0f)
+        DieType.BOOST -> DieStats(12f, 1.0f)
         DieType.VAMPIRE -> DieStats(14f, 1.0f)
     }
 }

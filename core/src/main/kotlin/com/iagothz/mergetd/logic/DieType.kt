@@ -1,6 +1,7 @@
 package com.iagothz.mergetd.logic
 
-enum class DieType(val id: String, val attacks: Boolean = true) {
+/** [wildcard] dice pair with any type of the same pips: the Mirror rolls, the Boost keeps the other's type. */
+enum class DieType(val id: String, val attacks: Boolean = true, val wildcard: Boolean = false) {
     FIRE("fire"),
     ICE("ice"),
     POISON("poison"),
@@ -9,7 +10,7 @@ enum class DieType(val id: String, val attacks: Boolean = true) {
     IRON("iron"),
     MINE("mine", attacks = false),
     SNIPER("sniper"),
-    MIRROR("mirror"),
+    MIRROR("mirror", wildcard = true),
     GROWTH("growth"),
     LIGHT("light"),
     CRIT("crit"),
@@ -24,6 +25,8 @@ enum class DieType(val id: String, val attacks: Boolean = true) {
     NOVA("nova"),
     LUCK("luck"),
     VAMPIRE("vampire"),
+    CLONE("clone"),
+    BOOST("boost", wildcard = true),
     ;
 
     companion object {

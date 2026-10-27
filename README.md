@@ -5,11 +5,11 @@ Tower defense de merge no estilo Random Dice, para jogar offline no Android. Fei
 ## Como jogar
 
 - Compre dados com SP. Cada dado comprado é um tipo aleatório do seu deck, com 1 pip.
-- Arraste um dado sobre outro do **mesmo tipo e mesmo número de pips** para gerar um dado com +1 pip de tipo aleatório. O Espelho combina com qualquer tipo.
+- Arraste um dado sobre outro do **mesmo tipo e mesmo número de pips** para gerar um dado com +1 pip de tipo aleatório. O Espelho combina com qualquer tipo (resultado sorteado), o Reforço também, mas garante o tipo do outro dado, e o Clonador vira uma cópia do dado em que for solto.
 - Gaste SP nos botões de baixo para aumentar o dano de um tipo (níveis 1 a 5).
 - As ondas são infinitas, com um chefe a cada 10 ondas. Você tem 3 vidas; o recorde é a maior onda alcançada.
 - Se você trocar de app no meio da partida, o jogo pausa e salva. Mesmo que o Android feche o jogo, ao abrir de novo a partida volta de onde parou.
-- Na tela **Deck**, escolha 5 dos 23 tipos de dado. Tocar num dado mostra o que ele faz: alvo, dano, velocidade, efeito e power-up.
+- Na tela **Deck**, escolha 5 dos 25 tipos de dado. Tocar num dado mostra o que ele faz: alvo, dano, velocidade, efeito e power-up.
 
 ## Requisitos
 

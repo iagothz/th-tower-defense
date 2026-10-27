@@ -85,7 +85,7 @@ th-tower-defense/
 
 **Recorde:** maior onda alcançada.
 
-## Dados (23 tipos)
+## Dados (25 tipos)
 
 | Tipo | Cor | Efeito |
 |---|---|---|
@@ -97,13 +97,13 @@ th-tower-defense/
 | Ferro | cinza | Dano ×2 contra chefes |
 | Mina | dourado | Minerador: não ataca; gera `10 × pips × powerMult` SP a cada 5 s |
 | Sniper | roxo | Dano alto e ataque lento; mira o inimigo com mais vida |
-| Espelho | branco | Ataque fraco. Pode fazer merge com qualquer dado de mesmos pips, e o resultado tem o tipo do outro dado. Dois Espelhos geram um tipo aleatório |
-| Crescimento | rosa | A cada 75 s, ganha +1 pip (máx. 7); fraco nos outros atributos |
+| Espelho | branco | Ataque fraco. Coringa: faz merge com qualquer dado de mesmos pips; o resultado é sorteado do deck, como num merge normal |
+| Crescimento | rosa | A cada 75 s ganha +1 pip e vira um tipo sorteado do deck (pode continuar Crescimento); para em 7 pips; fraco nos outros atributos |
 | Luz | amarelo-claro | Ataque fraco; os vizinhos ortogonais atacam +15% mais rápido por pip da Luz (somam) |
 | Crítico | laranja | Ataque fraco; cada pip dá +3% de chance de crítico (dano x3) a todos os dados, até 60% |
 | Combo | azul | +30% de dano para cada outro Combo no tabuleiro |
 | Maldição | roxo-escuro | O alvo recebe 15% + 3% × pips a mais de dano de tudo (inclusive veneno) por 3 s; não acumula |
-| Caçador | marrom | +1 stack por abate, +5% de dano por stack (máx. 40); merge de Caçadores soma os stacks se o resultado for Caçador |
+| Caçador | marrom | +1 stack por abate, +5% de dano por stack; limite de 10 stacks por pip (60 com 6) e sem limite com 7 pips; merge de Caçadores soma os stacks se o resultado for Caçador |
 | Gravidade | azul-marinho | Empurra o alvo 40 + 10 × pips para trás; cada inimigo pode ser empurrado no máximo 300 no total (chefes: 25% de tudo) |
 | Tempo | verde-água | Congela o alvo 0,3 + 0,1 × pips s (chefes: metade); não renova um congelamento ativo e deixa o inimigo imune por 1 s depois |
 | Armadilha | oliva | Planta mina 150 à frente do primeiro inimigo; explode quando alguém pisa (raio 60); máx. 3 por dado |
@@ -112,6 +112,8 @@ th-tower-defense/
 | Supernova | magenta | Inimigo morto por ela explode (raio 90) com o dano do dado; mortes na explosão também explodem |
 | Sorte | verde-limão | Dano sorteado de 0x a 4x a cada ataque |
 | Vampiro | vinho | +1 SP por pip a cada abate, além da recompensa |
+| Clonador | lilás | Ataque fraco. Arrastado sobre um dado de mesmos pips (ou o contrário), vira uma cópia dele (tipo e pips, sem stacks) e o original fica; funciona até com 7 pips; dois Clonadores fazem merge normal |
+| Reforço | verde-petróleo | Ataque fraco. Coringa garantido: faz merge com qualquer dado de mesmos pips e o resultado é o tipo do outro dado com +1 pip; dois Reforços sorteiam do deck |
 
 Os valores base (dano e intervalo) ficam em `Balance.kt`. O dado que deu o último golpe recebe o crédito do abate (Vampiro, Caçador, Supernova). Gravidade e Tempo têm limites para nenhum inimigo ficar preso para sempre.
 
@@ -154,8 +156,8 @@ Os valores base (dano e intervalo) ficam em `Balance.kt`. O dado que deu o últi
 - **JUnit 5 no pacote `logic`,** com RNG semeado:
   - custo de compra e casa cheia;
   - merge válido e inválido, máximo de 7 pips;
-  - Espelho (com outro tipo e com outro Espelho);
-  - Crescimento;
+  - Espelho (sorteio), Reforço (tipo garantido) e Clonador (cópia, original fica);
+  - Crescimento (vira tipo do deck ao ganhar pip);
   - SP de abates e da Mina;
   - power-up (custo e multiplicador);
   - fórmulas de ataque;

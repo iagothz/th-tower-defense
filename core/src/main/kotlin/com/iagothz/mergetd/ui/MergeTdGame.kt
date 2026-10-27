@@ -17,6 +17,7 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
     lateinit var font: BitmapFont
     lateinit var bigFont: BitmapFont
     lateinit var smallFont: BitmapFont
+    lateinit var tinyFont: BitmapFont
     lateinit var save: SaveData
     lateinit var sfx: Sfx
     val backdrop = Backdrop()
@@ -33,6 +34,7 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
         font = newFont(generator, 34)
         bigFont = newFont(generator, 64)
         smallFont = newFont(generator, 24)
+        tinyFont = newFont(generator, 19)
         generator.dispose()
         save = SaveData(Gdx.app.getPreferences("merge-td"))
         sfx = Sfx(save)
@@ -104,6 +106,7 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
         font.dispose()
         bigFont.dispose()
         smallFont.dispose()
+        tinyFont.dispose()
         sfx.dispose()
     }
 

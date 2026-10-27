@@ -83,8 +83,10 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
     fun canMerge(from: Cell, to: Cell): Boolean = !isGameOver && board.canMerge(from, to)
 
     fun merge(from: Cell, to: Cell): Boolean {
-        if (isGameOver || !board.merge(from, to, deck, rng)) return false
-        events += GameEvent.Merged(to)
+        if (isGameOver) return false
+        val result = board.resultCell(from, to)
+        if (!board.merge(from, to, deck, rng)) return false
+        events += GameEvent.Merged(result)
         return true
     }
 
@@ -257,9 +259,12 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
                 }
                 DieType.GROWTH -> {
                     die.timer += dt
-                    if (die.timer >= Balance.GROWTH_INTERVAL) {
+                    // Each pip it earns, it turns into one of the deck's types; it may roll Growth and keep going.
+                    if (die.timer >= Balance.GROWTH_INTERVAL && die.pips < Balance.MAX_PIPS) {
+                        board[cell] = Die(deck.random(rng), die.pips + 1).apply { disabledFor = die.disabledFor }
+                        continue
+                    } else if (die.timer >= Balance.GROWTH_INTERVAL) {
                         die.timer -= Balance.GROWTH_INTERVAL
-                        die.pips = minOf(Balance.MAX_PIPS, die.pips + 1)
                     }
                 }
                 else -> Unit
@@ -329,7 +334,7 @@ class Match(val deck: List<DieType>, private val rng: Random = Random.Default) {
                 val killer = e.lastHit ?: continue
                 when (killer.type) {
                     DieType.VAMPIRE -> sp += Balance.VAMPIRE_SP_PER_PIP * killer.pips
-                    DieType.HUNTER -> killer.stacks = minOf(Balance.HUNTER_MAX_STACKS, killer.stacks + 1)
+                    DieType.HUNTER -> if (killer.stacks < Balance.hunterCap(killer.pips)) killer.stacks++
                     DieType.NOVA -> blast(at, Balance.NOVA_RADIUS, Combat.baseDamage(DieType.NOVA, killer.pips, powerLevel(DieType.NOVA)), killer, DieType.NOVA)
                     else -> Unit
                 }

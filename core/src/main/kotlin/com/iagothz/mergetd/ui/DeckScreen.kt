@@ -13,9 +13,9 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     private val selected = game.save.deck.toMutableList()
     private var shown = selected.firstOrNull() ?: DieType.FIRE
     private val tiles = DieType.entries.mapIndexed { i, t ->
-        t to Rectangle(34f + (i % COLS) * 112f, 1010f - (i / COLS) * 136f, 92f, 92f)
+        t to Rectangle(24f + (i % COLS) * 98f, 1010f - (i / COLS) * 126f, 84f, 84f)
     }
-    private val panel = Rectangle(24f, 150f, 672f, 400f)
+    private val panel = Rectangle(24f, 150f, 672f, 430f)
     private val confirm = Button(Rectangle(40f, 30f, 310f, 100f), "Confirmar")
     private val back = Button(Rectangle(370f, 30f, 310f, 100f), "Voltar", color = Skin.PANEL)
     private val tap = Tap<Button>()
@@ -33,7 +33,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
                 shapes.roundedRect(r.x - 6, r.y - 6, r.width + 12, r.height + 12, 20f)
             }
             shapes.bevelRect(r.x, r.y, r.width, r.height, 16f, Skin.color(t))
-            shapes.glyph(t, r.x + r.width / 2, r.y + r.height / 2 + 2f, 28f, Skin.glyphColor(t, 0.85f), Skin.color(t))
+            shapes.glyph(t, r.x + r.width / 2, r.y + r.height / 2 + 2f, 25f, Skin.glyphColor(t, 0.85f), Skin.color(t))
             if (t in selected) {
                 shapes.color = Skin.GOLD
                 shapes.circle(r.x + r.width - 2f, r.y + r.height - 2f, 14f, 20)
@@ -69,7 +69,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
             game.batch.textLeft(game.smallFont, "escolha ${DeckCodec.SIZE - selected.size}", 556f, 1142f)
             game.smallFont.color = Color.WHITE
         }
-        for ((t, r) in tiles) game.batch.textCentered(game.smallFont, Skin.label(t), r.x + r.width / 2, r.y - 20f)
+        for ((t, r) in tiles) game.batch.textCentered(game.tinyFont, Skin.label(t), r.x + r.width / 2, r.y - 16f)
         drawInfo()
         confirm.drawText(game.batch, game.font)
         back.drawText(game.batch, game.font)
@@ -125,7 +125,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     }
 
     private companion object {
-        const val COLS = 6
+        const val COLS = 7
         val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
     }
 }

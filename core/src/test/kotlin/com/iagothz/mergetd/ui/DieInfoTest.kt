@@ -49,4 +49,14 @@ class DieInfoTest {
             assertTrue(row(t, "Power-up") != null, "$t power-up")
         }
     }
+
+    @Test
+    fun wildcardsDescribeTheirMergeRules() {
+        assertEquals("Inimigo mais à frente", row(DieType.BOOST, "Alvo"))
+        assertTrue("mesmos pips" in row(DieType.BOOST, "Efeito")!!)
+        assertTrue("cópia" in row(DieType.CLONE, "Efeito")!!)
+        assertTrue("sorteado" in row(DieType.MIRROR, "Efeito")!!)
+        assertTrue("deck" in row(DieType.GROWTH, "Efeito")!!)
+        assertTrue("7 pips" in row(DieType.HUNTER, "Efeito")!!)
+    }
 }

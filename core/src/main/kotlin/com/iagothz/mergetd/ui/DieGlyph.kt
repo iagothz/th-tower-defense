@@ -85,6 +85,16 @@ object DieGlyph {
         ),
         DieType.NOVA to rays(8, 0f, 1f, 0.16f) + listOf(c(0f, 0f, 0.35f)),
         DieType.LUCK to listOf(c(-0.35f, 0.35f, 0.4f), c(0.35f, 0.35f, 0.4f), c(-0.35f, -0.35f, 0.4f), c(0.35f, -0.35f, 0.4f), l(0f, -0.3f, 0.3f, -1f, 0.14f)),
+        // Two squares, the back one hollow: a copy.
+        DieType.CLONE to listOf(
+            l(-0.65f, 0.25f, 0.15f, 0.25f, 0.8f), l(-0.5f, 0.25f, 0f, 0.25f, 0.5f, cut = true),
+            l(-0.15f, -0.25f, 0.65f, -0.25f, 0.8f),
+        ),
+        // Two stacked chevrons pointing up.
+        DieType.BOOST to listOf(
+            t(-0.8f, -1f, 0.8f, -1f, 0f, 0f), t(-0.45f, -1f, 0.45f, -1f, 0f, -0.45f, cut = true),
+            t(-0.8f, -0.3f, 0.8f, -0.3f, 0f, 0.7f), t(-0.45f, -0.3f, 0.45f, -0.3f, 0f, 0.25f, cut = true),
+        ),
         DieType.VAMPIRE to listOf(l(-0.8f, 0.6f, 0.8f, 0.6f, 0.35f), t(-0.7f, 0.45f, -0.2f, 0.45f, -0.45f, -0.8f), t(0.2f, 0.45f, 0.7f, 0.45f, 0.45f, -0.8f)),
     )
 

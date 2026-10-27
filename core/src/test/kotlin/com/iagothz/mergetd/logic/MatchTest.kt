@@ -178,6 +178,24 @@ class MatchTest {
         assertEquals(7, m.board[Cell(0, 1)]!!.pips)
     }
 
+    /** Gaining a pip rerolls the Growth into one of the deck's types, with the new pips. */
+    @Test
+    fun growthBecomesADeckTypeWhenItGainsAPip() {
+        val deck = listOf(DieType.FIRE, DieType.ICE, DieType.POISON, DieType.ELECTRIC, DieType.HUNTER)
+        val types = (0 until 30).map { seed ->
+            val m = Match(deck, Random(seed))
+            m.lives = 1000
+            m.board[Cell(0, 0)] = Die(DieType.GROWTH, 3)
+            m.advance(75.1f)
+            val die = m.board[Cell(0, 0)]!!
+            assertEquals(4, die.pips)
+            assertEquals(0, die.stacks)
+            die.type
+        }
+        assertTrue(types.all { it in deck }, "$types")
+        assertTrue(types.toSet().size > 1, "$types")
+    }
+
     @Test
     fun silencedDieDoesNotAttack() {
         val m = match()
