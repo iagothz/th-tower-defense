@@ -3,6 +3,7 @@ package com.iagothz.mergetd.ui
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
+import com.badlogic.gdx.utils.Align
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.Layout
@@ -76,7 +77,7 @@ class GameOverScreen(
             val pulse = 0.8f + 0.2f * sin(time * 4f)
             game.batch.textShadowed(game.font, "Novo recorde!", 360f, 920f, Color(1f, 0.85f * pulse + 0.1f, 0.3f, 1f))
         }
-        var y = panel.y + panel.height - 48f
+        var y = panel.y + panel.height - 44f
         for ((key, value) in rows) {
             game.smallFont.color = KEY_COLOR
             game.batch.textLeft(game.smallFont, key, panel.x + 32f, y)
@@ -84,8 +85,11 @@ class GameOverScreen(
             game.font.color = if (key == "Onda alcançada") Skin.GOLD else Color.WHITE
             game.batch.textRight(game.font, value, panel.x + panel.width - 32f, y)
             game.font.color = Color.WHITE
-            y -= 70f
+            y -= 58f
         }
+        game.smallFont.color = Skin.GOLD
+        game.smallFont.draw(game.batch, Tips.forKiller(stats.killedBy), panel.x + 32f, y + 10f, panel.width - 64f, Align.left, true)
+        game.smallFont.color = Color.WHITE
         menu.drawText(game.batch, game.font)
         game.batch.end()
     }

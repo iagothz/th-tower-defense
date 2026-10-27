@@ -52,6 +52,14 @@ fun ShapeRenderer.polygon(cx: Float, cy: Float, r: Float, sides: Int, angle: Flo
     }
 }
 
+/** Rounded-corner-free rectangle outline of the given [thickness]. */
+fun ShapeRenderer.ring(x: Float, y: Float, w: Float, h: Float, thickness: Float) {
+    rectLine(x, y, x + w, y, thickness)
+    rectLine(x + w, y, x + w, y + h, thickness)
+    rectLine(x + w, y + h, x, y + h, thickness)
+    rectLine(x, y + h, x, y, thickness)
+}
+
 /** Circle outline of the given [thickness], as a polygon of short line segments. */
 fun ShapeRenderer.ring(cx: Float, cy: Float, r: Float, thickness: Float, segments: Int = 32) {
     val step = 2f * Math.PI.toFloat() / segments

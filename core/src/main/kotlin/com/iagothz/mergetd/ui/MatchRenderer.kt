@@ -24,6 +24,7 @@ class MatchRenderer(
     private val batch: SpriteBatch,
     private val font: BitmapFont,
     private val smallFont: BitmapFont,
+    private val tinyFont: BitmapFont,
 ) {
     private class Trace(val shot: ShotEvent, val ttl: Float, val seed: Int) {
         var left = ttl
@@ -76,21 +77,21 @@ class MatchRenderer(
             batch.textShadowed(smallFont, "${die.stacks}", c.x + 34f, c.y - 36f)
         }
         if (match.waveCountdown > 0f) {
-            batch.textCentered(font, "Próxima onda em ${ceil(match.waveCountdown).toInt()}", 360f, 1106f)
-            batch.textCentered(smallFont, wavePreview(match.wave + 1, match.bossOrder), 360f, 1142f)
+            val until = WaveSpawner.wavesUntilBoss(match.wave + 1)
+            val boss = if (WaveSpawner.isBossWave(match.wave + 1)) "" else "  ·  chefe em $until"
+            batch.textCentered(font, "Próxima onda em ${ceil(match.waveCountdown).toInt()}$boss", 360f, 1106f)
+            batch.textCentered(tinyFont, wavePreview(match.wave + 1, match.bossOrder), 360f, 1140f)
         }
         boss(match)?.let { batch.textCentered(smallFont, Skin.enemyName(it.kind), 360f, BOSS_BAR.y + BOSS_BAR.height + 18f) }
     }
 
-    /** "12 soldados · 4 corredores · chefe em 3 ondas", or "Chefe: Trocador" on a boss wave. */
+    /** "12 soldados · 4 corredores", "Horda! 40 soldados", or "Chefe: Trocador" on a boss wave. */
     private fun wavePreview(next: Int, bosses: List<EnemyKind>): String {
         val counts = WaveSpawner.preview(next, bosses)
         val boss = counts.keys.firstOrNull { it.isBoss }
         if (boss != null) return "Chefe: ${Skin.enemyName(boss)}"
         val special = WaveSpawner.special(next)?.let { "${it.title}! " } ?: ""
-        val parts = special + counts.entries.joinToString(" · ") { (kind, n) -> "$n ${Skin.enemyPlural(kind)}" }
-        val until = WaveSpawner.wavesUntilBoss(next)
-        return "$parts · chefe em $until ${if (until == 1) "onda" else "ondas"}"
+        return special + counts.entries.joinToString(" · ") { (kind, n) -> "$n ${Skin.enemyPlural(kind)}" }
     }
 
     private fun boss(match: Match): Enemy? = match.enemies.firstOrNull { it.kind.isBoss && it.alive }
@@ -344,8 +345,8 @@ class MatchRenderer(
         shapes.circle(x, y, if (heavy) 8f else 4f, 16)
     }
 
-    private companion object {
-        const val SHOT_TTL = 0.1f
+    companion object {
+        private const val SHOT_TTL = 0.1f
         const val PATH_WIDTH = 40f
         const val DIE = Layout.CELL - 8f
         private const val BOARD_PAD = 18f

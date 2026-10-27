@@ -85,4 +85,12 @@ class SaveDataTest {
         SaveData(prefs).vibrationOn = false
         assertFalse(SaveData(prefs).vibrationOn)
     }
+
+    @Test
+    fun tutorialIsPendingUntilMarkedDone() {
+        val prefs = memoryPrefs()
+        assertFalse(SaveData(prefs).tutorialDone)
+        SaveData(prefs).tutorialDone = true
+        assertTrue(SaveData(prefs).tutorialDone)
+    }
 }

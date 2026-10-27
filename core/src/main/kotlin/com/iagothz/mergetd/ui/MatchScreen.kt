@@ -29,10 +29,11 @@ class MatchScreen(
     private val match = restored ?: Match(game.save.deck, map = game.save.map)
     private val drag = DragController(match)
     private val hold = LongPress()
-    private val renderer = MatchRenderer(game.shapes, game.batch, game.font, game.smallFont)
+    private val renderer = MatchRenderer(game.shapes, game.batch, game.font, game.smallFont, game.tinyFont)
     private val buttonTap = Tap<Button>()
     private val effects = Effects(path = match.path)
     private val stats = MatchStats()
+    private val tutorial = Tutorial(active = restored == null && !game.save.tutorialDone)
     private val sounds = SoundPlanner()
     private var clock = 0f
     private var paused = restored != null
@@ -51,7 +52,8 @@ class MatchScreen(
     private val quit = Button(Rectangle(160f, 460f, 400f, 100f), "Sair", color = DANGER)
     private val yes = Button(Rectangle(160f, 560f, 400f, 100f), "Sim", color = DANGER)
     private val no = Button(Rectangle(160f, 690f, 400f, 100f), "Não")
-    private val allButtons = listOf(buy, speedButton, pauseButton, resume, restart, quit, yes, no) + powerButtons.map { it.second }
+    private val skipTutorial = Button(Rectangle(540f, 1080f, 140f, 56f), "Pular", color = Skin.PANEL)
+    private val allButtons = listOf(buy, speedButton, pauseButton, resume, restart, quit, yes, no, skipTutorial) + powerButtons.map { it.second }
 
     override val theme get() = Skin.theme(match.map)
 
@@ -72,6 +74,9 @@ class MatchScreen(
             val events = match.drainEvents()
             effects.consume(events)
             stats.consume(events)
+            tutorial.consume(events)
+            tutorial.update(delta)
+            if (tutorial.finished && !game.save.tutorialDone) game.save.tutorialDone = true
             effects.update(delta)
             game.sfx.play(sounds.plan(events, clock))
             if (match.isGameOver) {
@@ -137,7 +142,48 @@ class MatchScreen(
         if (info != null) drawDieInfo(info.first, info.second)
         batch.end()
 
+        // The balloon goes over the HUD text, so it gets its own pass.
+        if (tutorial.step != null) {
+            shapes.begin(ShapeRenderer.ShapeType.Filled)
+            drawTutorialShapes()
+            shapes.end()
+            batch.begin()
+            drawTutorialText()
+            batch.end()
+        }
+
         if (paused) drawPauseOverlay()
+    }
+
+    /** The balloon's panel plus a pulsing gold ring around the step's target; the balloon sits in the sky. */
+    private fun drawTutorialShapes() {
+        val step = tutorial.step ?: return
+        val shapes = game.shapes
+        val pulse = 0.5f + 0.5f * kotlin.math.sin(game.clock * 5f)
+        val target: Rectangle? = when (step.target) {
+            Tutorial.Target.BUY -> buy.rect
+            Tutorial.Target.BOARD -> MatchRenderer.BOARD
+            Tutorial.Target.POWER -> POWER_ROW
+            null -> null
+        }
+        if (target != null) {
+            shapes.color = tmpColor.set(Skin.GOLD).also { it.a = 0.45f + 0.5f * pulse }
+            val pad = 8f + 6f * pulse
+            shapes.ring(target.x - pad, target.y - pad, target.width + 2 * pad, target.height + 2 * pad, 5f)
+        }
+        shapes.color = Skin.SHADOW
+        shapes.roundedRect(TUTORIAL.x + 3f, TUTORIAL.y - 8f, TUTORIAL.width, TUTORIAL.height, 20f)
+        shapes.color = Skin.PANEL
+        shapes.roundedRect(TUTORIAL.x, TUTORIAL.y, TUTORIAL.width, TUTORIAL.height, 20f)
+        shapes.color = Skin.GOLD
+        shapes.roundedRect(TUTORIAL.x, TUTORIAL.y + TUTORIAL.height - 8f, TUTORIAL.width, 8f, 4f)
+        if (step != Tutorial.Step.DONE) skipTutorial.drawShape(shapes)
+    }
+
+    private fun drawTutorialText() {
+        val step = tutorial.step ?: return
+        game.smallFont.draw(game.batch, step.text, TUTORIAL.x + 24f, TUTORIAL.y + TUTORIAL.height - 30f, TUTORIAL.width - 190f, Align.left, true)
+        if (step != Tutorial.Step.DONE) skipTutorial.drawText(game.batch, game.smallFont)
     }
 
     override fun cameraShake(): Vec2 = if (paused) super.cameraShake() else effects.shakeOffset()
@@ -210,7 +256,8 @@ class MatchScreen(
     private fun pauseButtons(): List<Button> = if (confirm != null) listOf(no, yes) else listOf(resume, restart, quit)
 
     private fun buttonAt(p: Vec2): Button? {
-        val visible = if (paused) pauseButtons() else listOf(buy, speedButton, pauseButton) + powerButtons.map { it.second }
+        val visible = if (paused) pauseButtons() else listOf(buy, speedButton, pauseButton) + powerButtons.map { it.second } +
+            listOfNotNull(skipTutorial.takeIf { tutorial.step != null && tutorial.step != Tutorial.Step.DONE })
         return visible.firstOrNull { it.contains(p.x, p.y) }
     }
 
@@ -246,6 +293,7 @@ class MatchScreen(
             }
             buy -> match.buyDie()
             speedButton -> speed = if (speed == 1) 2 else 1
+            skipTutorial -> tutorial.skip()
             pauseButton -> {
                 paused = true
                 confirm = null
@@ -295,5 +343,9 @@ class MatchScreen(
         val KEY_COLOR = Color(0.75f, 0.77f, 0.85f, 1f)
         /** Die info card, in the sky above the board. */
         val INFO = Rectangle(24f, 840f, 672f, 270f)
+        /** Tutorial balloon, same place; the two never show together for long. */
+        val TUTORIAL = Rectangle(24f, 1000f, 672f, 150f)
+        val POWER_ROW = Rectangle(26f, 50f, 668f, 120f)
+        val tmpColor = Color()
     }
 }
