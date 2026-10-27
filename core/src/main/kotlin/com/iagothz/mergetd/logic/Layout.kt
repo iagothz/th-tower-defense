@@ -4,13 +4,14 @@ package com.iagothz.mergetd.logic
 object Layout {
     const val WORLD_W = 720f
     const val WORLD_H = 1280f
-    const val CELL = 112f
+    const val CELL = 104f
     const val GAP = 8f
-    const val GRID_X = 64f
+    const val GRID_X = 84f
     const val GRID_Y = 464f
 
+    /** A U around the board, far enough from the edges that a boss (radius 32) is fully visible. */
     val PATH = EnemyPath(
-        listOf(Vec2(24f, 200f), Vec2(24f, 856f), Vec2(696f, 856f), Vec2(696f, 200f)),
+        listOf(Vec2(44f, 180f), Vec2(44f, 856f), Vec2(676f, 856f), Vec2(676f, 180f)),
     )
 
     fun cellCenter(c: Cell): Vec2 = Vec2(

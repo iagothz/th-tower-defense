@@ -15,13 +15,12 @@ class Button(
     fun contains(x: Float, y: Float): Boolean = enabled && rect.contains(x, y)
 
     fun drawShape(shapes: ShapeRenderer) {
-        shapes.color = if (enabled) color else DISABLED
-        shapes.roundedRect(rect.x, rect.y, rect.width, rect.height, 16f)
+        shapes.bevelRect(rect.x, rect.y, rect.width, rect.height, 16f, if (enabled) color else DISABLED)
     }
 
     fun drawText(batch: SpriteBatch, font: BitmapFont) {
         font.color = if (enabled) Color.WHITE else Color.LIGHT_GRAY
-        batch.textCentered(font, text, rect.x + rect.width / 2, rect.y + rect.height / 2)
+        batch.textCentered(font, text, rect.x + rect.width / 2, rect.y + rect.height / 2 + 2f)
         font.color = Color.WHITE
     }
 

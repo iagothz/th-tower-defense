@@ -17,6 +17,8 @@ class AndroidLauncher : AndroidApplication() {
         }
         val config = AndroidApplicationConfiguration().apply {
             useImmersiveMode = true
+            // 4x MSAA: everything is drawn with ShapeRenderer, so edges would be jagged without it.
+            numSamples = 4
         }
         initialize(MergeTdGame(), config)
     }

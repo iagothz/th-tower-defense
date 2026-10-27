@@ -10,6 +10,8 @@ fun main(args: Array<String>) {
         setWindowedMode(405, 720)
         useVsync(true)
         setForegroundFPS(60)
+        // 4x MSAA: everything is drawn with ShapeRenderer, so edges would be jagged without it.
+        setBackBufferConfig(8, 8, 8, 8, 16, 0, 4)
     }
     Lwjgl3Application(MergeTdGame(devMode = "--dev" in args), config)
 }

@@ -24,21 +24,25 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         val shapes = game.shapes
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         for ((t, r) in tiles) {
-            if (t in selected) {
+            if (t == shown) {
                 shapes.color = Color.WHITE
                 shapes.roundedRect(r.x - 6, r.y - 6, r.width + 12, r.height + 12, 20f)
             }
-            shapes.color = Skin.color(t)
-            shapes.roundedRect(r.x, r.y, r.width, r.height, 16f)
-            if (t == shown) {
-                shapes.color = Skin.pipColor(t)
-                shapes.circle(r.x + r.width / 2, r.y + r.height / 2, 10f, 16)
+            shapes.bevelRect(r.x, r.y, r.width, r.height, 16f, Skin.color(t))
+            shapes.glyph(t, r.x + r.width / 2, r.y + r.height / 2 + 2f, 28f, Skin.glyphColor(t, 0.85f), Skin.color(t))
+            if (t in selected) {
+                shapes.color = Skin.GOLD
+                shapes.circle(r.x + r.width - 2f, r.y + r.height - 2f, 14f, 20)
+                shapes.color = Color(0.15f, 0.15f, 0.2f, 1f)
+                shapes.rectLine(r.x + r.width - 9f, r.y + r.height - 2f, r.x + r.width - 4f, r.y + r.height - 8f, 3.5f)
+                shapes.rectLine(r.x + r.width - 4f, r.y + r.height - 8f, r.x + r.width + 5f, r.y + r.height + 5f, 3.5f)
             }
         }
         shapes.color = Skin.PANEL
         shapes.roundedRect(panel.x, panel.y, panel.width, panel.height, 18f)
         shapes.color = Skin.color(shown)
         shapes.roundedRect(panel.x, panel.y + panel.height - 12f, panel.width, 12f, 6f)
+        shapes.glyph(shown, panel.x + 48f, panel.y + panel.height - 42f, 18f, Skin.color(shown), Skin.PANEL)
         confirm.drawShape(shapes)
         back.drawShape(shapes)
         shapes.end()
@@ -58,9 +62,9 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         val left = panel.x + 24f
         val keyWidth = 150f
         val valueWidth = panel.width - 48f - keyWidth
-        var y = panel.y + panel.height - 36f
+        var y = panel.y + panel.height - 30f
 
-        game.font.draw(game.batch, Skin.fullName(shown), left, y)
+        game.font.draw(game.batch, Skin.fullName(shown), left + 52f, y)
         y -= 46f
         y -= game.smallFont.draw(game.batch, info.summary, left, y, panel.width - 48f, Align.left, true).height + 16f
 

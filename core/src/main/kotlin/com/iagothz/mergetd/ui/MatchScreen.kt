@@ -30,7 +30,7 @@ class MatchScreen(
     private var speed = 1
 
     private val buy = Button(Rectangle(160f, 320f, 400f, 100f), "")
-    private val pauseButton = Button(Rectangle(620f, 1170f, 80f, 80f), "II", color = Skin.PANEL)
+    private val pauseButton = Button(Rectangle(620f, 1182f, 80f, 56f), "", color = Skin.PANEL)
     private val powerButtons = match.deck.mapIndexed { i, t ->
         t to Button(Rectangle(26f + i * 136f, 50f, 124f, 120f), "", color = Skin.color(t))
     }
@@ -68,7 +68,15 @@ class MatchScreen(
         renderer.drawShapes(match, drag, effects)
         buy.drawShape(shapes)
         pauseButton.drawShape(shapes)
-        powerButtons.forEach { it.second.drawShape(shapes) }
+        shapes.color = Color.WHITE
+        val pc = pauseButton.rect
+        shapes.rect(pc.x + pc.width / 2 - 12f, pc.y + 18f, 8f, 24f)
+        shapes.rect(pc.x + pc.width / 2 + 4f, pc.y + 18f, 8f, 24f)
+        for ((t, b) in powerButtons) {
+            b.drawShape(shapes)
+            val base = if (b.enabled) Skin.color(t) else Color(0.3f, 0.3f, 0.34f, 1f)
+            shapes.glyph(t, b.rect.x + b.rect.width / 2, b.rect.y + 62f, 30f, Skin.glyphColor(t, 0.25f), base)
+        }
         shapes.end()
 
         val batch = game.batch
@@ -88,9 +96,9 @@ class MatchScreen(
             val ink = if (b.enabled) Skin.pipColor(t) else Color.LIGHT_GRAY
             game.smallFont.color = ink
             game.font.color = ink
-            batch.textCentered(game.smallFont, Skin.label(t), cx, b.rect.y + 96f)
-            batch.textCentered(game.font, "Nv${match.powerLevel(t)}", cx, b.rect.y + 58f)
-            batch.textCentered(game.smallFont, cost?.toString() ?: "MAX", cx, b.rect.y + 22f)
+            batch.textCentered(game.smallFont, Skin.label(t), cx, b.rect.y + 100f)
+            batch.textCentered(game.font, "Nv${match.powerLevel(t)}", cx, b.rect.y + 62f)
+            batch.textCentered(game.smallFont, cost?.toString() ?: "MAX", cx, b.rect.y + 26f)
         }
         game.smallFont.color = Color.WHITE
         game.font.color = Color.WHITE
