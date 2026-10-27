@@ -48,6 +48,7 @@ class MatchScreen(
     private val tutorial = Tutorial(active = restored == null && fresh == null && !game.save.tutorialDone)
 
     init {
+        effects.reduceMotion = game.save.reduceMotion
         if (fresh != null) effects.announce(S["Desafio do dia: deck e mapa do dia"], 2.5f)
     }
     private val sounds = SoundPlanner()

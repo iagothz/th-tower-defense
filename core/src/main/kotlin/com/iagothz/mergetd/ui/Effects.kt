@@ -112,6 +112,8 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
     private val glows = mutableMapOf<DieType, Float>()
     /** Set by the screen each frame: one life left, so the edges breathe red. */
     var lastLife = false
+    /** Accessibility: no shake, no vignette, no slow motion. Particles and pops stay. */
+    var reduceMotion = false
     var banner: String? = null
         private set
     /** Second line under the banner: what the boss does. */
@@ -295,12 +297,12 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
     }
 
     /** 1 at the start of the boss-death slow motion, 0 when it is over; the camera leans in with it. */
-    fun slowMo(): Float = (slowLeft / SLOWMO_TIME).coerceIn(0f, 1f)
+    fun slowMo(): Float = if (reduceMotion) 0f else (slowLeft / SLOWMO_TIME).coerceIn(0f, 1f)
 
     /** How fast the match should run this frame: frozen for an instant after a merge, slow after a boss dies. */
     fun timeScale(): Float = when {
         freezeLeft > 0f -> 0f
-        slowLeft > 0f -> SLOWMO_SCALE
+        slowLeft > 0f && !reduceMotion -> SLOWMO_SCALE
         else -> 1f
     }
 
@@ -308,6 +310,7 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
 
     /** Edge darkening right now: a red flash on a leak, a slow red breath on the last life, dark while the boss card shows. */
     fun vignetteAlpha(): Float {
+        if (reduceMotion) return 0f
         if (ending) return 0.95f
         val leak = 0.9f * leakVignette / LEAK_VIGNETTE_TIME
         val boss = 0.55f * minOf(1f, bossVignette / 0.4f)
@@ -408,7 +411,7 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
     }
 
     fun shakeOffset(): Vec2 {
-        if (shakeLeft <= 0f) return Vec2(0f, 0f)
+        if (shakeLeft <= 0f || reduceMotion) return Vec2(0f, 0f)
         val a = shakeAmp * (shakeLeft / shakeDuration)
         return Vec2(rng.nextFloat() * 2 * a - a, rng.nextFloat() * 2 * a - a)
     }

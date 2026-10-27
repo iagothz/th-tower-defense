@@ -89,6 +89,7 @@ object S {
         "Total" to "Total", "Partidas" to "Matches", "Ondas somadas" to "Waves in total", "Abates" to "Kills", "Chefes" to "Bosses",
         "Média de ondas" to "Average wave", "Recorde por mapa" to "Record per map", "Melhores decks" to "Best decks",
         "Jogue uma partida para aparecer aqui." to "Play a match to show up here.", "Nenhum desafio jogado ainda." to "No challenge played yet.",
+        "Reduzir movimento" to "Reduce motion", "Texto grande" to "Large text",
         "Inimigos" to "Enemies", "Como vencer" to "How to beat it",
         "vida ×%s · vel. ×%s · %d SP · tira %d" to "HP ×%s · speed ×%s · %d SP · takes %d",
         "O básico: vem em grupo." to "The basic one: comes in groups.", "Rápido e frágil." to "Fast and fragile.",

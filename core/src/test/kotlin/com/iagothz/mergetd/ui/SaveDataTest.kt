@@ -241,4 +241,15 @@ class SaveDataTest {
         SaveData(prefs).hints = setOf("undo", "hold")
         assertEquals(setOf("undo", "hold"), SaveData(prefs).hints)
     }
+
+    @Test
+    fun accessibilityTogglesPersist() {
+        val prefs = memoryPrefs()
+        assertFalse(SaveData(prefs).reduceMotion)
+        assertFalse(SaveData(prefs).largeText)
+        SaveData(prefs).reduceMotion = true
+        SaveData(prefs).largeText = true
+        assertTrue(SaveData(prefs).reduceMotion)
+        assertTrue(SaveData(prefs).largeText)
+    }
 }

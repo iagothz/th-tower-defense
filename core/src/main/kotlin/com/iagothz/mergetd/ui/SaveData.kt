@@ -204,6 +204,22 @@ class SaveData(private val prefs: Preferences) {
             prefs.flush()
         }
 
+    /** Accessibility: no screen shake, vignettes, slow motion or camera zoom. */
+    var reduceMotion: Boolean
+        get() = prefs.getBoolean("reduceMotion", false)
+        set(value) {
+            prefs.putBoolean("reduceMotion", value)
+            prefs.flush()
+        }
+
+    /** Accessibility: every font 15% bigger. */
+    var largeText: Boolean
+        get() = prefs.getBoolean("largeText", false)
+        set(value) {
+            prefs.putBoolean("largeText", value)
+            prefs.flush()
+        }
+
     var tutorialDone: Boolean
         get() = prefs.getBoolean("tutorialDone", false)
         set(value) {

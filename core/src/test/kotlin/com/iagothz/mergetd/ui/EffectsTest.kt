@@ -417,4 +417,22 @@ class EffectsTest {
         fx.consume(listOf(GameEvent.Merged(Cell(1, 1), pips = 2)))
         assertEquals(1f, fx.pulse("undo"))
     }
+
+    @Test
+    fun reduceMotionDropsShakeVignetteAndSlowMotion() {
+        fx.reduceMotion = true
+        fx.consume(listOf(GameEvent.Leaked(EnemyKind.NORMAL)))
+        fx.update(0.01f)
+        assertEquals(Vec2(0f, 0f), fx.shakeOffset())
+        assertEquals(0f, fx.vignetteAlpha())
+        fx.consume(listOf(GameEvent.Killed(EnemyKind.BOSS_REGEN, Vec2(100f, 100f))))
+        assertEquals(1f, fx.timeScale())
+        assertEquals(0f, fx.slowMo())
+        fx.lastLife = true
+        fx.update(0.1f)
+        assertEquals(0f, fx.vignetteAlpha())
+        fx.gameOver()
+        fx.update(0.01f)
+        assertEquals(Vec2(0f, 0f), fx.shakeOffset())
+    }
 }

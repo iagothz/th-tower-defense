@@ -35,13 +35,8 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
     override fun create() {
         shapes = ShapeRenderer()
         batch = SpriteBatch()
-        val generator = FreeTypeFontGenerator(Gdx.files.internal("fonts/Roboto-Medium.ttf"))
-        font = newFont(generator, 34)
-        bigFont = newFont(generator, 64)
-        smallFont = newFont(generator, 24)
-        tinyFont = newFont(generator, 19)
-        generator.dispose()
         save = SaveData(Gdx.app.getPreferences("merge-td"))
+        buildFonts()
         sfx = Sfx(save)
         Cosmetics.load(save)
         S.language = Language.resolve(save.language, Locale.getDefault().language)
@@ -127,6 +122,18 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
     }
 
     /** Rasterizes the TTF at [size] world pixels, including Portuguese accented letters. */
+    /** Rasterizes the four fonts, 15% bigger with the large-text setting; call again when that setting changes. */
+    fun buildFonts() {
+        if (::font.isInitialized) listOf(font, bigFont, smallFont, tinyFont).forEach { it.dispose() }
+        val scale = if (save.largeText) LARGE_TEXT else 1f
+        val generator = FreeTypeFontGenerator(Gdx.files.internal("fonts/Roboto-Medium.ttf"))
+        font = newFont(generator, (34 * scale).toInt())
+        bigFont = newFont(generator, (64 * scale).toInt())
+        smallFont = newFont(generator, (24 * scale).toInt())
+        tinyFont = newFont(generator, (19 * scale).toInt())
+        generator.dispose()
+    }
+
     private fun newFont(generator: FreeTypeFontGenerator, size: Int): BitmapFont {
         val params = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
             this.size = size
@@ -149,6 +156,7 @@ class MergeTdGame(val devMode: Boolean = false) : Game() {
     }
 
     companion object {
+        const val LARGE_TEXT = 1.15f
         const val VERSION = "0.5.0"
     }
 }

@@ -11,8 +11,10 @@ import java.util.Locale
 class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
     private val soundSlider = Rectangle(60f, 980f, 600f, 40f)
     private val musicSlider = Rectangle(60f, 860f, 600f, 40f)
-    private val vibration = Button(Rectangle(60f, 700f, 600f, 90f), "", color = Skin.PANEL)
-    private val languages = Language.entries.mapIndexed { i, l -> l to Button(Rectangle(60f + i * 204f, 520f, 192f, 80f), S[l.title], color = Skin.PANEL) }
+    private val vibration = Button(Rectangle(60f, 740f, 292f, 80f), "", color = Skin.PANEL)
+    private val motion = Button(Rectangle(368f, 740f, 292f, 80f), "", color = Skin.PANEL)
+    private val largeText = Button(Rectangle(60f, 644f, 600f, 80f), "", color = Skin.PANEL)
+    private val languages = Language.entries.mapIndexed { i, l -> l to Button(Rectangle(60f + i * 204f, 500f, 192f, 80f), S[l.title], color = Skin.PANEL) }
     private val back = Button(Rectangle(160f, 30f, 400f, 100f), S["Voltar"], color = Skin.PANEL)
     private val tap = Tap<Button>()
     private var dragging: Rectangle? = null
@@ -20,12 +22,18 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
     override fun draw(delta: Float) {
         back.pressed = tap.current === back
         vibration.pressed = tap.current === vibration
+        motion.pressed = tap.current === motion
+        largeText.pressed = tap.current === largeText
         vibration.text = "${S["Vibrar"]}: ${S[if (game.save.vibrationOn) "sim" else "não"]}"
+        motion.text = "${S["Reduzir movimento"]}: ${S[if (game.save.reduceMotion) "sim" else "não"]}"
+        largeText.text = "${S["Texto grande"]}: ${S[if (game.save.largeText) "sim" else "não"]}"
         val shapes = game.shapes
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         drawSlider(soundSlider, game.save.soundVolume)
         drawSlider(musicSlider, game.save.musicVolume)
         vibration.drawShape(shapes)
+        motion.drawShape(shapes)
+        largeText.drawShape(shapes)
         for ((l, b) in languages) {
             b.color = if (l == game.save.language) ON else Skin.PANEL
             b.pressed = tap.current === b
@@ -38,9 +46,11 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
         game.batch.textShadowed(game.bigFont, S["Configurações"], 360f, 1222f)
         label(S["Som"], game.save.soundVolume, soundSlider)
         label(S["Música"], game.save.musicVolume, musicSlider)
-        vibration.drawText(game.batch, game.font)
+        vibration.drawText(game.batch, game.smallFont)
+        motion.drawText(game.batch, game.smallFont)
+        largeText.drawText(game.batch, game.smallFont)
         game.smallFont.color = KEY_COLOR
-        game.batch.textLeft(game.smallFont, S["Idioma"], 60f, 630f)
+        game.batch.textLeft(game.smallFont, S["Idioma"], 60f, 610f)
         game.smallFont.color = Color.WHITE
         for ((_, b) in languages) b.drawText(game.batch, game.smallFont)
         game.tinyFont.color = KEY_COLOR
@@ -76,7 +86,7 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
         if (r === soundSlider) game.save.soundVolume = v else game.save.musicVolume = v
     }
 
-    private fun buttonAt(p: Vec2) = (listOf(back, vibration) + languages.map { it.second }).firstOrNull { it.contains(p.x, p.y) }
+    private fun buttonAt(p: Vec2) = (listOf(back, vibration, motion, largeText) + languages.map { it.second }).firstOrNull { it.contains(p.x, p.y) }
 
     override fun onTouchDown(p: Vec2) {
         dragging = sliderAt(p)?.also { setSlider(it, p) }
@@ -103,6 +113,12 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
             vibration -> {
                 game.save.vibrationOn = !game.save.vibrationOn
                 if (game.save.vibrationOn) game.sfx.play(setOf("boss"))
+            }
+            motion -> game.save.reduceMotion = !game.save.reduceMotion
+            largeText -> {
+                game.save.largeText = !game.save.largeText
+                game.buildFonts()
+                game.showSettings()
             }
             null -> Unit
             else -> languages.firstOrNull { it.second === b }?.let { (l, _) ->
