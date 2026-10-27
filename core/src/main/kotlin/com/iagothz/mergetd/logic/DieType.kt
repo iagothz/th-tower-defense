@@ -9,7 +9,7 @@ enum class DieType(val id: String, val attacks: Boolean = true) {
     IRON("iron"),
     MINE("mine", attacks = false),
     SNIPER("sniper"),
-    MIRROR("mirror", attacks = false),
+    MIRROR("mirror"),
     GROWTH("growth"),
     ;
 

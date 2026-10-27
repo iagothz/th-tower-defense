@@ -55,12 +55,14 @@ th-tower-defense/
 **Compra**
 - Custa 10 SP na primeira compra e sobe +10 a cada compra.
 - Gera um dado de tipo aleatório do deck, com 1 pip, numa casa vazia aleatória.
+- Enquanto o tabuleiro tiver menos de 3 dados que atacam, a compra só sorteia tipos que atacam (evita decks com Mina começarem sem defesa).
 - Fica desabilitada se não houver SP suficiente ou casa vazia.
 
 **Merge**
 - Só funciona entre dados do mesmo tipo e com o mesmo número de pips, menor que 7.
 - O resultado ocupa a casa de destino, com pips+1 e tipo aleatório do deck.
 - A casa de origem fica vazia.
+- Se um dos dados estava desativado pelo Silenciador, o resultado continua desativado pelo tempo restante maior.
 - Um merge inválido não muda nada.
 
 **Ataque**
@@ -96,8 +98,8 @@ th-tower-defense/
 | Ferro | cinza | Dano ×2 contra chefes |
 | Mina | dourado | Não ataca; gera `10 × pips × powerMult` SP a cada 5 s |
 | Sniper | roxo | Dano alto e ataque lento; mira o inimigo com mais vida |
-| Espelho | branco | Não ataca. Pode fazer merge com qualquer dado de mesmos pips, e o resultado tem o tipo do outro dado. Dois Espelhos geram um tipo aleatório |
-| Crescimento | rosa | A cada 40 s, ganha +1 pip (máx. 7); fraco nos outros atributos |
+| Espelho | branco | Ataque fraco. Pode fazer merge com qualquer dado de mesmos pips, e o resultado tem o tipo do outro dado. Dois Espelhos geram um tipo aleatório |
+| Crescimento | rosa | A cada 60 s, ganha +1 pip (máx. 7); fraco nos outros atributos |
 
 Os valores base (dano e intervalo) ficam em `Balance.kt`.
 

@@ -15,7 +15,7 @@ class BotTest {
 
     /** Fills every empty cell with dice that can't merge with each other (unique type+pips, no Mirror). */
     private fun Board.fillUnmergeable(skip: Set<Pair<DieType, Int>> = emptySet()) {
-        val attackers = DieType.entries.filter { it.attacks }
+        val attackers = DieType.entries.filter { it.attacks && it != DieType.MIRROR }
         val combos = attackers.flatMap { t -> (1..7).map { t to it } }.filter { it !in skip }.iterator()
         for (c in emptyCells()) {
             val (t, p) = combos.next()

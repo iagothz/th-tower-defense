@@ -9,6 +9,8 @@ object Balance {
     const val MAX_PIPS = 7
 
     const val START_SP = 150
+    /** Until the board has this many attacking dice, purchases only roll attacking types. */
+    const val MIN_ATTACKERS = 3
     const val START_LIVES = 3
     const val BUY_BASE = 10
     const val BUY_STEP = 10
@@ -54,7 +56,7 @@ object Balance {
 
     const val MINE_INTERVAL = 5f
     const val MINE_SP_PER_PIP = 10
-    const val GROWTH_INTERVAL = 40f
+    const val GROWTH_INTERVAL = 60f
 
     fun powerMult(level: Int): Float = POWER_MULT[level - 1]
 
@@ -67,7 +69,7 @@ object Balance {
         DieType.IRON -> DieStats(18f, 1.0f)
         DieType.MINE -> DieStats(0f, 0f)
         DieType.SNIPER -> DieStats(60f, 2.5f)
-        DieType.MIRROR -> DieStats(0f, 0f)
+        DieType.MIRROR -> DieStats(12f, 1.0f)
         DieType.GROWTH -> DieStats(8f, 1.0f)
     }
 }

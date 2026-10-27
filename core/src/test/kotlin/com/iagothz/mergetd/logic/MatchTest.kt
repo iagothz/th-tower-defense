@@ -171,7 +171,9 @@ class MatchTest {
         m.lives = 1000
         m.board[Cell(0, 0)] = Die(DieType.GROWTH, 1)
         m.board[Cell(0, 1)] = Die(DieType.GROWTH, 7)
-        m.advance(40.05f)
+        m.advance(59.9f)
+        assertEquals(1, m.board[Cell(0, 0)]!!.pips)
+        m.advance(0.2f)
         assertEquals(2, m.board[Cell(0, 0)]!!.pips)
         assertEquals(7, m.board[Cell(0, 1)]!!.pips)
     }
@@ -238,5 +240,41 @@ class MatchTest {
         m.update(Balance.STEP)
         assertEquals(1, m.lives)
         assertTrue(m.enemies.isEmpty())
+    }
+
+    @Test
+    fun buysOnlyAttackersUntilThreeOnBoard() {
+        val deck = listOf(DieType.MINE, DieType.MIRROR, DieType.FIRE, DieType.ICE, DieType.POISON)
+        for (seed in 1..40) {
+            val m = Match(deck, Random(seed))
+            m.sp = 100_000
+            repeat(3) { m.buyDie() }
+            val types = m.board.occupied().map { it.second.type }
+            assertTrue(DieType.MINE !in types, "seed $seed: $types")
+        }
+    }
+
+    @Test
+    fun buysWholeDeckOnceThreeAttackersAreOnBoard() {
+        val deck = listOf(DieType.MINE, DieType.MIRROR, DieType.FIRE, DieType.ICE, DieType.POISON)
+        val boughtMine = (1..10).count { seed ->
+            val m = Match(deck, Random(seed))
+            m.sp = 100_000
+            repeat(3) { m.board[Cell(2, it)] = Die(DieType.FIRE, 1) }
+            repeat(12) { m.buyDie() }
+            m.board.occupied().any { it.second.type == DieType.MINE }
+        }
+        assertTrue(boughtMine >= 5, "only $boughtMine of 10 seeds bought a Mine")
+    }
+
+    @Test
+    fun mirrorAttacks() {
+        val m = match()
+        m.board[Cell(0, 0)] = Die(DieType.MIRROR, 1)
+        val enemy = Enemy(EnemyKind.NORMAL, 100f).also { it.distance = 500f }
+        m.debugAddEnemy(enemy)
+        m.update(Balance.STEP)
+        assertEquals(100f - Balance.stats(DieType.MIRROR).baseDamage, enemy.hp)
+        assertTrue(enemy.hp < 100f)
     }
 }
