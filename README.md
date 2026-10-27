@@ -72,6 +72,8 @@ keyAlias=mergetd
 
 Para a loja, o pacote AAB sai de `./gradlew :android:bundleRelease` (em `android/build/outputs/bundle/release/`). O release passa pelo R8 (código reduzido e ofuscado); as regras que mantêm o que o libGDX usa por reflexão ficam em `android/proguard-rules.pro`, e o `mapping.txt` de cada build em `android/build/outputs/mapping/release/`.
 
+O material da ficha da loja (textos em pt/en, capturas 1080×2160 e a arte de destaque) fica em `store/`, com um `README.md` explicando cada item.
+
 Guarde a chave e as senhas: atualizar um app instalado exige a mesma assinatura. O ícone é gerado por `python tools/make_icons.py` (precisa do Pillow).
 
 ## Modo de teste (só no PC)
