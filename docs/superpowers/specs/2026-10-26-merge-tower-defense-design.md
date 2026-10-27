@@ -139,6 +139,11 @@ O tabuleiro, o HUD e os botões nunca mudam de lugar; cada mapa é um caminho di
 - 20 conquistas (`Achievement`), avaliadas no fim de cada partida a partir de `AchievementProgress` (resultado, modo, flags observadas no tabuleiro por `MatchStats.observe`, totais do save). Guardadas como `ach.<id>`.
 - 13 delas destravam um cosmético só visual (`Cosmetic`): 6 molduras do tabuleiro, 4 tons de céu (tinta multiplicada no gradiente), 3 formas de pip. Equipado por slot em `cosmetic.<slot>`, lido pelos renderers via `Cosmetics`. Tela Conquistas (botão em Estatísticas): toque numa linha destravada para equipar; de novo para voltar ao padrão.
 
+## Histórico e código de partida
+
+- Toda partida terminada entra no **histórico** (`history`, últimas 20): dia, mapa, modo, deck, onda, quem matou e o código. Tela Histórico (botão em Estatísticas).
+- Toda partida normal nasce de uma seed guardada (`Match.seeded`, linha `seed` no save). `MatchCode` escreve mapa, modo, deck e seed em 14 letras base32 (Crockford, sem I/L/O/U) com letra de verificação: "XXXX-XXXX-XXXX-XX". O fim de jogo mostra o código; "Jogar código" na tela Partida reproduz a mesma partida (`locked`: conta só para os totais, não para recordes). O desafio do dia não gera código.
+
 ## Meta, tutorial e áudio
 
 - **Tutorial** na primeira partida (`Tutorial`): Comprar → juntar → power-up, cada balão some ao fazer; Pular; `tutorialDone` no save.

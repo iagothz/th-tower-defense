@@ -1,5 +1,7 @@
 package com.iagothz.mergetd.ui
 
+import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
@@ -7,6 +9,7 @@ import com.iagothz.mergetd.logic.Balance
 import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.GameMode
 import com.iagothz.mergetd.logic.Layout
+import com.iagothz.mergetd.logic.MatchCode
 import com.iagothz.mergetd.logic.Vec2
 
 /** Picks the match: four map cards (miniature, difficulty, record) above a row of modes. */
@@ -19,6 +22,8 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
     private val modes = GameMode.entries.mapIndexed { i, m -> m to Rectangle(24f + i * 170f, 440f, 162f, 64f) }
     private val confirm = Button(Rectangle(40f, 30f, 310f, 100f), "Confirmar")
     private val back = Button(Rectangle(370f, 30f, 310f, 100f), "Voltar", color = Skin.PANEL)
+    private val playCode = Button(Rectangle(190f, 300f, 340f, 72f), "Jogar código", color = Color(0.55f, 0.30f, 0.75f, 1f))
+    private var codeError = 0f
     private val tap = Tap<Button>()
 
     /** The menu behind the cards already shows the chosen map's sky. */
@@ -27,6 +32,8 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
     override fun draw(delta: Float) {
         confirm.pressed = tap.current === confirm
         back.pressed = tap.current === back
+        playCode.pressed = tap.current === playCode
+        codeError = maxOf(0f, codeError - delta)
         val shapes = game.shapes
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         for ((m, r) in cards) {
@@ -49,6 +56,7 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
         }
         confirm.drawShape(shapes)
         back.drawShape(shapes)
+        playCode.drawShape(shapes)
         shapes.end()
 
         game.batch.begin()
@@ -70,6 +78,12 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
         game.tinyFont.color = Color.WHITE
         confirm.drawText(game.batch, game.font)
         back.drawText(game.batch, game.font)
+        playCode.drawText(game.batch, game.smallFont)
+        if (codeError > 0f) {
+            game.smallFont.color = Skin.HEART
+            game.batch.textCentered(game.smallFont, "Código inválido", 360f, 270f)
+            game.smallFont.color = Color.WHITE
+        }
         game.batch.end()
     }
 
@@ -97,7 +111,21 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.circle(wx(pts.last().x), wy(pts.last().y), 5f, 12)
     }
 
-    private fun buttonAt(p: Vec2) = listOf(confirm, back).firstOrNull { it.contains(p.x, p.y) }
+    private fun buttonAt(p: Vec2) = listOf(confirm, back, playCode).firstOrNull { it.contains(p.x, p.y) }
+
+    private fun askForCode() {
+        Gdx.input.getTextInput(
+            object : Input.TextInputListener {
+                override fun input(text: String) {
+                    val setup = MatchCode.decode(text)
+                    Gdx.app.postRunnable { if (setup != null) game.startFromCode(setup) else codeError = 2.5f }
+                }
+
+                override fun canceled() = Unit
+            },
+            "Código da partida", "", "XXXX-XXXX-XXXX-XX",
+        )
+    }
 
     override fun onTouchDown(p: Vec2) = tap.press(buttonAt(p))
 
@@ -119,6 +147,7 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
                 game.showMenu()
             }
             back -> game.showMenu()
+            playCode -> askForCode()
         }
     }
 

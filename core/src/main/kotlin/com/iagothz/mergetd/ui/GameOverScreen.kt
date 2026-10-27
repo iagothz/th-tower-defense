@@ -23,6 +23,7 @@ class GameOverScreen(
     private val challengeDay: Int? = null,
     private val mode: GameMode = GameMode.NORMAL,
     private val unlocked: Set<Achievement> = emptySet(),
+    private val code: String? = null,
 ) : BaseScreen(game) {
     private class Confetto(var x: Float, var y: Float, val speed: Float, val sway: Float, val color: Color, val w: Float, val h: Float)
 
@@ -99,6 +100,11 @@ class GameOverScreen(
         if (unlocked.isNotEmpty()) {
             val names = unlocked.joinToString(", ") { it.title }
             game.batch.textShadowed(game.smallFont, "Conquista: $names", 360f, panel.y - 24f, Skin.GOLD)
+        }
+        if (code != null) {
+            game.tinyFont.color = KEY_COLOR
+            game.batch.textCentered(game.tinyFont, "Código da partida: $code", 360f, 1080f)
+            game.tinyFont.color = Color.WHITE
         }
         menu.drawText(game.batch, game.font)
         game.batch.end()

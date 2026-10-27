@@ -3,13 +3,29 @@ package com.iagothz.mergetd.ui
 import com.badlogic.gdx.Preferences
 import com.iagothz.mergetd.logic.DeckCodec
 import com.iagothz.mergetd.logic.DieType
+import com.iagothz.mergetd.logic.EnemyKind
 import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.GameMode
+
+/** One finished match, as the history screen shows it. */
+data class MatchRecord(
+    val day: Int,
+    val map: GameMap,
+    val mode: GameMode,
+    val deck: List<DieType>,
+    val wave: Int,
+    val killedBy: EnemyKind?,
+    val code: String,
+)
 
 /** Lifetime counters shown on the stats screen. */
 class Totals(val games: Int, val kills: Int, val bosses: Int, val merges: Int, val waves: Int)
 
 class SaveData(private val prefs: Preferences) {
+    companion object {
+        const val HISTORY_SIZE = 20
+    }
+
     /** Best wave on [map] in [mode]. The record from before maps existed ("bestWave") belongs to the default map. */
     fun bestWave(map: GameMap, mode: GameMode = GameMode.NORMAL): Int {
         if (mode != GameMode.NORMAL) return prefs.getInteger("best.${map.id}.${mode.id}", 0)
@@ -36,7 +52,7 @@ class SaveData(private val prefs: Preferences) {
      * Books a finished match: lifetime totals always; the map and deck records for a normal match,
      * or the day's record for a daily challenge ([daily] is its day). Returns whether a record fell.
      */
-    fun recordMatch(map: GameMap, deck: List<DieType>, wave: Int, kills: Int, bosses: Int, merges: Int, daily: Int? = null, mode: GameMode = GameMode.NORMAL): Boolean {
+    fun recordMatch(map: GameMap, deck: List<DieType>, wave: Int, kills: Int, bosses: Int, merges: Int, daily: Int? = null, mode: GameMode = GameMode.NORMAL, locked: Boolean = false): Boolean {
         val t = totals
         prefs.putInteger("total.games", t.games + 1)
         prefs.putInteger("total.kills", t.kills + kills)
@@ -45,6 +61,8 @@ class SaveData(private val prefs: Preferences) {
         prefs.putInteger("total.waves", t.waves + wave)
         prefs.flush()
         if (daily != null) return recordDaily(daily, wave)
+        // A match from a code had its map and deck dictated: it counts for the totals only.
+        if (locked) return false
         val key = "deckbest.${DeckCodec.encode(deck)}"
         if (wave > prefs.getInteger(key, 0)) {
             prefs.putInteger(key, wave)
@@ -85,6 +103,30 @@ class SaveData(private val prefs: Preferences) {
     private fun entries(prefix: String): List<Pair<String, Int>> = prefs.get().entries
         .filter { it.key.startsWith(prefix) }
         .mapNotNull { e -> e.value?.toString()?.toIntOrNull()?.let { e.key.removePrefix(prefix) to it } }
+
+    // --- History ---
+
+    fun history(): List<MatchRecord> = prefs.getString("history", "").lines().filter { it.isNotBlank() }.mapNotNull { line ->
+        val f = line.split("|")
+        if (f.size < 7) return@mapNotNull null
+        MatchRecord(
+            f[0].toIntOrNull() ?: return@mapNotNull null,
+            GameMap.byId(f[1]) ?: return@mapNotNull null,
+            GameMode.byId(f[2]) ?: return@mapNotNull null,
+            DeckCodec.decode(f[3]),
+            f[4].toIntOrNull() ?: return@mapNotNull null,
+            f[5].takeIf { it.isNotEmpty() }?.let { k -> EnemyKind.entries.firstOrNull { it.name == k } },
+            f[6],
+        )
+    }
+
+    /** Prepends [r]; only the last [HISTORY_SIZE] stay. */
+    fun addHistory(r: MatchRecord) {
+        val line = listOf(r.day, r.map.id, r.mode.id, DeckCodec.encode(r.deck), r.wave, r.killedBy?.name ?: "", r.code).joinToString("|")
+        val lines = (listOf(line) + prefs.getString("history", "").lines().filter { it.isNotBlank() }).take(HISTORY_SIZE)
+        prefs.putString("history", lines.joinToString("\n"))
+        prefs.flush()
+    }
 
     // --- Achievements and cosmetics ---
 

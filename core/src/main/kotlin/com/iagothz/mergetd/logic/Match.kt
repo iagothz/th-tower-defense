@@ -14,7 +14,14 @@ class Match(
     val map: GameMap = GameMap.DEFAULT,
     val challengeDay: Int? = null,
     val mode: GameMode = GameMode.NORMAL,
+    /** The RNG seed this match started from, when known; what a match code reproduces. */
+    val seed: Int? = null,
+    /** Started from a code: map and deck were dictated, so it books no map or deck record. */
+    val locked: Boolean = false,
 ) {
+    /** What a code needs to replay this match; null for a match without a known seed. */
+    val setup: MatchSetup? get() = seed?.let { MatchSetup(map, mode, it, deck) }
+
     val board = Board()
     val path: EnemyPath get() = map.path
     var sp = Balance.START_SP * (if (mode == GameMode.SURVIVAL) Balance.SURVIVAL_SP else 1)
@@ -175,6 +182,8 @@ class Match(
         line("map", map.id)
         line("daily", challengeDay ?: -1)
         line("mode", mode.id)
+        line("seed", seed ?: "")
+        line("locked", locked)
         line("bosses", bossOrder.joinToString(",") { it.name })
         line("wave", wave)
         line("sp", sp)
@@ -482,6 +491,12 @@ class Match(
     companion object {
         private const val SNAPSHOT_VERSION = 4
 
+        /** An ordinary match whose seed is drawn from [rng] and remembered, so it can be shared as a code. */
+        fun seeded(deck: List<DieType>, map: GameMap, mode: GameMode, rng: Random = Random.Default): Match {
+            val seed = rng.nextInt()
+            return Match(deck, Random(seed), map, mode = mode, seed = seed)
+        }
+
         /** Rebuilds a match from [snapshot] text; null if the text is damaged or from another version. */
         fun restore(text: String, rng: Random = Random.Default): Match? =
             try {
@@ -505,7 +520,9 @@ class Match(
             val map = scalars["map"]?.let { requireNotNull(GameMap.byId(it)) { "unknown map $it" } } ?: GameMap.DEFAULT
             val daily = scalars["daily"]?.toInt()?.takeIf { it >= 0 }
             val mode = scalars["mode"]?.let { requireNotNull(GameMode.byId(it)) { "unknown mode $it" } } ?: GameMode.NORMAL
-            val m = Match(scalars.getValue("deck").split(",").map(::type), rng, map, daily, mode)
+            val seed = scalars["seed"]?.takeIf { it.isNotEmpty() }?.toInt()
+            val locked = scalars["locked"]?.toBooleanStrict() ?: false
+            val m = Match(scalars.getValue("deck").split(",").map(::type), rng, map, daily, mode, seed, locked)
             m.wave = scalars.getValue("wave").toInt()
             m.sp = scalars.getValue("sp").toInt()
             m.lives = scalars.getValue("lives").toInt()

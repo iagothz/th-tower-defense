@@ -10,6 +10,8 @@ import com.badlogic.gdx.utils.Align
 import com.iagothz.mergetd.logic.Balance
 import com.iagothz.mergetd.logic.Cell
 import com.iagothz.mergetd.logic.Combat
+import com.iagothz.mergetd.logic.DailyChallenge
+import com.iagothz.mergetd.logic.MatchCode
 import com.iagothz.mergetd.logic.Die
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.Layout
@@ -29,7 +31,7 @@ class MatchScreen(
 ) : BaseScreen(game) {
     private enum class Confirm(val question: String) { RESTART("Reiniciar a partida?"), QUIT("Sair da partida?") }
 
-    private val match = restored ?: fresh ?: Match(game.save.deck, map = game.save.map, mode = game.save.mode)
+    private val match = restored ?: fresh ?: Match.seeded(game.save.deck, game.save.map, game.save.mode)
     private val drag = DragController(match)
     private val hold = LongPress()
     private val renderer = MatchRenderer(game.shapes, game.batch, game.font, game.smallFont, game.tinyFont)
@@ -357,7 +359,13 @@ class MatchScreen(
     private fun book(): Set<Achievement> {
         game.save.clearMatch()
         if (game.devMode) return emptySet()
-        game.save.recordMatch(match.map, match.deck, match.wave, stats.kills, stats.bosses, stats.merges, match.challengeDay, match.mode)
+        game.save.recordMatch(match.map, match.deck, match.wave, stats.kills, stats.bosses, stats.merges, match.challengeDay, match.mode, match.locked)
+        game.save.addHistory(
+            MatchRecord(
+                DailyChallenge.today(), match.map, match.mode, match.deck, match.wave, stats.killedBy,
+                match.setup?.takeIf { match.challengeDay == null }?.let { MatchCode.encode(it) } ?: "",
+            ),
+        )
         val t = game.save.totals
         val progress = AchievementProgress(
             wave = match.wave, mode = match.mode, kills = t.kills, bosses = t.bosses, merges = t.merges, games = t.games,
@@ -369,7 +377,7 @@ class MatchScreen(
 
     private fun finish() {
         val fresh = book()
-        game.showGameOver(match.map, match.wave, !game.devMode && match.wave > previousBest, stats, match.challengeDay, match.mode, fresh)
+        game.showGameOver(match.map, match.wave, !game.devMode && match.wave > previousBest, stats, match.challengeDay, match.mode, fresh, match.setup?.takeIf { match.challengeDay == null }?.let { MatchCode.encode(it) })
     }
 
     private companion object {

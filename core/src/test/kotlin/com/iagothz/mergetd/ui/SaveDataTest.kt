@@ -3,6 +3,7 @@ package com.iagothz.mergetd.ui
 import com.badlogic.gdx.Preferences
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.GameMap
+import com.iagothz.mergetd.logic.EnemyKind
 import com.iagothz.mergetd.logic.GameMode
 import java.lang.reflect.Proxy
 import kotlin.test.Test
@@ -154,5 +155,22 @@ class SaveDataTest {
         assertEquals(GameMode.NORMAL, save.mode)
         save.mode = GameMode.SURVIVAL
         assertEquals(GameMode.SURVIVAL, save.mode)
+    }
+
+    @Test
+    fun historyKeepsTheLastTwentyNewestFirst() {
+        val save = SaveData(memoryPrefs())
+        val deck = listOf(DieType.FIRE, DieType.ICE, DieType.POISON, DieType.ELECTRIC, DieType.WIND)
+        for (i in 1..25) {
+            save.addHistory(MatchRecord(day = 20_700 + i, map = GameMap.RING, mode = GameMode.RUSH, deck = deck, wave = i, killedBy = if (i % 2 == 0) EnemyKind.TANK else null, code = "C$i"))
+        }
+        val h = save.history()
+        assertEquals(20, h.size)
+        assertEquals(25, h.first().wave)
+        assertEquals(6, h.last().wave)
+        assertEquals(EnemyKind.TANK, h.last().killedBy)
+        assertEquals(null, h.first().killedBy)
+        assertEquals("C25", h.first().code)
+        assertEquals(deck, h.first().deck)
     }
 }
