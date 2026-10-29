@@ -13,7 +13,8 @@ import com.iagothz.mergetd.logic.Vec2
 import kotlin.math.roundToInt
 
 /**
- * Tapping a die toggles it in the deck and shows what it does in the panel below. Dice the account level hasn't
+ * Tapping a die only shows what it does in the panel below; the deck changes by dragging (`DeckEditor`): a die
+ * from the grid onto a slot, a slot's die out of the slots, slot onto slot to swap. Dice the account level hasn't
  * opened yet sit grey with a padlock and the level that opens them; an open die shows its level and the cards
  * towards the next one, with a button to take it.
  */
@@ -40,6 +41,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     private val rng = kotlin.random.Random(System.nanoTime())
     private val tap = Tap<Button>()
     private val slots = List(DeckCodec.SIZE) { Rectangle(186f + it * 72f, 1112f, 60f, 60f) }
+    private val editor = DeckEditor(selected, tiles, slots, ::isOpen)
 
     private fun isOpen(t: DieType) = DiceUnlocks.isUnlocked(t, level)
 
@@ -101,8 +103,14 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
                 for (i in 1 until dieLevel) shapes.circle(r.x + 10f + (i - 1) * 11f, r.y + 7f, 3.5f, 10)
             }
         }
+        val target = editor.pointer?.let { editor.slotAt(it) }
         for ((i, r) in slots.withIndex()) {
-            val t = selected.getOrNull(i)
+            val t = selected.getOrNull(i)?.takeIf { i != editor.fromSlot }
+            if (i == target) {
+                // The slot the drag would land in.
+                shapes.color = Skin.GOLD
+                shapes.roundedRect(r.x - 5f, r.y - 5f, r.width + 10f, r.height + 10f, 14f)
+            }
             if (t == null) {
                 shapes.color = Skin.CELL
                 shapes.roundedRect(r.x, r.y, r.width, r.height, 12f)
@@ -129,13 +137,14 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         random.drawShape(shapes)
         presets.forEach { it.drawShape(shapes) }
         if (levelUpShown()) levelUp.drawShape(shapes)
+        editor.dragging?.let { t -> editor.pointer?.let { p -> shapes.die(t, 1, p.x, p.y + DRAG_LIFT, 72f) } }
         shapes.end()
 
         game.batch.begin()
         game.batch.textShadowed(game.bigFont, S["Deck"], 360f, 1222f)
         if (selected.size < DeckCodec.SIZE) {
             game.smallFont.color = KEY_COLOR
-            game.batch.textLeft(game.smallFont, S.f("escolha %d", DeckCodec.SIZE - selected.size), 556f, 1142f)
+            game.batch.textLeft(game.smallFont, S.f("arraste %d", DeckCodec.SIZE - selected.size), 556f, 1142f)
             game.smallFont.color = Color.WHITE
         }
         for ((t, r) in tiles) {
@@ -157,7 +166,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         random.drawText(game.batch, game.smallFont)
         presets.forEach { it.drawText(game.batch, game.smallFont) }
         if (levelUpShown()) levelUp.drawText(game.batch, game.smallFont)
-        if (toastLeft > 0f) game.batch.textShadowed(game.tinyFont, toast, 360f, 1176f, Skin.GOLD)
+        if (toastLeft > 0f) game.batch.textShadowed(game.tinyFont, toast, 360f, TOAST_Y, Skin.GOLD)
         game.batch.end()
     }
 
@@ -207,30 +216,39 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         tap.press(buttonAt(p))
         holdingPreset = presets.indexOfFirst { it.contains(p.x, p.y) }.takeIf { it >= 0 }
         if (holdingPreset != null) hold.down(p, game.clock)
+        editor.down(p)
     }
 
-    override fun onDrag(p: Vec2) = hold.move(p)
+    override fun onDrag(p: Vec2) {
+        hold.move(p)
+        val lifted = editor.dragging == null
+        editor.move(p)
+        if (lifted && editor.dragging != null) game.sfx.play(setOf("pick"))
+    }
 
     override fun onTouchCancelled() {
         tap.cancel()
         holdingPreset = null
         hold.up()
+        editor.cancel()
     }
 
     override fun onTouchUp(p: Vec2) {
-        val tile = tiles.firstOrNull { it.second.contains(p.x, p.y) }?.first
-        if (tile != null) shown = tile
-        val slot = slots.indexOfFirst { it.contains(p.x, p.y) }
+        val wasDragging = editor.dragging != null
+        val onSlot = slots.any { it.contains(p.x, p.y) }
+        val release = editor.up(p)
+        val die = release.shown
         when {
-            slot in selected.indices -> {
-                shown = selected[slot]
-                selected.removeAt(slot)
-                tap.cancel()
+            die != null -> {
+                shown = die
+                when {
+                    release.changed -> game.sfx.play(setOf("drop"))
+                    wasDragging -> Unit
+                    // A tap only shows the die; the toast teaches the gesture that would move it.
+                    onSlot -> say(S["Arraste para fora para tirar do deck"])
+                    isOpen(die) && die !in selected -> say(S["Arraste até um espaço do deck para usar"])
+                }
             }
-            tile != null && !isOpen(tile) -> tap.cancel()
-            tile != null && tile in selected -> selected.remove(tile)
-            tile != null && selected.size < DeckCodec.SIZE -> selected.add(tile)
-            tile != null -> tap.cancel()
             else -> when (val b = tap.release(buttonAt(p))) {
                 enemies -> game.showEnemies()
                 random -> {
@@ -269,6 +287,10 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         val LOCK_COLOR = Color(0.62f, 0.64f, 0.72f, 1f)
         val STAR_OFF = Color(0.26f, 0.27f, 0.34f, 1f)
         const val COLS = 7
+        /** The dragged die floats this much above the finger so it isn't hidden under it. */
+        const val DRAG_LIFT = 40f
+        /** The toast sits in the gap between the title and the deck slots. */
+        const val TOAST_Y = 1188f
         val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
     }
 }
