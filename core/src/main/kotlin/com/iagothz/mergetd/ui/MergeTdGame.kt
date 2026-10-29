@@ -41,6 +41,7 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
         buildFonts()
         sfx = Sfx(save)
         Cosmetics.load(save)
+        save.retroCards(kotlin.random.Random(System.nanoTime()))
         S.language = Language.resolve(save.language, Locale.getDefault().language)
         if (devMode || !resumeSavedMatch()) showMenu()
     }
@@ -69,7 +70,7 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
     fun startDaily() {
         save.clearMatch()
         val c = DailyChallenge.of(DailyChallenge.today())
-        switchTo(MatchScreen(this, previousBest = save.dailyBest(c.day), fresh = c.newMatch()))
+        switchTo(MatchScreen(this, previousBest = save.dailyBest(c.day), fresh = c.newMatch(save.dieLevels())))
     }
 
     fun startMatch() {
@@ -83,7 +84,7 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
     fun startWeekly() {
         save.clearMatch()
         val w = WeeklyChallenge.of(WeeklyChallenge.thisWeek())
-        switchTo(MatchScreen(this, previousBest = save.weeklyBest(w.week), fresh = w.newMatch()))
+        switchTo(MatchScreen(this, previousBest = save.weeklyBest(w.week), fresh = w.newMatch(save.dieLevels())))
     }
 
     /** Reopens the match Android closed while the app was in the background; false if there is none. */
@@ -122,7 +123,7 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
     /** Replays a shared match: its map, mode, deck and seed, booked for the totals only. */
     fun startFromCode(setup: MatchSetup) {
         save.clearMatch()
-        switchTo(MatchScreen(this, previousBest = save.bestWave(setup.map, setup.mode), fresh = setup.newMatch()))
+        switchTo(MatchScreen(this, previousBest = save.bestWave(setup.map, setup.mode), fresh = setup.newMatch(save.dieLevels())))
     }
 
     fun showAchievements() = switchTo(AchievementsScreen(this))
@@ -180,6 +181,6 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
 
     companion object {
         const val LARGE_TEXT = 1.15f
-        const val VERSION = "0.5.0"
+        const val VERSION = "0.6.0"
     }
 }

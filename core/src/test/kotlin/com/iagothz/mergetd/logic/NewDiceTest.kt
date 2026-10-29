@@ -16,7 +16,7 @@ class NewDiceTest {
         Enemy(kind, hp).also { it.distance = distance }
 
     private fun attack(die: Die, vararg enemies: Enemy, bonus: AttackBonus = AttackBonus.NONE, rng: Random = Random(1)) =
-        Combat.attack(die, origin, 1, enemies.toList(), path, bonus, rng)
+        Combat.attack(die, origin, 1f, enemies.toList(), path, bonus, rng)
 
     private fun match() = Match(DeckCodec.DEFAULT, Random(7))
 
@@ -105,7 +105,7 @@ class NewDiceTest {
     @Test
     fun quakeHitsEveryEnemy() {
         val enemies = listOf(enemy(100f), enemy(500f), enemy(1500f))
-        val shot = assertNotNull(Combat.attack(Die(DieType.QUAKE, 1), origin, 1, enemies, path))
+        val shot = assertNotNull(Combat.attack(Die(DieType.QUAKE, 1), origin, 1f, enemies, path))
         enemies.forEach { assertEquals(1000f - 6f, it.hp, 1e-3f) }
         assertEquals(3, shot.damage.size)
     }

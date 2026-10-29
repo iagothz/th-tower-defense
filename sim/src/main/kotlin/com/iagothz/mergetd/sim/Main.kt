@@ -12,7 +12,8 @@ import kotlin.random.Random
 /**
  * Headless balance report.
  *   ./gradlew :sim:run --args="--games 300 --bot all --decks default"
- * Options: --games N, --bot simple|smart|all, --decks default|random, --seed S, --map <id>|all, --mode <id>.
+ * Options: --games N, --bot simple|smart|all, --decks default|random, --seed S, --map <id>|all, --mode <id>,
+ * --levels L (every die at account level L, 1..5; default 1).
  */
 fun main(args: Array<String>) {
     val opts = args.toList().chunked(2).associate { it[0].removePrefix("--") to it.getOrElse(1) { "" } }
@@ -24,6 +25,8 @@ fun main(args: Array<String>) {
         else -> listOf(requireNotNull(GameMap.byId(m)) { "unknown map $m" })
     }
     val mode = opts["mode"]?.let { requireNotNull(GameMode.byId(it)) { "unknown mode $it" } } ?: GameMode.NORMAL
+    val levels = opts["levels"]?.toInt() ?: 1
+    val dieLevels = if (levels > 1) DieType.entries.associateWith { levels } else emptyMap()
     val bots = when (val b = opts["bot"] ?: "all") {
         "all" -> BOTS.keys.toList()
         else -> listOf(b)
@@ -35,10 +38,10 @@ fun main(args: Array<String>) {
         val started = System.nanoTime()
         val results = LongStream.range(seed, seed + games).parallel().mapToObj { s ->
             val deck = if (randomDecks) DieType.entries.shuffled(Random(s)).take(DeckCodec.SIZE) else DeckCodec.DEFAULT
-            Simulator.play(deck, bot, s, map, mode)
+            Simulator.play(deck, bot, s, map, mode, dieLevels = dieLevels)
         }.collect(Collectors.toList())
         val secs = (System.nanoTime() - started) / 1e9
-        printReport(name, map, results, randomDecks, secs)
+        printReport(name, map, results, randomDecks, secs, levels)
         results.forEach { r ->
             csv.append("$name,${map.id},${r.seed},${DeckCodec.encode(r.deck).replace(',', ' ')},${r.wave},${r.killedBy ?: ""}\n")
         }
@@ -49,11 +52,11 @@ fun main(args: Array<String>) {
     println("CSV: ${out.path}")
 }
 
-private fun printReport(bot: String, map: GameMap, results: List<GameResult>, randomDecks: Boolean, secs: Double) {
+private fun printReport(bot: String, map: GameMap, results: List<GameResult>, randomDecks: Boolean, secs: Double, levels: Int) {
     val waves = results.map { it.wave }
     val deck = if (randomDecks) "sorteados" else DeckCodec.encode(DeckCodec.DEFAULT)
     println()
-    println("== Bot: $bot | mapa: ${map.id} | decks: $deck | ${results.size} partidas | ${"%.1f".format(secs)} s ==")
+    println("== Bot: $bot | mapa: ${map.id} | decks: $deck | nível dos dados: $levels | ${results.size} partidas | ${"%.1f".format(secs)} s ==")
     println(
         "Onda final: p10 ${Stats.percentile(waves, 10)} | mediana ${Stats.percentile(waves, 50)} | " +
             "p90 ${Stats.percentile(waves, 90)} | maior ${waves.max()}",

@@ -6,8 +6,8 @@ object DeckCodec {
 
     fun encode(deck: List<DieType>): String = deck.joinToString(",") { it.id }
 
-    /** Five distinct types, any of them. */
-    fun random(rng: kotlin.random.Random): List<DieType> = DieType.entries.shuffled(rng).take(SIZE)
+    /** Five distinct types out of [from] (every type by default). */
+    fun random(rng: kotlin.random.Random, from: List<DieType> = DieType.entries): List<DieType> = from.shuffled(rng).take(SIZE)
 
     /** Returns [DEFAULT] for anything that is not exactly [SIZE] distinct known ids. */
     fun decode(s: String?): List<DieType> {

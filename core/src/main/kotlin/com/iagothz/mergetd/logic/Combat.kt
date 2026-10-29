@@ -39,12 +39,12 @@ object Combat {
         return if (t == DieType.WIND && pips >= Balance.MAX_PIPS) base / 2 else base
     }
 
-    /** Damage before target or board modifiers. */
-    fun baseDamage(t: DieType, pips: Int, powerLevel: Int): Float =
-        Balance.stats(t).baseDamage * pips * Balance.powerMult(powerLevel)
+    /** Damage before target or board modifiers; [power] is the die's multiplier (power-ups times its level, see [Match.powerMult]). */
+    fun baseDamage(t: DieType, pips: Int, power: Float): Float =
+        Balance.stats(t).baseDamage * pips * power
 
-    fun hitDamage(t: DieType, pips: Int, powerLevel: Int, target: Enemy): Float {
-        val base = baseDamage(t, pips, powerLevel)
+    fun hitDamage(t: DieType, pips: Int, power: Float, target: Enemy): Float {
+        val base = baseDamage(t, pips, power)
         if (t != DieType.IRON || !target.kind.isBoss) return base
         return base * if (pips >= Balance.MAX_PIPS) Balance.IRON_BOSS_MULT_MAX else Balance.IRON_BOSS_MULT
     }
@@ -61,7 +61,7 @@ object Combat {
     fun attack(
         die: Die,
         origin: Vec2,
-        powerLevel: Int,
+        power: Float,
         enemies: List<Enemy>,
         path: EnemyPath,
         bonus: AttackBonus = AttackBonus.NONE,
@@ -70,7 +70,7 @@ object Combat {
         val target = selectTarget(die.type, enemies) ?: return null
         val maxed = die.maxed
         val syn = bonus.synergies
-        var damage = hitDamage(die.type, die.pips, powerLevel, target)
+        var damage = hitDamage(die.type, die.pips, power, target)
         when (die.type) {
             DieType.COMBO -> damage *= 1 + Balance.COMBO_BONUS * (bonus.comboCount - 1)
             DieType.HUNTER -> damage *= 1 + (if (maxed) Balance.HUNTER_BONUS_PER_STACK_MAX else Balance.HUNTER_BONUS_PER_STACK) * die.stacks
@@ -115,7 +115,7 @@ object Combat {
                 if (maxed) target.applyStun(Balance.ICE_FREEZE)
             }
             DieType.POISON -> target.addPoison(
-                Balance.POISON_DPS * die.pips * Balance.powerMult(powerLevel) * (if (Synergy.PLAGUE in syn) Balance.PLAGUE_DPS else 1f),
+                Balance.POISON_DPS * die.pips * power * (if (Synergy.PLAGUE in syn) Balance.PLAGUE_DPS else 1f),
                 Balance.POISON_DURATION * (if (maxed) 2f else 1f),
             )
             DieType.ELECTRIC -> chain(target, damage, enemies, path, hits, if (maxed) Balance.CHAIN_JUMPS_MAX else Balance.CHAIN_JUMPS, Synergy.SHOCK in syn, ::deal)

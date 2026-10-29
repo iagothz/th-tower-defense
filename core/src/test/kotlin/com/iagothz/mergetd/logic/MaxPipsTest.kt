@@ -13,7 +13,7 @@ class MaxPipsTest {
     private fun enemy(distance: Float, hp: Float = 100_000f, kind: EnemyKind = EnemyKind.NORMAL) = Enemy(kind, hp).also { it.distance = distance }
 
     private fun attack(die: Die, vararg enemies: Enemy, bonus: AttackBonus = AttackBonus.NONE, rng: Random = Random(1)) =
-        Combat.attack(die, origin, 1, enemies.toList(), path, bonus, rng)
+        Combat.attack(die, origin, 1f, enemies.toList(), path, bonus, rng)
 
     private fun match() = Match(DeckCodec.DEFAULT, Random(7))
 
@@ -69,7 +69,7 @@ class MaxPipsTest {
     @Test
     fun ironQuadruplesOnBossesAtSeven() {
         val boss = enemy(500f, kind = EnemyKind.BOSS_REGEN)
-        assertEquals(Combat.baseDamage(DieType.IRON, 7, 1) * Balance.IRON_BOSS_MULT_MAX, Combat.hitDamage(DieType.IRON, 7, 1, boss), 0.01f)
+        assertEquals(Combat.baseDamage(DieType.IRON, 7, 1f) * Balance.IRON_BOSS_MULT_MAX, Combat.hitDamage(DieType.IRON, 7, 1f, boss), 0.01f)
     }
 
     @Test
@@ -139,7 +139,7 @@ class MaxPipsTest {
     fun hunterStacksAreWorthMoreAtSeven() {
         val e = enemy(500f)
         attack(Die(DieType.HUNTER, 7).apply { stacks = 10 }, e)
-        assertEquals(Combat.baseDamage(DieType.HUNTER, 7, 1) * (1 + Balance.HUNTER_BONUS_PER_STACK_MAX * 10), 100_000f - e.hp, 0.01f)
+        assertEquals(Combat.baseDamage(DieType.HUNTER, 7, 1f) * (1 + Balance.HUNTER_BONUS_PER_STACK_MAX * 10), 100_000f - e.hp, 0.01f)
     }
 
     @Test
@@ -197,7 +197,7 @@ class MaxPipsTest {
         val e = enemy(500f)
         repeat(30) { attack(Die(DieType.LUCK, 7), e, rng = Random(it)) }
         val perShot = (100_000f - e.hp) / 30
-        assertTrue(perShot >= Combat.baseDamage(DieType.LUCK, 7, 1) * 1.5f, "$perShot")
+        assertTrue(perShot >= Combat.baseDamage(DieType.LUCK, 7, 1f) * 1.5f, "$perShot")
     }
 
     @Test

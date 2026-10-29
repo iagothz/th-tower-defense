@@ -36,7 +36,11 @@ class GameOverScreen(
     private val share = Button(Rectangle(40f, 40f, 310f, 100f), S["Compartilhar"], color = Skin.PANEL)
     private var copied = 0f
     private val tap = Tap<Button>()
-    private val panel = Rectangle(70f, 300f, 580f, 540f)
+    private val panel = Rectangle(70f, 300f, 580f, 480f)
+    /** The chest's cards, most first, as (die, count); at most [CHEST_SHOWN] kinds fit the strip. */
+    private val chest: List<Pair<DieType, Int>> = reward?.cards?.entries?.sortedWith(compareByDescending<Map.Entry<DieType, Int>> { it.value }.thenBy { it.key })
+        ?.take(CHEST_SHOWN)?.map { it.key to it.value } ?: emptyList()
+    private var cardsShown = 0
     private val rng = Random(System.nanoTime())
     private val confetti = if (isRecord) List(CONFETTI) { newConfetto(rng.nextFloat() * Layout.WORLD_H) } else emptyList()
     private var time = 0f
@@ -97,6 +101,11 @@ class GameOverScreen(
         shapes.roundedRect(panel.x, panel.y + panel.height - 10f, panel.width, 10f, 5f)
         menu.drawShape(shapes)
         share.drawShape(shapes)
+        // The chest: one die per kind pops in, left to right.
+        for ((i, card) in chest.withIndex()) {
+            val k = cardScale(i)
+            if (k > 0f) shapes.die(card.first, 1, cardX(i), CHEST_Y, cardSize() * k)
+        }
         shapes.end()
 
         game.batch.begin()
@@ -119,7 +128,7 @@ class GameOverScreen(
             game.font.color = if (key == S["Onda alcançada"]) Skin.GOLD else Color.WHITE
             game.batch.textRight(game.font, shown, panel.x + panel.width - 32f, y)
             game.font.color = Color.WHITE
-            y -= 58f
+            y -= 50f
         }
         game.smallFont.color = Skin.GOLD
         game.smallFont.draw(game.batch, Tips.forKiller(stats.killedBy), panel.x + 32f, y + 10f, panel.width - 64f, Align.left, true)
@@ -136,6 +145,18 @@ class GameOverScreen(
         if (score != null) {
             game.batch.textShadowed(game.smallFont, S.f("Pontuação %d (onda %d × mutadores)", score, wave), 360f, 1172f, Skin.GOLD)
         }
+        for ((i, card) in chest.withIndex()) {
+            if (cardScale(i) < 1f) continue
+            game.batch.textShadowed(game.tinyFont, "×${card.second}", cardX(i), CHEST_Y - cardSize() / 2 - 12f, Skin.GOLD)
+        }
+        val popped = chest.indices.count { cardScale(it) >= 1f }
+        if (popped > cardsShown) {
+            cardsShown = popped
+            game.sfx.play(setOf("pick"))
+        }
+        if (reward != null && reward.newDice.isNotEmpty()) {
+            game.batch.textShadowed(game.smallFont, S.f("Novo dado: %s", reward.newDice.joinToString(", ") { Skin.fullName(it) }), 360f, 888f, Skin.GOLD)
+        }
         if (reward != null) {
             val line = if (reward.leveledUp) S.f("Novo nível: %d!", reward.level) + "  ·  " + S.f("+%d XP", reward.xp) else S.f("+%d XP", reward.xp)
             game.batch.textShadowed(game.smallFont, line, 360f, 1130f, if (reward.leveledUp) Skin.GOLD else Color.WHITE)
@@ -149,6 +170,18 @@ class GameOverScreen(
         share.drawText(game.batch, game.smallFont)
         if (copied > 0f) game.batch.textShadowed(game.smallFont, S["Copiado!"], 195f, 162f, Skin.GOLD)
         game.batch.end()
+    }
+
+    private fun cardSize(): Float = minOf(46f, cardSpacing() - 10f)
+
+    private fun cardSpacing(): Float = minOf(76f, 560f / maxOf(1, chest.size))
+
+    private fun cardX(i: Int): Float = 360f - (chest.size - 1) * cardSpacing() / 2 + i * cardSpacing()
+
+    /** 0 before the card's turn, overshooting to 1 as it pops. */
+    private fun cardScale(i: Int): Float {
+        val t = ((time - CHEST_FROM - i * CHEST_STAGGER) / CHEST_POP).coerceIn(0f, 1f)
+        return if (t <= 0f) 0f else if (t >= 1f) 1f else t * (1.25f - 0.25f * t)
     }
 
     private fun buttonAt(p: Vec2) = listOf(menu, share).firstOrNull { it.contains(p.x, p.y) }
@@ -170,6 +203,11 @@ class GameOverScreen(
         const val SLAM_TIME = 0.3f
         const val COUNT_FROM = 0.3f
         const val COUNT_STAGGER = 0.12f
+        const val CHEST_SHOWN = 8
+        const val CHEST_Y = 830f
+        const val CHEST_FROM = 0.9f
+        const val CHEST_STAGGER = 0.15f
+        const val CHEST_POP = 0.2f
         val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
     }
 }

@@ -21,13 +21,13 @@ class CombatTest {
 
     @Test
     fun damageFormula() {
-        assertEquals(20f * 3 * 1.3f, Combat.hitDamage(DieType.FIRE, 3, 2, enemy(0f)), 1e-3f)
+        assertEquals(20f * 3 * 1.3f, Combat.hitDamage(DieType.FIRE, 3, Balance.powerMult(2), enemy(0f)), 1e-3f)
     }
 
     @Test
     fun ironDoublesVsBoss() {
-        assertEquals(36f, Combat.hitDamage(DieType.IRON, 1, 1, enemy(0f, kind = EnemyKind.BOSS_SWAPPER)), 1e-3f)
-        assertEquals(18f, Combat.hitDamage(DieType.IRON, 1, 1, enemy(0f)), 1e-3f)
+        assertEquals(36f, Combat.hitDamage(DieType.IRON, 1, 1f, enemy(0f, kind = EnemyKind.BOSS_SWAPPER)), 1e-3f)
+        assertEquals(18f, Combat.hitDamage(DieType.IRON, 1, 1f, enemy(0f)), 1e-3f)
     }
 
     @Test
@@ -45,13 +45,13 @@ class CombatTest {
     @Test
     fun ignoresDead() {
         val dead = enemy(500f).also { it.hp = 0f }
-        assertNull(Combat.attack(Die(DieType.FIRE, 1), origin, 1, listOf(dead), path))
+        assertNull(Combat.attack(Die(DieType.FIRE, 1), origin, 1f, listOf(dead), path))
     }
 
     @Test
     fun attackReturnsShot() {
         val target = enemy(500f)
-        val shot = assertNotNull(Combat.attack(Die(DieType.WIND, 1), origin, 1, listOf(target), path))
+        val shot = assertNotNull(Combat.attack(Die(DieType.WIND, 1), origin, 1f, listOf(target), path))
         assertEquals(origin, shot.from)
         assertEquals(listOf(path.positionAt(500f)), shot.to)
         assertEquals(994f, target.hp, 1e-3f)
@@ -62,7 +62,7 @@ class CombatTest {
         val target = enemy(500f)
         val near = enemy(480f)
         val far = enemy(100f)
-        Combat.attack(Die(DieType.FIRE, 1), origin, 1, listOf(target, near, far), path)
+        Combat.attack(Die(DieType.FIRE, 1), origin, 1f, listOf(target, near, far), path)
         assertEquals(980f, target.hp, 1e-3f)
         assertEquals(990f, near.hp, 1e-3f)
         assertEquals(1000f, far.hp)
@@ -72,7 +72,7 @@ class CombatTest {
     fun shotReportsEveryDamagedEnemy() {
         val target = enemy(500f)
         val near = enemy(480f)
-        val shot = assertNotNull(Combat.attack(Die(DieType.FIRE, 1), origin, 1, listOf(target, near), path))
+        val shot = assertNotNull(Combat.attack(Die(DieType.FIRE, 1), origin, 1f, listOf(target, near), path))
         assertEquals(20f, shot.damage.getValue(target), 1e-3f)
         assertEquals(10f, shot.damage.getValue(near), 1e-3f)
         assertEquals(2, shot.damage.size)
@@ -81,17 +81,17 @@ class CombatTest {
     @Test
     fun iceSlowByPips() {
         val e1 = enemy(500f)
-        Combat.attack(Die(DieType.ICE, 1), origin, 1, listOf(e1), path)
+        Combat.attack(Die(DieType.ICE, 1), origin, 1f, listOf(e1), path)
         assertEquals(0.20f, e1.slow, 1e-4f)
         val e7 = enemy(500f)
-        Combat.attack(Die(DieType.ICE, 7), origin, 1, listOf(e7), path)
+        Combat.attack(Die(DieType.ICE, 7), origin, 1f, listOf(e7), path)
         assertEquals(0.50f, e7.slow, 1e-4f)
     }
 
     @Test
     fun poisonAddsStack() {
         val e = enemy(500f)
-        Combat.attack(Die(DieType.POISON, 2), origin, 2, listOf(e), path)
+        Combat.attack(Die(DieType.POISON, 2), origin, Balance.powerMult(2), listOf(e), path)
         assertEquals(1, e.poison.size)
         assertEquals(Balance.POISON_DPS * 2 * 1.3f, e.poison[0].dps, 1e-3f)
     }
@@ -99,7 +99,7 @@ class CombatTest {
     @Test
     fun electricChains() {
         val enemies = listOf(enemy(100f), enemy(200f), enemy(300f), enemy(400f))
-        val shot = assertNotNull(Combat.attack(Die(DieType.ELECTRIC, 1), origin, 1, enemies, path))
+        val shot = assertNotNull(Combat.attack(Die(DieType.ELECTRIC, 1), origin, 1f, enemies, path))
         assertEquals(985f, enemies[3].hp, 1e-3f)
         assertEquals(1000f - 15f * 0.7f, enemies[2].hp, 1e-3f)
         assertEquals(1000f - 15f * 0.49f, enemies[1].hp, 1e-3f)
@@ -111,7 +111,7 @@ class CombatTest {
     fun electricRangeLimit() {
         val target = enemy(500f)
         val neighbour = enemy(350f)
-        Combat.attack(Die(DieType.ELECTRIC, 1), origin, 1, listOf(target, neighbour), path)
+        Combat.attack(Die(DieType.ELECTRIC, 1), origin, 1f, listOf(target, neighbour), path)
         assertEquals(985f, target.hp, 1e-3f)
         assertEquals(1000f, neighbour.hp)
     }

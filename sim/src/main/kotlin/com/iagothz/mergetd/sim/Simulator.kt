@@ -26,8 +26,9 @@ object Simulator {
         mode: GameMode = GameMode.NORMAL,
         maxWave: Int = MAX_WAVE,
         maxSeconds: Float = MAX_SECONDS,
+        dieLevels: Map<DieType, Int> = emptyMap(),
     ): GameResult {
-        val match = Match(deck, Random(seed), map, mode = mode)
+        val match = Match(deck, Random(seed), map, mode = mode, dieLevels = dieLevels)
         val player = bot(seed)
         val stepsPerAct = (ACT_EVERY / Balance.STEP).toInt()
         var killedBy: EnemyKind? = null

@@ -22,6 +22,8 @@ class Match(
     val mutators: Set<Mutator> = emptySet(),
     /** The weekly challenge this match is, if any (weeks since 1970); booked against that week's score. */
     val week: Int? = null,
+    /** Permanent levels from the account (see [DieLevels]); absent means 1. */
+    val dieLevels: Map<DieType, Int> = emptyMap(),
 ) {
     /** What a code needs to replay this match; null for a match without a known seed. */
     val setup: MatchSetup? get() = seed?.let { MatchSetup(map, mode, it, deck, mutators) }
@@ -79,7 +81,10 @@ class Match(
 
     fun powerUpCost(t: DieType): Int? = Balance.POWER_COSTS.getOrNull(powerLevel(t) - 1)
 
-    fun powerMult(t: DieType): Float = Balance.powerMult(powerLevel(t))
+    fun dieLevel(t: DieType): Int = dieLevels[t] ?: 1
+
+    /** Everything that scales the die's numbers: the match's power-ups times the account's die level. */
+    fun powerMult(t: DieType): Float = Balance.powerMult(powerLevel(t)) * DieLevels.mult(dieLevel(t))
 
     /** Seconds a Growth die needs per pip right now: its power-up levels make it grow faster. */
     fun growthInterval(): Float = Balance.GROWTH_INTERVAL / powerMult(DieType.GROWTH)
@@ -114,7 +119,7 @@ class Match(
             critMult = if (active.any { it.type == DieType.CRIT && it.pips >= Balance.MAX_PIPS }) Balance.CRIT_MULT_MAX else Balance.CRIT_MULT,
             synergies = syn,
             strongestDamage = active.filter { it.type.attacks && it.type != DieType.MIRROR }
-                .maxOfOrNull { Combat.baseDamage(it.type, it.pips, powerLevel(it.type)) } ?: 0f,
+                .maxOfOrNull { Combat.baseDamage(it.type, it.pips, powerMult(it.type)) } ?: 0f,
         )
     }
 
@@ -209,6 +214,7 @@ class Match(
         line("spawnTimer", spawnTimer)
         line("accumulator", accumulator)
         line("power", powerLevels.entries.joinToString(",") { "${it.key.id}:${it.value}" })
+        line("levels", dieLevels.entries.filter { it.value > 1 }.sortedBy { it.key }.joinToString(",") { "${it.key.id}:${it.value}" })
         line("queue", spawnQueue.joinToString(",") { it.name })
         for ((c, d) in board.occupied()) {
             line("die", listOf(c.row, c.col, d.type.id, d.pips, d.cooldown, d.timer, d.disabledFor, d.stacks).joinToString(","))
@@ -439,7 +445,7 @@ class Match(
         val fired = if (die.type == DieType.TRAP) {
             plantTrap(die)
         } else {
-            val shot = Combat.attack(die, Layout.cellCenter(cell), powerLevel(die.type), enemyList, path, bonus, rng)
+            val shot = Combat.attack(die, Layout.cellCenter(cell), powerMult(die.type), enemyList, path, bonus, rng)
             if (shot != null) {
                 shots += shot
                 shot.damage.forEach { (enemy, amount) -> events += GameEvent.Hit(enemy, amount, shot.crit, shot.type) }
@@ -460,7 +466,7 @@ class Match(
         if (trapList.count { it.owner === die } >= (if (maxed) Balance.TRAP_MAX_PER_DIE_MAX else Balance.TRAP_MAX_PER_DIE)) return false
         val at = minOf(leader.distance + Balance.TRAP_AHEAD, path.length - 1f)
         val radius = Balance.TRAP_RADIUS * (if (maxed) Balance.TRAP_MAX_RADIUS else 1f)
-        trapList += Trap(at, Combat.baseDamage(DieType.TRAP, die.pips, powerLevel(DieType.TRAP)), die, radius)
+        trapList += Trap(at, Combat.baseDamage(DieType.TRAP, die.pips, powerMult(DieType.TRAP)), die, radius)
         return true
     }
 
@@ -515,7 +521,7 @@ class Match(
                     DieType.HUNTER -> if (killer.stacks < Balance.hunterCap(killer.pips)) killer.stacks++
                     DieType.NOVA -> {
                         val boost = if (killer.pips >= Balance.MAX_PIPS) Balance.NOVA_MAX else 1f
-                        blast(at, Balance.NOVA_RADIUS * boost, Combat.baseDamage(DieType.NOVA, killer.pips, powerLevel(DieType.NOVA)) * boost, killer, DieType.NOVA)
+                        blast(at, Balance.NOVA_RADIUS * boost, Combat.baseDamage(DieType.NOVA, killer.pips, powerMult(DieType.NOVA)) * boost, killer, DieType.NOVA)
                     }
                     else -> Unit
                 }
@@ -527,9 +533,9 @@ class Match(
         private const val SNAPSHOT_VERSION = 4
 
         /** An ordinary match whose seed is drawn from [rng] and remembered, so it can be shared as a code. */
-        fun seeded(deck: List<DieType>, map: GameMap, mode: GameMode, mutators: Set<Mutator> = emptySet(), rng: Random = Random.Default): Match {
+        fun seeded(deck: List<DieType>, map: GameMap, mode: GameMode, mutators: Set<Mutator> = emptySet(), dieLevels: Map<DieType, Int> = emptyMap(), rng: Random = Random.Default): Match {
             val seed = rng.nextInt()
-            return Match(deck, Random(seed), map, mode = mode, seed = seed, mutators = mutators)
+            return Match(deck, Random(seed), map, mode = mode, seed = seed, mutators = mutators, dieLevels = dieLevels)
         }
 
         /** Rebuilds a match from [snapshot] text; null if the text is damaged or from another version. */
@@ -559,7 +565,12 @@ class Match(
             val locked = scalars["locked"]?.toBooleanStrict() ?: false
             val mutators = Mutator.fromMask(scalars["mutators"]?.toInt() ?: 0)
             val week = scalars["week"]?.toInt()?.takeIf { it >= 0 }
-            val m = Match(scalars.getValue("deck").split(",").map(::type), rng, map, daily, mode, seed, locked, mutators, week)
+            // Saves from before die levels have no "levels" line: every die at 1.
+            val levels = (scalars["levels"] ?: "").split(",").filter { it.isNotEmpty() }.associate { p ->
+                val (id, level) = p.split(":")
+                type(id) to level.toInt()
+            }
+            val m = Match(scalars.getValue("deck").split(",").map(::type), rng, map, daily, mode, seed, locked, mutators, week, levels)
             m.wave = scalars.getValue("wave").toInt()
             m.sp = scalars.getValue("sp").toInt()
             m.lives = scalars.getValue("lives").toInt()

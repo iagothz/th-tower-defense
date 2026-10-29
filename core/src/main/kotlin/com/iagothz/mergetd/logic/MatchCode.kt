@@ -4,7 +4,8 @@ import kotlin.random.Random
 
 /** Everything that makes two matches play out the same given the same moves. */
 data class MatchSetup(val map: GameMap, val mode: GameMode, val seed: Int, val deck: List<DieType>, val mutators: Set<Mutator> = emptySet()) {
-    fun newMatch(): Match = Match(deck, Random(seed), map, mode = mode, seed = seed, locked = true, mutators = mutators)
+    fun newMatch(dieLevels: Map<DieType, Int> = emptyMap()): Match =
+        Match(deck, Random(seed), map, mode = mode, seed = seed, locked = true, mutators = mutators, dieLevels = dieLevels)
 }
 
 /**

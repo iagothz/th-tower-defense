@@ -28,6 +28,8 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
     private val drops = List(DROPS) { newDrop(rng.nextFloat() * Layout.WORLD_H) }
     private val today = DailyChallenge.of(DailyChallenge.today())
     private var time = 0f
+    /** A die can take its next level: the Deck button gets a gold dot. */
+    private val canLevel = game.save.canLevelUpAny()
 
     private fun newDrop(y: Float) = Drop(
         DieType.entries.random(rng),
@@ -71,6 +73,10 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.rectLine(176f, 826f, 176f, 856f, 3f)
         shapes.triangle(177f, 856f, 177f, 840f, 199f, 848f)
         buttons.forEach { it.drawShape(shapes) }
+        if (canLevel) {
+            shapes.color = Skin.GOLD
+            shapes.circle(deck.rect.x + deck.rect.width - 12f, deck.rect.y + deck.rect.height - 12f, 11f, 20)
+        }
         // Three little dice sitting on the title line.
         shapes.die(DieType.FIRE, 3, 236f, 1046f, 44f)
         shapes.die(DieType.ELECTRIC, 5, 360f, 1058f, 52f)

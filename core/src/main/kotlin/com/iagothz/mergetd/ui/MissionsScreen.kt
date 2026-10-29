@@ -27,7 +27,15 @@ fun Mission.text(): String {
 }
 
 /** What a match paid: XP for the waves, the missions it completed, and whether that crossed a level. */
-data class MatchReward(val xp: Int, val level: Int, val leveledUp: Boolean, val missions: List<Mission>)
+/** What a finished match paid: XP, the level it left the account at, the chest of cards and any die the level-up opened. */
+data class MatchReward(
+    val xp: Int,
+    val level: Int,
+    val leveledUp: Boolean,
+    val missions: List<Mission>,
+    val cards: Map<com.iagothz.mergetd.logic.DieType, Int> = emptyMap(),
+    val newDice: List<com.iagothz.mergetd.logic.DieType> = emptyList(),
+)
 
 /** Today's three missions with their progress, under the account level. */
 class MissionsScreen(game: MergeTdGame) : BaseScreen(game) {

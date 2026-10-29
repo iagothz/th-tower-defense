@@ -12,7 +12,8 @@ class WeeklyChallenge private constructor(val week: Int, val map: GameMap, val d
     /** dd/MM/yyyy of the week's first day. */
     val dateLabel: String get() = DailyChallenge.of(week * 7).dateLabel
 
-    fun newMatch(): Match = Match(deck, Random(seed), map, mode = GameMode.NORMAL, seed = seed, locked = true, mutators = mutators, week = week)
+    fun newMatch(dieLevels: Map<DieType, Int> = emptyMap()): Match =
+        Match(deck, Random(seed), map, mode = GameMode.NORMAL, seed = seed, locked = true, mutators = mutators, week = week, dieLevels = dieLevels)
 
     companion object {
         fun of(week: Int): WeeklyChallenge {

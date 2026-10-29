@@ -16,7 +16,7 @@ class DailyChallenge private constructor(val day: Int, val map: GameMap, val dec
             return "%02d/%02d/%04d".format(d, m, y)
         }
 
-    fun newMatch(): Match = Match(deck, Random(seed), map, day)
+    fun newMatch(dieLevels: Map<DieType, Int> = emptyMap()): Match = Match(deck, Random(seed), map, day, dieLevels = dieLevels)
 
     companion object {
         fun of(day: Int): DailyChallenge {

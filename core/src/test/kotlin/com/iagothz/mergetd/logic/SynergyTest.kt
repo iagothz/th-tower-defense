@@ -35,14 +35,14 @@ class SynergyTest {
         val origin = Layout.cellCenter(Cell(1, 2))
         val target = Enemy(EnemyKind.NORMAL, 1000f).also { it.distance = 500f }
         val far = Enemy(EnemyKind.NORMAL, 1000f).also { it.distance = 500f - 90f }
-        Combat.attack(Die(DieType.FIRE, 1), origin, 1, listOf(target, far), path)
+        Combat.attack(Die(DieType.FIRE, 1), origin, 1f, listOf(target, far), path)
         assertEquals(1000f, far.hp, "90 away is outside the plain splash")
-        Combat.attack(Die(DieType.FIRE, 1), origin, 1, listOf(target, far), path, AttackBonus(synergies = setOf(Synergy.BLAZE)))
+        Combat.attack(Die(DieType.FIRE, 1), origin, 1f, listOf(target, far), path, AttackBonus(synergies = setOf(Synergy.BLAZE)))
         assertTrue(far.hp < 1000f, "Blaze reaches 90 away")
 
         val slowed = Enemy(EnemyKind.NORMAL, 1000f).also { it.distance = 400f; it.applySlow(0.3f) }
         val plain = Enemy(EnemyKind.NORMAL, 1000f).also { it.distance = 420f }
-        Combat.attack(Die(DieType.QUAKE, 1), origin, 1, listOf(slowed, plain), path, AttackBonus(synergies = setOf(Synergy.SHATTER)))
+        Combat.attack(Die(DieType.QUAKE, 1), origin, 1f, listOf(slowed, plain), path, AttackBonus(synergies = setOf(Synergy.SHATTER)))
         assertEquals(2f * (1000f - plain.hp), 1000f - slowed.hp, 0.01f)
     }
 

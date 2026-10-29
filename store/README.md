@@ -31,6 +31,7 @@ Compre dados com SP, arraste dois iguais um sobre o outro e eles viram um dado m
 • Mutadores para quem quer mais: inimigos mais rápidos, mais resistentes, mais numerosos.
 • Desafio do dia e desafio da semana, iguais para todo mundo.
 • Nível de conta com XP, três missões por dia e 20 conquistas que destravam molduras, céus e pips.
+• Desbloqueie um dado novo a cada nível e suba o nível dos seus dados com as cartas de cada partida.
 • Código de partida: mande para um amigo jogar exatamente a mesma partida.
 • Histórico, estatísticas e enciclopédia de inimigos.
 • Configurações de som, música, vibração, idioma, reduzir movimento e texto grande.
@@ -39,7 +40,7 @@ Sem anúncios, sem compras, sem conta. O jogo não coleta nem envia nenhum dado.
 
 **Novidades** (500):
 
-Nível com XP e missões diárias, enciclopédia de inimigos, dicas na partida, inimigos Elite e Tesouro, mutadores com pontuação, desafio semanal, decks salvos, compartilhar partida, reduzir movimento e texto grande.
+Desbloqueio de dados por nível e cartas para subir o nível de cada dado. Nível com XP e missões diárias, enciclopédia de inimigos, dicas na partida, inimigos Elite e Tesouro, mutadores com pontuação, desafio semanal, decks salvos, compartilhar partida, reduzir movimento e texto grande.
 
 ---
 
@@ -62,6 +63,7 @@ Buy dice with SP, drag two matching dice together and they become a stronger die
 • Mutators for more: faster, tougher, more numerous enemies.
 • Daily and weekly challenges, the same for everyone.
 • Account level with XP, three missions a day and 20 achievements that unlock frames, skies and pip shapes.
+• Unlock a new die every level and level up your dice with the cards each match drops.
 • Match codes: send one to a friend to play the exact same match.
 • History, stats and an enemy encyclopedia.
 • Settings for sound, music, vibration, language, reduce motion and large text.
@@ -70,4 +72,4 @@ No ads, no purchases, no account. The game collects and sends no data.
 
 **What's new** (500):
 
-Account level with XP and daily missions, enemy encyclopedia, in-match hints, Elite and Treasure enemies, mutators with scores, weekly challenge, saved decks, share your match, reduce motion and large text.
+Dice unlock by level and cards that level up each die. Account level with XP and daily missions, enemy encyclopedia, in-match hints, Elite and Treasure enemies, mutators with scores, weekly challenge, saved decks, share your match, reduce motion and large text.

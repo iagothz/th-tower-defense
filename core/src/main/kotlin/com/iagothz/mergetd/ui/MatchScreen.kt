@@ -15,6 +15,8 @@ import com.iagothz.mergetd.logic.Combat
 import com.iagothz.mergetd.logic.DailyChallenge
 import com.iagothz.mergetd.logic.DailyMissions
 import com.iagothz.mergetd.logic.Progression
+import com.iagothz.mergetd.logic.CardDrop
+import com.iagothz.mergetd.logic.DiceUnlocks
 import com.iagothz.mergetd.logic.MatchCode
 import com.iagothz.mergetd.logic.Die
 import com.iagothz.mergetd.logic.DieType
@@ -35,7 +37,7 @@ class MatchScreen(
 ) : BaseScreen(game) {
     private enum class Confirm(val question: String) { RESTART("Reiniciar a partida?"), QUIT("Sair da partida?") }
 
-    private val match = restored ?: fresh ?: Match.seeded(game.save.deck, game.save.map, game.save.mode, game.save.mutators)
+    private val match = restored ?: fresh ?: Match.seeded(game.save.playableDeck(), game.save.map, game.save.mode, game.save.mutators, game.save.dieLevels())
     private val drag = DragController(match)
     private val hold = LongPress()
     private val renderer = MatchRenderer(game.shapes, game.batch, game.font, game.smallFont, game.tinyFont)
@@ -101,10 +103,13 @@ class MatchScreen(
             // The world stands still while the screen shakes and goes red; then the game over screen.
             effects.update(delta)
             renderer.update(match, delta)
-            ending = end - delta
-            if (end - delta <= 0f) {
-                finish()
-                return
+            // Once the hold is over the result is booked exactly once; the frames until the fade swaps screens only draw.
+            if (end > 0f) {
+                ending = end - delta
+                if (end - delta <= 0f) {
+                    finish()
+                    return
+                }
             }
         } else if (!paused) {
             clock += delta
@@ -310,7 +315,7 @@ class MatchScreen(
         game.font.draw(batch, S.f("%s · %d %s%s", Skin.fullName(t), die.pips, pips, stacks), left + 48f, y + 8f)
         y -= 44f
         if (t.attacks) {
-            val dmg = Combat.baseDamage(t, die.pips, match.powerLevel(t))
+            val dmg = Combat.baseDamage(t, die.pips, match.powerMult(t))
             val every = Combat.attackInterval(t, die.pips) / match.speedMultiplier(cell)
             game.smallFont.color = Skin.GOLD
             game.smallFont.draw(batch, S.f("Dano %s  ·  a cada %s s  ·  Nv%d", fmt(dmg), fmt(every), match.powerLevel(t)), left, y)
@@ -488,7 +493,10 @@ class MatchScreen(
         game.save.xp += matchXp
         val done = game.save.applyMissions(DailyChallenge.today(), missions, tracker.progress())
         val level = Progression.level(game.save.xp)
-        return fresh to MatchReward(matchXp + done.sumOf { it.xp }, level, level > levelBefore, done)
+        val newDice = (levelBefore + 1..level).mapNotNull { DiceUnlocks.openedAt(it) }
+        val chest = CardDrop.draw(game.save.cardCandidates(), CardDrop.count(match.wave, stats.bosses), kotlin.random.Random(System.nanoTime()))
+        game.save.addCards(chest)
+        return fresh to MatchReward(matchXp + done.sumOf { it.xp }, level, level > levelBefore, done, chest, newDice)
     }
 
     private fun finish() {

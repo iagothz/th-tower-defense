@@ -1,7 +1,10 @@
 package com.iagothz.mergetd.ui
 
 import com.badlogic.gdx.Preferences
+import com.iagothz.mergetd.logic.CardDrop
 import com.iagothz.mergetd.logic.DeckCodec
+import com.iagothz.mergetd.logic.DiceUnlocks
+import com.iagothz.mergetd.logic.DieLevels
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.EnemyKind
 import com.iagothz.mergetd.logic.GameMap
@@ -9,6 +12,8 @@ import com.iagothz.mergetd.logic.GameMode
 import com.iagothz.mergetd.logic.Mission
 import com.iagothz.mergetd.logic.MissionProgress
 import com.iagothz.mergetd.logic.Mutator
+import com.iagothz.mergetd.logic.Progression
+import kotlin.random.Random
 
 /** One finished match, as the history screen shows it. */
 data class MatchRecord(
@@ -27,6 +32,8 @@ class Totals(val games: Int, val kills: Int, val bosses: Int, val merges: Int, v
 class SaveData(private val prefs: Preferences) {
     companion object {
         const val HISTORY_SIZE = 20
+        /** Most cards the one-time chest for matches played before cards existed can hold. */
+        const val RETRO_CAP = 60
     }
 
     /** Best wave on [map] in [mode]. The record from before maps existed ("bestWave") belongs to the default map. */
@@ -188,6 +195,61 @@ class SaveData(private val prefs: Preferences) {
         if (done.isNotEmpty()) prefs.putInteger("xp", xp + done.sumOf { it.xp })
         prefs.flush()
         return done
+    }
+
+    val accountLevel: Int get() = Progression.level(xp)
+
+    // --- Dice: unlocks by account level, levels paid with cards ---
+
+    fun isUnlocked(t: DieType): Boolean = DiceUnlocks.isUnlocked(t, accountLevel)
+
+    fun unlockedDice(): List<DieType> = DiceUnlocks.unlocked(accountLevel)
+
+    /** The saved deck with any die the account hasn't opened swapped out (old saves, or a level that never was). */
+    fun playableDeck(): List<DieType> = DiceUnlocks.sanitize(deck, accountLevel)
+
+    fun cards(t: DieType): Int = prefs.getInteger("cards.${t.id}", 0)
+
+    fun addCards(drop: Map<DieType, Int>) {
+        for ((t, n) in drop) prefs.putInteger("cards.${t.id}", cards(t) + n)
+        if (drop.isNotEmpty()) prefs.flush()
+    }
+
+    fun dieLevel(t: DieType): Int = prefs.getInteger("dielevel.${t.id}", 1).coerceIn(1, DieLevels.MAX)
+
+    /** Only the dice above level 1, as [com.iagothz.mergetd.logic.Match] takes them. */
+    fun dieLevels(): Map<DieType, Int> = DieType.entries.filter { dieLevel(it) > 1 }.associateWith { dieLevel(it) }
+
+    fun canLevelUp(t: DieType): Boolean = DieLevels.cardsToNext(dieLevel(t))?.let { cards(t) >= it } ?: false
+
+    fun canLevelUpAny(): Boolean = DieType.entries.any { canLevelUp(it) }
+
+    /** Spends the cards for the next level of [t]; false when they aren't there or it is maxed. */
+    fun levelUp(t: DieType): Boolean {
+        val cost = DieLevels.cardsToNext(dieLevel(t)) ?: return false
+        if (cards(t) < cost) return false
+        prefs.putInteger("cards.${t.id}", cards(t) - cost)
+        prefs.putInteger("dielevel.${t.id}", dieLevel(t) + 1)
+        prefs.flush()
+        return true
+    }
+
+    /** Dice a chest can hold cards for: opened and not yet at the top. */
+    fun cardCandidates(): List<DieType> = unlockedDice().filter { dieLevel(it) < DieLevels.MAX }
+
+    /**
+     * The chest for the matches played before cards existed, paid once per save from the lifetime waves and bosses
+     * (capped at [RETRO_CAP]); empty afterwards, and for a save with no matches.
+     */
+    fun retroCards(rng: Random): Map<DieType, Int> {
+        if (prefs.getBoolean("cards.retro", false)) return emptyMap()
+        prefs.putBoolean("cards.retro", true)
+        prefs.flush()
+        val t = totals
+        if (t.games == 0) return emptyMap()
+        val drop = CardDrop.draw(cardCandidates(), minOf(RETRO_CAP, CardDrop.count(t.waves, t.bosses)), rng)
+        addCards(drop)
+        return drop
     }
 
     var map: GameMap

@@ -16,6 +16,7 @@ Tower defense de merge no estilo Random Dice, para jogar offline no Android. Fei
 - Se você trocar de app no meio da partida, o jogo pausa e salva. Mesmo que o Android feche o jogo, ao abrir de novo a partida volta de onde parou.
 - **Histórico** das últimas 20 partidas e **código de partida** no fim de jogo: mande o código para alguém jogar exatamente a mesma partida (botão Jogar código na tela Partida).
 - **Nível e missões**: cada partida dá XP pelas ondas, e três missões por dia (as mesmas para todo mundo) pagam XP extra; o nível e o título aparecem no menu, as missões na tela **Missões**.
+- **Dados por nível**: você começa com 8 dados e cada nível de conta abre mais um (até o 18). Cada partida abre um baú de **cartas**; com 5/10/20/40 cartas de um dado ele sobe de nível (até 5), ganhando +10% permanentes por nível. Tudo na tela Deck.
 - **Conquistas**: 20 medalhas; 13 destravam molduras, céus e formas de pip (só visual), equipados na tela Conquistas.
 - **Elite** (grande, cura a escolta, vale 30 SP) a cada três ondas e **Tesouro** (rápido, não tira vida, vale 60 SP) a cada quatro, a partir da onda 6.
 - **Mutadores** na tela Partida (Velozes, Resistentes, Pobres, Enxame): cada um multiplica a pontuação (onda × mutadores). O **Desafio semanal** fixa mapa, deck e dois mutadores para a semana.
@@ -100,7 +101,7 @@ No modo de teste, o recorde não é salvo.
 ./gradlew :sim:run --args="--games 300 --bot all"
 ```
 
-Joga partidas sem tela com bots (`--bot simple|smart|all`) e mostra em que onda as partidas terminam. Com `--decks random`, mostra também a força de cada tipo de dado. O CSV com os resultados vai para `sim/build/sim-results.csv`.
+Joga partidas sem tela com bots (`--bot simple|smart|all`) e mostra em que onda as partidas terminam. Com `--decks random`, mostra também a força de cada tipo de dado; `--levels 5` põe todos os dados no nível 5. O CSV com os resultados vai para `sim/build/sim-results.csv`.
 
 ## Gerar e instalar o APK
 
