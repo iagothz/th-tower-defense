@@ -9,18 +9,23 @@ import java.util.Locale
 
 /** Volumes, vibration and language, plus the privacy line the store asks for. */
 class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
+    override val tab get() = Tab.SETTINGS
+
     private val soundSlider = Rectangle(60f, 980f, 600f, 40f)
     private val musicSlider = Rectangle(60f, 860f, 600f, 40f)
     private val vibration = Button(Rectangle(60f, 740f, 292f, 80f), "", color = Skin.PANEL)
     private val motion = Button(Rectangle(368f, 740f, 292f, 80f), "", color = Skin.PANEL)
     private val largeText = Button(Rectangle(60f, 644f, 600f, 80f), "", color = Skin.PANEL)
     private val languages = Language.entries.mapIndexed { i, l -> l to Button(Rectangle(60f + i * 204f, 500f, 192f, 80f), S[l.title], color = Skin.PANEL) }
-    private val back = Button(Rectangle(160f, 30f, 400f, 100f), S["Voltar"], color = Skin.PANEL)
+    private val stats = Button(Rectangle(40f, 124f, 206f, 80f), S["Estatísticas"], color = Skin.PANEL)
+    private val achievements = Button(Rectangle(257f, 124f, 206f, 80f), S["Conquistas"], color = Skin.PANEL)
+    private val history = Button(Rectangle(474f, 124f, 206f, 80f), S["Histórico"], color = Skin.PANEL)
+    private val links = listOf(stats, achievements, history)
     private val tap = Tap<Button>()
     private var dragging: Rectangle? = null
 
     override fun draw(delta: Float) {
-        back.pressed = tap.current === back
+        links.forEach { it.pressed = tap.current === it }
         vibration.pressed = tap.current === vibration
         motion.pressed = tap.current === motion
         largeText.pressed = tap.current === largeText
@@ -39,7 +44,7 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
             b.pressed = tap.current === b
             b.drawShape(shapes)
         }
-        back.drawShape(shapes)
+        links.forEach { it.drawShape(shapes) }
         shapes.end()
 
         game.batch.begin()
@@ -56,7 +61,7 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
         game.tinyFont.color = KEY_COLOR
         game.tinyFont.draw(game.batch, S["Privacidade: este jogo funciona sem internet, não coleta nem envia nenhum dado."], 60f, 420f, 600f, Align.left, true)
         game.tinyFont.color = Color.WHITE
-        back.drawText(game.batch, game.font)
+        links.forEach { it.drawText(game.batch, game.smallFont) }
         game.batch.end()
     }
 
@@ -86,7 +91,7 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
         if (r === soundSlider) game.save.soundVolume = v else game.save.musicVolume = v
     }
 
-    private fun buttonAt(p: Vec2) = (listOf(back, vibration, motion, largeText) + languages.map { it.second }).firstOrNull { it.contains(p.x, p.y) }
+    private fun buttonAt(p: Vec2) = (listOf(vibration, motion, largeText) + links + languages.map { it.second }).firstOrNull { it.contains(p.x, p.y) }
 
     override fun onTouchDown(p: Vec2) {
         dragging = sliderAt(p)?.also { setSlider(it, p) }
@@ -109,7 +114,9 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
             return
         }
         when (val b = tap.release(buttonAt(p))) {
-            back -> game.showMenu()
+            stats -> game.showStats()
+            achievements -> game.showAchievements()
+            history -> game.showHistory()
             vibration -> {
                 game.save.vibrationOn = !game.save.vibrationOn
                 if (game.save.vibrationOn) game.sfx.play(setOf("boss"))

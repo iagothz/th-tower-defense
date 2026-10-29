@@ -15,6 +15,8 @@ import com.iagothz.mergetd.logic.Vec2
 
 /** Picks the match: four map cards (miniature, difficulty, record) above a row of modes. */
 class MapScreen(game: MergeTdGame) : BaseScreen(game) {
+    override val tab get() = Tab.MAPS
+
     private var selected = game.save.map
     private var mode = game.save.mode
     private val mutators = game.save.mutators.toMutableSet()
@@ -23,9 +25,8 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
         m to Rectangle(24f + (i % 2) * 340f, 870f - (i / 2) * 300f, 332f, 280f)
     }
     private val modes = GameMode.entries.mapIndexed { i, m -> m to Rectangle(24f + i * 170f, 440f, 162f, 64f) }
-    private val confirm = Button(Rectangle(40f, 30f, 310f, 100f), S["Confirmar"])
-    private val back = Button(Rectangle(370f, 30f, 310f, 100f), S["Voltar"], color = Skin.PANEL)
-    private val playCode = Button(Rectangle(190f, 212f, 340f, 64f), S["Jogar código"], color = Color(0.55f, 0.30f, 0.75f, 1f))
+    private val play = Button(Rectangle(40f, 124f, 400f, 76f), S["Jogar"])
+    private val playCode = Button(Rectangle(456f, 124f, 240f, 76f), S["Jogar código"], color = Color(0.55f, 0.30f, 0.75f, 1f))
     private var codeError = 0f
     private val tap = Tap<Button>()
 
@@ -33,8 +34,7 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
     override val skyMap get() = selected
 
     override fun draw(delta: Float) {
-        confirm.pressed = tap.current === confirm
-        back.pressed = tap.current === back
+        play.pressed = tap.current === play
         playCode.pressed = tap.current === playCode
         codeError = maxOf(0f, codeError - delta)
         val shapes = game.shapes
@@ -58,13 +58,12 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
             shapes.bevelRect(r.x, r.y, r.width, r.height, 14f, if (m == mode) MODE_ON else Skin.PANEL)
         }
         for ((m, r) in mutatorChips) shapes.bevelRect(r.x, r.y, r.width, r.height, 14f, if (m in mutators) MUTATOR_ON else Skin.PANEL)
-        confirm.drawShape(shapes)
-        back.drawShape(shapes)
+        play.drawShape(shapes)
         playCode.drawShape(shapes)
         shapes.end()
 
         game.batch.begin()
-        game.batch.textShadowed(game.bigFont, S["Partida"], 360f, 1222f)
+        game.batch.textShadowed(game.bigFont, S["Mapas"], 360f, 1222f)
         for ((m, r) in cards) {
             game.batch.textCentered(game.font, S[m.title], r.x + r.width / 2, r.y + r.height - 30f)
             game.smallFont.color = Skin.difficultyColor(m.difficulty)
@@ -86,12 +85,11 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
         game.tinyFont.color = Skin.GOLD
         game.batch.textCentered(game.tinyFont, if (mutators.isEmpty()) S["Sem mutadores: recorde normal"] else mutators.joinToString(" · ") { S[it.description] }, 360f, 304f)
         game.tinyFont.color = Color.WHITE
-        confirm.drawText(game.batch, game.font)
-        back.drawText(game.batch, game.font)
+        play.drawText(game.batch, game.font)
         playCode.drawText(game.batch, game.smallFont)
         if (codeError > 0f) {
             game.smallFont.color = Skin.HEART
-            game.batch.textCentered(game.smallFont, S["Código inválido"], 360f, 190f)
+            game.batch.textCentered(game.smallFont, S["Código inválido"], 360f, 222f)
             game.smallFont.color = Color.WHITE
         }
         game.batch.end()
@@ -121,7 +119,7 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.circle(wx(pts.last().x), wy(pts.last().y), 5f, 12)
     }
 
-    private fun buttonAt(p: Vec2) = listOf(confirm, back, playCode).firstOrNull { it.contains(p.x, p.y) }
+    private fun buttonAt(p: Vec2) = listOf(play, playCode).firstOrNull { it.contains(p.x, p.y) }
 
     private fun askForCode() {
         Gdx.input.getTextInput(
@@ -146,20 +144,23 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
         val chip = modes.firstOrNull { it.second.contains(p.x, p.y) }?.first
         val mutator = mutatorChips.firstOrNull { it.second.contains(p.x, p.y) }?.first
         if (card != null || chip != null || mutator != null) {
-            if (card != null) selected = card
-            if (chip != null) mode = chip
-            if (mutator != null && !mutators.remove(mutator)) mutators += mutator
+            if (card != null) {
+                selected = card
+                game.save.map = card
+            }
+            if (chip != null) {
+                mode = chip
+                game.save.mode = chip
+            }
+            if (mutator != null) {
+                if (!mutators.remove(mutator)) mutators += mutator
+                game.save.mutators = mutators
+            }
             tap.cancel()
             return
         }
         when (tap.release(buttonAt(p))) {
-            confirm -> {
-                game.save.map = selected
-                game.save.mode = mode
-                game.save.mutators = mutators
-                game.showMenu()
-            }
-            back -> game.showMenu()
+            play -> game.startMatch()
             playCode -> askForCode()
         }
     }

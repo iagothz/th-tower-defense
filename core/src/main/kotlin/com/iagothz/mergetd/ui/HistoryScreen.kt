@@ -8,9 +8,11 @@ import com.iagothz.mergetd.logic.Vec2
 
 /** The last twenty matches: when, where, with what, how far, and the code to play them again. */
 class HistoryScreen(game: MergeTdGame) : BaseScreen(game) {
+    override val tab get() = Tab.SETTINGS
+
     private val records = game.save.history()
-    private val rows = records.mapIndexed { i, r -> r to Rectangle(24f, 1120f - i * 50f, 672f, 46f) }
-    private val back = Button(Rectangle(160f, 30f, 400f, 90f), S["Voltar"], color = Skin.PANEL)
+    private val rows = records.mapIndexed { i, r -> r to Rectangle(24f, 1124f - i * 48f, 672f, 44f) }
+    private val back = Button(Rectangle(160f, 120f, 400f, 80f), S["Voltar"], color = Skin.PANEL)
     private val tap = Tap<Button>()
 
     override fun draw(delta: Float) {

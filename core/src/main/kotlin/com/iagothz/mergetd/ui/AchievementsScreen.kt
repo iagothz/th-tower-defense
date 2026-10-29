@@ -7,8 +7,10 @@ import com.iagothz.mergetd.logic.Vec2
 
 /** The twenty badges, done or not, each with the cosmetic it unlocks; tap an unlocked cosmetic to wear it. */
 class AchievementsScreen(game: MergeTdGame) : BaseScreen(game) {
-    private val rows = Achievement.entries.mapIndexed { i, a -> a to Rectangle(24f, 1136f - i * 50f, 672f, 46f) }
-    private val back = Button(Rectangle(160f, 30f, 400f, 90f), S["Voltar"], color = Skin.PANEL)
+    override val tab get() = Tab.SETTINGS
+
+    private val rows = Achievement.entries.mapIndexed { i, a -> a to Rectangle(24f, 1120f - i * 47f, 672f, 44f) }
+    private val back = Button(Rectangle(160f, 124f, 400f, 80f), S["Voltar"], color = Skin.PANEL)
     private val tap = Tap<Button>()
 
     override fun draw(delta: Float) {

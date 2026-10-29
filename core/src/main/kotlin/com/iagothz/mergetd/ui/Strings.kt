@@ -38,6 +38,7 @@ object S {
 
     private val EN: Map<String, String> = mapOf(
         // Menu
+        "Início" to "Home", "Mapas" to "Maps", "Config" to "Settings",
         "Jogar" to "Play", "Deck" to "Deck", "Partida" to "Match", "Desafio" to "Daily", "Estatísticas" to "Stats",
         "Configurações" to "Settings", "Junte dados iguais, segure as ondas" to "Merge matching dice, hold the waves",
         "%s · %s: recorde %d" to "%s · %s: best %d",

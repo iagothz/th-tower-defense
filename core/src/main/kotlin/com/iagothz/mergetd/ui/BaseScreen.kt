@@ -23,22 +23,41 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
     /** Ignores releases of touches that began on a previous screen. */
     private val gesture = Tap<Unit>()
 
+    /** The bottom bar's tab this screen belongs to; null for screens without the bar (the match, game over). */
+    open val tab: Tab? get() = null
+
+    private val nav: BottomNav? by lazy { tab?.let { BottomNav(it).apply { if (game.save.canLevelUpAny()) badges = setOf(Tab.DECK) } } }
+    /** True while the current touch began on the bar, so the screen never sees it. */
+    private var onBar = false
+
     private val input = object : InputAdapter() {
         override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
             if (pointer == 0) {
                 gesture.press(Unit)
-                onTouchDown(world(screenX, screenY))
+                val p = world(screenX, screenY)
+                val bar = nav
+                onBar = bar != null && bar.tabAt(p.x, p.y) != null
+                if (onBar) bar!!.pressed = bar.tabAt(p.x, p.y) else onTouchDown(p)
             }
             return true
         }
 
         override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
-            if (pointer == 0) onDrag(world(screenX, screenY))
+            if (pointer == 0 && !onBar) onDrag(world(screenX, screenY))
             return true
         }
 
         override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-            if (pointer == 0 && gesture.release(Unit) != null) onTouchUp(world(screenX, screenY))
+            if (pointer == 0 && gesture.release(Unit) != null) {
+                val p = world(screenX, screenY)
+                val bar = nav
+                if (onBar && bar != null) {
+                    val hit = bar.tabAt(p.x, p.y)
+                    bar.pressed = null
+                    if (hit != null && hit == bar.pressedWas) game.showTab(hit)
+                } else if (!onBar) onTouchUp(p)
+                onBar = false
+            }
             return true
         }
 
@@ -50,7 +69,9 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
         override fun touchCancelled(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
             if (pointer == 0) {
                 gesture.cancel()
-                onTouchCancelled()
+                nav?.pressed = null
+                if (!onBar) onTouchCancelled()
+                onBar = false
             }
             return true
         }
@@ -81,6 +102,14 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
         w.draw(game.shapes)
         game.shapes.end()
         draw(delta)
+        nav?.let { bar ->
+            game.shapes.begin(ShapeRenderer.ShapeType.Filled)
+            bar.draw(game.shapes, Layout.WORLD_H / 2 - viewport.worldHeight / 2)
+            game.shapes.end()
+            game.batch.begin()
+            bar.drawText(game.batch, game.tinyFont)
+            game.batch.end()
+        }
         val fade = game.fader.alpha
         if (fade > 0f) {
             Gdx.gl.glEnable(GL20.GL_BLEND)

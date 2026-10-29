@@ -15,7 +15,8 @@ Tower defense de merge no estilo Random Dice, para jogar offline no Android. Fei
 - As ondas são infinitas, com um chefe a cada 10 ondas (7 chefes, em ordem sorteada por partida) e uma onda especial a cada 5 (Horda, Tanques, Corrida). Na primeira partida um tutorial de 3 passos mostra o básico. Você tem 3 vidas; o recorde é a maior onda alcançada.
 - Se você trocar de app no meio da partida, o jogo pausa e salva. Mesmo que o Android feche o jogo, ao abrir de novo a partida volta de onde parou.
 - **Histórico** das últimas 20 partidas e **código de partida** no fim de jogo: mande o código para alguém jogar exatamente a mesma partida (botão Jogar código na tela Partida).
-- **Nível e missões**: cada partida dá XP pelas ondas, e três missões por dia (as mesmas para todo mundo) pagam XP extra; o nível e o título aparecem no menu, as missões na tela **Missões**.
+- **Nível e missões**: cada partida dá XP pelas ondas, e três missões por dia (as mesmas para todo mundo) pagam XP extra; o nível, o título e as missões aparecem no **Início**.
+- **Barra inferior** com cinco abas: Início, Deck, Mapas, Desafios e Config (Estatísticas, Conquistas e Histórico ficam dentro de Config).
 - **Dados por nível**: você começa com 8 dados e cada nível de conta abre mais um (até o 18). Cada partida abre um baú de **cartas**; com 5/10/20/40 cartas de um dado ele sobe de nível (até 5), ganhando +10% permanentes por nível. Tudo na tela Deck.
 - **Conquistas**: 20 medalhas; 13 destravam molduras, céus e formas de pip (só visual), equipados na tela Conquistas.
 - **Elite** (grande, cura a escolta, vale 30 SP) a cada três ondas e **Tesouro** (rápido, não tira vida, vale 60 SP) a cada quatro, a partir da onda 6.

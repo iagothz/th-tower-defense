@@ -9,17 +9,19 @@ import com.iagothz.mergetd.logic.Vec2
 
 /** Lifetime totals, the record on each map, the best decks and the last daily challenges. */
 class StatsScreen(game: MergeTdGame) : BaseScreen(game) {
-    private val back = Button(Rectangle(480f, 30f, 200f, 100f), S["Voltar"], color = Skin.PANEL)
-    private val achievements = Button(Rectangle(40f, 30f, 210f, 100f), S["Conquistas"])
-    private val history = Button(Rectangle(260f, 30f, 210f, 100f), S["Histórico"])
+    override val tab get() = Tab.SETTINGS
+
+    private val back = Button(Rectangle(474f, 124f, 206f, 80f), S["Voltar"], color = Skin.PANEL)
+    private val achievements = Button(Rectangle(40f, 124f, 206f, 80f), S["Conquistas"])
+    private val history = Button(Rectangle(257f, 124f, 206f, 80f), S["Histórico"])
     private val tap = Tap<Button>()
     private val totalsPanel = Rectangle(24f, 1010f, 672f, 170f)
-    private val mapsPanel = Rectangle(24f, 840f, 672f, 150f)
-    private val decksPanel = Rectangle(24f, 490f, 672f, 330f)
-    private val dailyPanel = Rectangle(24f, 160f, 672f, 310f)
+    private val mapsPanel = Rectangle(24f, 850f, 672f, 140f)
+    private val decksPanel = Rectangle(24f, 560f, 672f, 270f)
+    private val dailyPanel = Rectangle(24f, 316f, 672f, 224f)
     private val totals = game.save.totals
-    private val decks = game.save.deckRecords().take(5)
-    private val daily = game.save.dailyHistory().take(5)
+    private val decks = game.save.deckRecords().take(4)
+    private val daily = game.save.dailyHistory().take(4)
 
     override fun draw(delta: Float) {
         back.pressed = tap.current === back
@@ -108,7 +110,7 @@ class StatsScreen(game: MergeTdGame) : BaseScreen(game) {
 
     override fun onTouchUp(p: Vec2) {
         when (tap.release(buttonAt(p))) {
-            back -> game.showMenu()
+            back -> game.showSettings()
             achievements -> game.showAchievements()
             history -> game.showHistory()
         }

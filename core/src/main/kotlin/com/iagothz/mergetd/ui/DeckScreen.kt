@@ -18,15 +18,15 @@ import kotlin.math.roundToInt
  * towards the next one, with a button to take it.
  */
 class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
+    override val tab get() = Tab.DECK
+
     private val level = game.save.accountLevel
     private val selected = game.save.playableDeck().toMutableList()
     private var shown = selected.firstOrNull() ?: DieType.FIRE
     private val tiles = DieType.entries.mapIndexed { i, t ->
         t to Rectangle(24f + (i % COLS) * 98f, 1010f - (i / COLS) * 118f, 84f, 84f)
     }
-    private val panel = Rectangle(24f, 140f, 672f, 464f)
-    private val confirm = Button(Rectangle(40f, 30f, 310f, 100f), S["Confirmar"])
-    private val back = Button(Rectangle(370f, 30f, 310f, 100f), S["Voltar"], color = Skin.PANEL)
+    private val panel = Rectangle(24f, 130f, 672f, 464f)
     private val enemies = Button(Rectangle(24f, 1190f, 190f, 56f), S["Inimigos"], color = Skin.PANEL)
     /** Three preset slots (tap loads, hold saves) and a random deck button. */
     private val presets = List(PRESETS) { Button(Rectangle(506f + it * 66f, 1190f, 60f, 56f), "${it + 1}", color = Skin.PANEL) }
@@ -47,8 +47,6 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     private fun levelUpShown() = isOpen(shown) && DieLevels.cardsToNext(game.save.dieLevel(shown)) != null
 
     override fun draw(delta: Float) {
-        confirm.enabled = selected.size == DeckCodec.SIZE
-        confirm.pressed = tap.current === confirm
         random.pressed = tap.current === random
         levelUp.enabled = game.save.canLevelUp(shown)
         levelUp.pressed = tap.current === levelUp
@@ -67,7 +65,6 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
             }
         }
         enemies.pressed = tap.current === enemies
-        back.pressed = tap.current === back
         val shapes = game.shapes
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         for ((t, r) in tiles) {
@@ -128,8 +125,6 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
                 shapes.polygon(panel.x + panel.width - 24f - (DieLevels.MAX - 1 - i) * 26f, panel.y + panel.height - 42f, 10f, 5, Math.PI.toFloat() / 2)
             }
         }
-        confirm.drawShape(shapes)
-        back.drawShape(shapes)
         enemies.drawShape(shapes)
         random.drawShape(shapes)
         presets.forEach { it.drawShape(shapes) }
@@ -158,13 +153,11 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         val line = if (pairs.isEmpty()) S["Sinergias do deck: nenhuma ainda (veja os pares na descrição de cada dado)"] else S.f("Sinergias do deck: %s", pairs.joinToString(", ") { S[it.title] })
         game.batch.textCentered(game.tinyFont, line, 360f, panel.y + 18f)
         game.tinyFont.color = Color.WHITE
-        confirm.drawText(game.batch, game.font)
         enemies.drawText(game.batch, game.smallFont)
         random.drawText(game.batch, game.smallFont)
         presets.forEach { it.drawText(game.batch, game.smallFont) }
         if (levelUpShown()) levelUp.drawText(game.batch, game.smallFont)
         if (toastLeft > 0f) game.batch.textShadowed(game.tinyFont, toast, 360f, 1176f, Skin.GOLD)
-        back.drawText(game.batch, game.font)
         game.batch.end()
     }
 
@@ -203,7 +196,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         }
     }
 
-    private fun buttonAt(p: Vec2) = (listOf(confirm, back, enemies, random) + presets + listOfNotNull(levelUp.takeIf { levelUpShown() })).firstOrNull { it.contains(p.x, p.y) }
+    private fun buttonAt(p: Vec2) = (listOf(enemies, random) + presets + listOfNotNull(levelUp.takeIf { levelUpShown() })).firstOrNull { it.contains(p.x, p.y) }
 
     private fun say(text: String) {
         toast = text
@@ -239,11 +232,6 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
             tile != null && selected.size < DeckCodec.SIZE -> selected.add(tile)
             tile != null -> tap.cancel()
             else -> when (val b = tap.release(buttonAt(p))) {
-                confirm -> {
-                    game.save.deck = selected.toList()
-                    game.showMenu()
-                }
-                back -> game.showMenu()
                 enemies -> game.showEnemies()
                 random -> {
                     selected.clear()
@@ -268,6 +256,8 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         }
         holdingPreset = null
         hold.up()
+        // A full deck is the deck: no confirm step.
+        if (selected.size == DeckCodec.SIZE && selected != game.save.deck) game.save.deck = selected.toList()
     }
 
     private companion object {

@@ -3,7 +3,7 @@
 Tudo o que a ficha do Google Play pede, pronto para colar.
 
 - `feature.png`: arte de destaque 1024×500 (`python tools/make_feature.py` gera de novo).
-- `screenshots/pt/` e `screenshots/en/`: sete capturas 1080×2160 por idioma, na ordem em que devem aparecer (menu, partida, deck, inimigos, missões, desafios, fim de jogo). Geradas no emulador Pixel 8 e cortadas pelo `tools/crop_screenshots.py`.
+- `screenshots/pt/` e `screenshots/en/`: sete capturas 1080×2160 por idioma, na ordem em que devem aparecer (menu, partida, deck, inimigos, missões, desafios, fim de jogo). Geradas no emulador Pixel 8 e cortadas pelo `tools/crop_screenshots.py`. **Desatualizadas desde a barra inferior (0.6.0): refazer antes de publicar.**
 - Ícone: `android/res/mipmap-*` (adaptativo), gerado por `tools/make_icons.py`.
 - Política de privacidade: `PRIVACY.md` na raiz (publique o texto numa página e cole o link).
 - Pacote: `./gradlew :android:bundleRelease` → `android/build/outputs/bundle/release/android-release.aab`.

@@ -9,9 +9,11 @@ import com.iagothz.mergetd.logic.Vec2
 
 /** Every enemy and boss: shape, numbers, what it does, and how to beat it. Tap a row for the advice. */
 class EnemiesScreen(game: MergeTdGame) : BaseScreen(game) {
-    private val rows = EnemyKind.entries.mapIndexed { i, k -> k to Rectangle(24f, 1078f - i * 70f, 672f, 62f) }
-    private val panel = Rectangle(24f, 136f, 672f, 160f)
-    private val back = Button(Rectangle(160f, 30f, 400f, 90f), S["Voltar"], color = Skin.PANEL)
+    override val tab get() = Tab.DECK
+
+    private val rows = EnemyKind.entries.mapIndexed { i, k -> k to Rectangle(24f, 1082f - i * 55f, 672f, 50f) }
+    private val panel = Rectangle(24f, 200f, 672f, 150f)
+    private val back = Button(Rectangle(160f, 124f, 400f, 80f), S["Voltar"], color = Skin.PANEL)
     private val tap = Tap<Button>()
     private var selected: EnemyKind = EnemyKind.NORMAL
 

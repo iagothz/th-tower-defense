@@ -10,14 +10,15 @@ import com.iagothz.mergetd.logic.WeeklyChallenge
 
 /** The two fixed runs everyone shares: today's challenge and this week's, each with its own record. */
 class ChallengeScreen(game: MergeTdGame) : BaseScreen(game) {
+    override val tab get() = Tab.CHALLENGES
+
     private val daily = DailyChallenge.of(DailyChallenge.today())
     private val weekly = WeeklyChallenge.of(WeeklyChallenge.thisWeek())
     private val dailyCard = Rectangle(24f, 760f, 672f, 330f)
     private val weeklyCard = Rectangle(24f, 380f, 672f, 350f)
     private val playDaily = Button(Rectangle(dailyCard.x + 24f, dailyCard.y + 24f, 624f, 80f), S["Jogar"], color = Color(0.55f, 0.30f, 0.75f, 1f))
     private val playWeekly = Button(Rectangle(weeklyCard.x + 24f, weeklyCard.y + 24f, 624f, 80f), S["Jogar"], color = Color(0.75f, 0.35f, 0.30f, 1f))
-    private val back = Button(Rectangle(160f, 30f, 400f, 90f), S["Voltar"], color = Skin.PANEL)
-    private val buttons = listOf(playDaily, playWeekly, back)
+    private val buttons = listOf(playDaily, playWeekly)
     private val tap = Tap<Button>()
 
     override fun draw(delta: Float) {
@@ -71,7 +72,6 @@ class ChallengeScreen(game: MergeTdGame) : BaseScreen(game) {
         when (tap.release(buttonAt(p))) {
             playDaily -> game.startDaily()
             playWeekly -> game.startWeekly()
-            back -> game.showMenu()
         }
     }
 

@@ -56,6 +56,17 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
 
     fun showMenu() = switchTo(MenuScreen(this))
 
+    /** Jumps to a bar tab with no fade: the bar stays put and only the content above it changes. */
+    fun showTab(tab: Tab) = apply(
+        when (tab) {
+            Tab.HOME -> MenuScreen(this)
+            Tab.DECK -> DeckScreen(this)
+            Tab.MAPS -> MapScreen(this)
+            Tab.CHALLENGES -> ChallengeScreen(this)
+            Tab.SETTINGS -> SettingsScreen(this)
+        },
+    )
+
     fun showDeck() = switchTo(DeckScreen(this))
 
     fun showEnemies() = switchTo(EnemiesScreen(this))
@@ -104,8 +115,6 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
         mode: GameMode = GameMode.NORMAL, unlocked: Set<Achievement> = emptySet(), code: String? = null, reward: MatchReward? = null,
         score: Int? = null, week: Int? = null,
     ) = switchTo(GameOverScreen(this, map, wave, isRecord, stats, challengeDay, mode, unlocked, code, reward, score, week))
-
-    fun showMissions() = switchTo(MissionsScreen(this))
 
     /** Hands [text] to the share sheet; returns false when it was only copied to the clipboard. */
     fun share(text: String): Boolean {
