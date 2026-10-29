@@ -133,9 +133,13 @@ class GameOverScreen(
         game.smallFont.color = Skin.GOLD
         game.smallFont.draw(game.batch, Tips.forKiller(stats.killedBy), panel.x + 32f, y + 10f, panel.width - 64f, Align.left, true)
         game.smallFont.color = Color.WHITE
+        // Several achievements can land at once (an old save's first match): the line wraps and pushes the missions down.
+        var achievementsHeight = 0f
         if (unlocked.isNotEmpty()) {
             val names = unlocked.joinToString(", ") { S[it.title] }
-            game.batch.textShadowed(game.smallFont, S.f("Conquista: %s", names), 360f, panel.y - 24f, Skin.GOLD)
+            game.smallFont.color = Skin.GOLD
+            achievementsHeight = game.smallFont.draw(game.batch, S.f("Conquista: %s", names), panel.x, panel.y - 12f, panel.width, Align.center, true).height + 6f
+            game.smallFont.color = Color.WHITE
         }
         if (code != null) {
             game.tinyFont.color = KEY_COLOR
@@ -160,7 +164,7 @@ class GameOverScreen(
         if (reward != null) {
             val line = if (reward.leveledUp) S.f("Novo nível: %d!", reward.level) + "  ·  " + S.f("+%d XP", reward.xp) else S.f("+%d XP", reward.xp)
             game.batch.textShadowed(game.smallFont, line, 360f, 1130f, if (reward.leveledUp) Skin.GOLD else Color.WHITE)
-            var my = panel.y - 24f - (if (unlocked.isNotEmpty()) 30f else 0f)
+            var my = panel.y - 24f - achievementsHeight
             for (m in reward.missions) {
                 game.batch.textShadowed(game.tinyFont, S.f("Missão: %s", m.text()), 360f, my, Skin.GOLD)
                 my -= 26f

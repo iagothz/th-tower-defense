@@ -24,9 +24,9 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     private val selected = game.save.playableDeck().toMutableList()
     private var shown = selected.firstOrNull() ?: DieType.FIRE
     private val tiles = DieType.entries.mapIndexed { i, t ->
-        t to Rectangle(24f + (i % COLS) * 98f, 1010f - (i / COLS) * 118f, 84f, 84f)
+        t to Rectangle(24f + (i % COLS) * 98f, 1010f - (i / COLS) * 116f, 84f, 84f)
     }
-    private val panel = Rectangle(24f, 130f, 672f, 464f)
+    private val panel = Rectangle(24f, 130f, 672f, 470f)
     private val enemies = Button(Rectangle(24f, 1190f, 190f, 56f), S["Inimigos"], color = Skin.PANEL)
     /** Three preset slots (tap loads, hold saves) and a random deck button. */
     private val presets = List(PRESETS) { Button(Rectangle(506f + it * 66f, 1190f, 60f, 56f), "${it + 1}", color = Skin.PANEL) }
@@ -151,7 +151,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         val pairs = Synergy.forDeck(selected)
         game.tinyFont.color = Skin.GOLD
         val line = if (pairs.isEmpty()) S["Sinergias do deck: nenhuma ainda (veja os pares na descrição de cada dado)"] else S.f("Sinergias do deck: %s", pairs.joinToString(", ") { S[it.title] })
-        game.batch.textCentered(game.tinyFont, line, 360f, panel.y + 18f)
+        game.batch.textCentered(game.tinyFont, line, 360f, panel.y + 15f)
         game.tinyFont.color = Color.WHITE
         enemies.drawText(game.batch, game.smallFont)
         random.drawText(game.batch, game.smallFont)
@@ -182,17 +182,17 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
             game.batch.textRight(game.tinyFont, levelText(), panel.x + panel.width - 24f, y - 36f)
             game.tinyFont.color = Color.WHITE
         }
-        y -= 42f
+        y -= 38f
         // The level-up button sits on the right of the summary, which wraps before it.
         val summaryWidth = panel.width - 48f - (if (levelUpShown()) 196f else 0f)
-        y -= maxOf(game.smallFont.draw(game.batch, info.summary, left, y, summaryWidth, Align.left, true).height, if (levelUpShown()) 52f else 0f) + 12f
+        y -= maxOf(game.smallFont.draw(game.batch, info.summary, left, y, summaryWidth, Align.left, true).height, if (levelUpShown()) 52f else 0f) + 8f
 
         val locked = if (isOpen(shown)) emptyList() else listOf(S["Bloqueado"] to S.f("Abre no nível de conta %d", DiceUnlocks.unlockLevel(shown)))
         for ((key, value) in locked + info.rows) {
             game.smallFont.color = KEY_COLOR
             game.smallFont.draw(game.batch, key, left, y)
             game.smallFont.color = Color.WHITE
-            y -= game.smallFont.draw(game.batch, value, left + keyWidth, y, valueWidth, Align.left, true).height + 10f
+            y -= game.smallFont.draw(game.batch, value, left + keyWidth, y, valueWidth, Align.left, true).height + 8f
         }
     }
 

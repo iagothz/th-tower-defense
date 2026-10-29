@@ -3,6 +3,7 @@ package com.iagothz.mergetd.ui
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
+import com.badlogic.gdx.utils.Align
 import com.iagothz.mergetd.logic.DailyChallenge
 import com.iagothz.mergetd.logic.Mutator
 import com.iagothz.mergetd.logic.Vec2
@@ -34,7 +35,7 @@ class ChallengeScreen(game: MergeTdGame) : BaseScreen(game) {
             shapes.roundedRect(card.x, card.y + card.height - 10f, card.width, 10f, 5f)
         }
         for ((i, t) in daily.deck.withIndex()) shapes.die(t, 1, dailyCard.x + 60f + i * 56f, dailyCard.y + 172f, 44f)
-        for ((i, t) in weekly.deck.withIndex()) shapes.die(t, 1, weeklyCard.x + 60f + i * 56f, weeklyCard.y + 192f, 44f)
+        for ((i, t) in weekly.deck.withIndex()) shapes.die(t, 1, weeklyCard.x + 60f + i * 56f, weeklyCard.y + 206f, 44f)
         buttons.forEach { it.drawShape(shapes) }
         shapes.end()
 
@@ -56,7 +57,8 @@ class ChallengeScreen(game: MergeTdGame) : BaseScreen(game) {
         game.batch.textRight(game.smallFont, S.f("recorde: pontuação %d", game.save.weeklyBest(weekly.week)), weeklyCard.x + weeklyCard.width - 28f, weeklyCard.y + weeklyCard.height - 86f)
         game.tinyFont.color = Skin.GOLD
         val names = weekly.mutators.joinToString(" · ") { "${S[it.title]} (${S[it.description]})" }
-        game.batch.textLeft(game.tinyFont, S.f("Mutadores ×%s: %s", DieInfo.num(Mutator.multiplier(weekly.mutators)), names), weeklyCard.x + 28f, weeklyCard.y + 136f)
+        // Wrapped: two mutators with their descriptions don't fit one line in English.
+        game.tinyFont.draw(game.batch, S.f("Mutadores ×%s: %s", DieInfo.num(Mutator.multiplier(weekly.mutators)), names), weeklyCard.x + 28f, weeklyCard.y + 162f, weeklyCard.width - 56f, Align.left, true)
         game.tinyFont.color = Color.WHITE
         buttons.forEach { it.drawText(game.batch, game.font) }
         game.batch.end()
