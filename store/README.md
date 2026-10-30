@@ -40,7 +40,7 @@ Sem anúncios, sem compras, sem conta. O jogo não coleta nem envia nenhum dado.
 
 **Novidades** (500):
 
-Desbloqueio de dados por nível e cartas para subir o nível de cada dado. Nível com XP e missões diárias, enciclopédia de inimigos, dicas na partida, inimigos Elite e Tesouro, mutadores com pontuação, desafio semanal, decks salvos, compartilhar partida, reduzir movimento e texto grande.
+Salvamento na nuvem com o Google Play Games. Desbloqueio de dados por nível e cartas para subir o nível de cada dado. Nível com XP e missões diárias, enciclopédia de inimigos, dicas na partida, inimigos Elite e Tesouro, mutadores com pontuação, desafio semanal, decks salvos, compartilhar partida, reduzir movimento e texto grande.
 
 ---
 
@@ -72,4 +72,4 @@ No ads, no purchases, no account. The game collects and sends no data.
 
 **What's new** (500):
 
-Dice unlock by level and cards that level up each die. Account level with XP and daily missions, enemy encyclopedia, in-match hints, Elite and Treasure enemies, mutators with scores, weekly challenge, saved decks, share your match, reduce motion and large text.
+Cloud save with Google Play Games. Dice unlock by level and cards that level up each die. Account level with XP and daily missions, enemy encyclopedia, in-match hints, Elite and Treasure enemies, mutators with scores, weekly challenge, saved decks, share your match, reduce motion and large text.

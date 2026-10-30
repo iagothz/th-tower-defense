@@ -11,7 +11,7 @@ Jogar o Merge TD em dois aparelhos com a mesma conta Google sem perder nível, d
 ### Decisões tomadas
 
 - **Serviço:** Google Play Games Services v2, recurso Saved Games (snapshots). Sem servidor próprio.
-- **Login:** automático ao abrir (comportamento padrão do SDK v2), com botão **Entrar** em Config para quem recusou o popup. O v2 não tem "sair": o jogo oferece **Desligar a nuvem** (interruptor local) no lugar.
+- **Login:** automático ao abrir (comportamento padrão do SDK v2), com botão **Entrar** em Config para quem recusou o popup. O v2 não tem "sair": o jogo oferece **Desligar a nuvem** (interruptor local) no lugar. Num aparelho sem conta Google, Entrar abre a tela de adicionar conta do próprio Android.
 - **Conflito:** o save com mais progresso vence em silêncio quando só um dos dois avançou; quando os dois avançaram separados, uma tela pergunta qual manter. Nunca sobrescreve progresso sem avisar.
 - **Fora do escopo:** conquistas e placares do Play Games, mesclar campo a campo, nuvem no desktop, sincronizar configurações do aparelho, sincronizar a partida em andamento.
 
@@ -62,7 +62,7 @@ f:… (nenhum hoje; o formato aceita)
 
 Valores são escapados (`\n` → `\\n`, `\\` → `\\\\`). `SaveData.import(blob)` apaga todas as chaves sincronizáveis e aplica as do blob; chaves locais ficam intactas. Blob inválido (linha sem `tipo:chave=`) é rejeitado inteiro sem tocar no save.
 
-**Fica fora do blob (local do aparelho):** `soundVolume`, `musicVolume`, `sound`, `music`, `vibration`, `reduceMotion`, `largeText`, `language`, `match` (partida em andamento) e todas as chaves `sync.*`. Tudo o mais entra: `xp`, `deck`, `deckslot.*`, `cards.*`, `dielevel.*`, `best.*`, `bestWave`, `deckbest.*`, `matchBest`, `score.best`, `total.*`, `history`, `missions.*`, `daily.*`, `weekly.*`, `ach.*`, `cosmetic.*`, `hints`, `map`, `mode`, `mutators`, `tutorialDone`, `cards.retro`.
+**Fica fora do blob (local do aparelho):** `soundVolume`, `musicVolume`, `sound`, `music`, `vibration`, `reduceMotion`, `largeText`, `language`, `match` e `matchBest` (partida em andamento e o recorde que ela partiu) e todas as chaves `sync.*`. Tudo o mais entra: `xp`, `deck`, `deckslot.*`, `cards.*`, `dielevel.*`, `best.*`, `bestWave`, `deckbest.*`, `score.best`, `total.*`, `history`, `missions.*`, `daily.*`, `weekly.*`, `ach.*`, `cosmetic.*`, `hints`, `map`, `mode`, `mutators`, `tutorialDone`, `cards.retro`.
 
 O blob carrega ainda duas linhas de controle, geradas na hora de subir: `i:sync.version=N` e `i:sync.at=<dia>` (`DailyChallenge.today()` do aparelho que subiu). Ao importar, `sync.version` vira o `sync.version` local e `sync.at` não é gravado.
 
@@ -118,7 +118,7 @@ Depois de `Upload(v)`: `sync.version = v`, `sync.hash = hash atual`. Depois de `
 | `WORKING` | Nuvem: sincronizando… | — |
 | `SYNCED` | Nuvem: sincronizada hoje / há N dias | Desligar |
 | `OFFLINE` | Nuvem: sem conexão | Desligar |
-| `ERROR` | Nuvem: falhou (toque para tentar) | Tentar |
+| `ERROR` | Nuvem: falhou | Tentar |
 
 A linha de privacidade passa a dizer que, com a nuvem ligada, o progresso é guardado na conta Google do jogador via Google Play Games, e nada mais; [PRIVACY.md](../../../PRIVACY.md) ganha o mesmo parágrafo.
 
@@ -152,7 +152,9 @@ Até isso existir, `isSignedIn` devolve `false`, Config mostra "Nuvem: sem conta
 ## Tratamento de erro
 
 - Qualquer falha da nuvem é silenciosa fora de Config: o estado aparece lá, nunca interrompe o jogo.
-- Blob corrompido na nuvem (inválido ou sem `sync.version`): `import` rejeita, o estado vira `ERROR("blob")`, e o blob é tratado como `cloudVersion = 0`, ou seja, o local sobe por cima na próxima abertura ou `push()`.
+- Blob corrompido na nuvem (inválido): é tratado como versão −1, abaixo de qualquer local, então o local sobe por cima na hora (`Upload(local + 1)`); um blob válido sem `sync.version` conta como versão 0.
+- Save que nunca sincronizou (`sync.version = 0`, sem hash): conta como "mudou" só se já tem partidas jogadas (`total.games > 0`), para uma instalação nova adotar a nuvem sem perguntar.
+- Chamada que nunca responde (sem projeto configurado, serviço travado): `CloudController.tick` conta o tempo em `WORKING` e, após 20 s (`TIMEOUT`), descarta a resposta tardia, libera a próxima subida e mostra `ERROR("timeout")` com o botão Tentar.
 - Dois aparelhos subindo quase ao mesmo tempo: a política `MOST_RECENTLY_MODIFIED` resolve o conflito do Google; o próximo que abrir vê a versão maior e aplica a regra. Com `sync.version` igual nos dois, mas conteúdo diferente, o hash diverge e vira `Upload`; o outro aparelho ao abrir vê versão maior e adota ou pergunta.
 
 ## Testes

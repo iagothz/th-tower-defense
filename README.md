@@ -18,6 +18,7 @@ Tower defense de merge no estilo Random Dice, para jogar offline no Android. Fei
 - **Nível e missões**: cada partida dá XP pelas ondas, e três missões por dia (as mesmas para todo mundo) pagam XP extra; o nível, o título e as missões aparecem no **Início**.
 - **Barra inferior** com cinco abas: Início, Deck, Mapas, Desafios e Config (Estatísticas, Conquistas e Histórico ficam dentro de Config).
 - **Dados por nível**: você começa com 8 dados e cada nível de conta abre mais um (até o 18). Cada partida abre um baú de **cartas**; com 5/10/20/40 cartas de um dado ele sobe de nível (até 5), ganhando +10% permanentes por nível. Tudo na tela Deck.
+- **Nuvem** (Android): com uma conta do Google Play Games, o progresso (nível, dados, cartas, recordes, histórico) sobe ao fim de cada partida e desce ao abrir o jogo, então dá para jogar em dois aparelhos. Se os dois avançaram separados, o jogo pergunta qual progresso manter. Em Config dá para entrar, ligar e desligar; sem conta, tudo fica no aparelho como antes.
 - **Conquistas**: 20 medalhas; 13 destravam molduras, céus e formas de pip (só visual), equipados na tela Conquistas.
 - **Elite** (grande, cura a escolta, vale 30 SP) a cada três ondas e **Tesouro** (rápido, não tira vida, vale 60 SP) a cada quatro, a partir da onda 6.
 - **Mutadores** na tela Partida (Velozes, Resistentes, Pobres, Enxame): cada um multiplica a pontuação (onda × mutadores). O **Desafio semanal** fixa mapa, deck e dois mutadores para a semana.
@@ -118,6 +119,8 @@ O APK fica em `android/build/outputs/apk/debug/android-debug.apk`. Para instalar
 ```bash
 adb install -r android/build/outputs/apk/debug/android-debug.apk
 ```
+
+Para a nuvem funcionar, o jogo precisa de um projeto do Play Games Services no Play Console (credencial Android com o pacote e o SHA‑1 de cada chave, Saved Games ativado); o ID do projeto vai em `android/res/values/games.xml`. Sem isso, Config mostra "Nuvem: sem conta" e o jogo segue offline.
 
 ## Estrutura
 

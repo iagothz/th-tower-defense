@@ -17,5 +17,6 @@ Ideias aprovadas, em ordem de retorno por esforço. Riscar ao concluir.
 
 ## Maiores
 
-- [ ] **Salvamento na nuvem** (Play Games): proteger nível, dados, cartas e recordes ao trocar de aparelho. ← em andamento
+- [x] **Salvamento na nuvem** (Play Games): proteger nível, dados, cartas e recordes ao trocar de aparelho.
+- [ ] **Play Console** (você): criar a conta e o app, ativar o Play Games Services com Saved Games, cadastrar os SHA‑1 e colocar o ID do projeto em `android/res/values/games.xml`; depois testar a nuvem em dois aparelhos (passo a passo na spec `2026-10-30-cloud-save-design.md`).
 - [ ] **Ranking do desafio diário/semanal**: histórico de posições local, ou compartilhar a pontuação do semanal como já se faz com o código da partida.
