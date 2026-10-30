@@ -48,11 +48,20 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
         save.retroCards(kotlin.random.Random(System.nanoTime()))
         S.language = Language.resolve(save.language, Locale.getDefault().language)
         cloud = CloudController(save, cloudSave).also {
-            it.onAdopted = { showTab(Tab.HOME) }
+            it.onAdopted = {
+                Cosmetics.load(save)
+                showTab(Tab.HOME)
+            }
             it.onConflict = { blob -> showCloudConflict(blob) }
         }
         if (devMode || !resumeSavedMatch()) showMenu()
         cloud.open()
+    }
+
+    /** Back from the background: another device may have played meanwhile. */
+    override fun resume() {
+        super.resume()
+        if (::cloud.isInitialized) cloud.open()
     }
 
     override fun render() {
@@ -161,10 +170,10 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
     private fun apply(screen: Screen) {
         val old = this.screen
         sfx.calm()
-        cloud.inMatch = screen is MatchScreen || screen is GameOverScreen
         setScreen(screen)
         old?.dispose()
         next = null
+        cloud.inMatch = screen is MatchScreen || screen is GameOverScreen
     }
 
     /** Rasterizes the TTF at [size] world pixels, including Portuguese accented letters. */

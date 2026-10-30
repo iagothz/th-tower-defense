@@ -9,6 +9,7 @@ import com.google.android.gms.games.SnapshotsClient
 import com.google.android.gms.games.snapshot.Snapshot
 import com.google.android.gms.games.snapshot.SnapshotMetadataChange
 import com.google.android.gms.tasks.Task
+import com.iagothz.mergetd.ui.CloudBlob
 import com.iagothz.mergetd.ui.CloudResult
 import com.iagothz.mergetd.ui.CloudSave
 
@@ -40,9 +41,12 @@ class PlayGamesCloud(private val activity: Activity) : CloudSave {
                 post { done(failure(t.exception)) }
                 return@addOnCompleteListener
             }
-            val bytes = runCatching { snapshot.snapshotContents.readFully() }.getOrNull()
+            val bytes = runCatching { snapshot.snapshotContents.readFully() }
             client.discardAndClose(snapshot)
-            post { done(CloudResult.Ok(bytes?.takeIf { it.isNotEmpty() }?.toString(Charsets.UTF_8))) }
+            post {
+                // A read that fails is not an empty cloud: reporting null would let the local save replace it.
+                done(bytes.fold({ CloudResult.Ok(it.takeIf { b -> b.isNotEmpty() }?.toString(Charsets.UTF_8)) }, { CloudResult.Failed("error:read") }))
+            }
         }
     }
 
@@ -54,7 +58,21 @@ class PlayGamesCloud(private val activity: Activity) : CloudSave {
                 post { done(failure(t.exception)) }
                 return@addOnCompleteListener
             }
-            snapshot.snapshotContents.writeBytes(blob.toByteArray(Charsets.UTF_8))
+            // Conditional write: a version the cloud already has (another device moved on) is refused as "stale",
+            // and the controller reads the cloud again instead of overwriting it.
+            val current = runCatching { snapshot.snapshotContents.readFully() }.getOrNull()
+                ?.takeIf { it.isNotEmpty() }?.toString(Charsets.UTF_8)?.let { CloudBlob.version(it) } ?: -1
+            if (current >= (CloudBlob.version(blob) ?: 0)) {
+                client.discardAndClose(snapshot)
+                post { done(CloudResult.Failed("stale")) }
+                return@addOnCompleteListener
+            }
+            val written = runCatching { snapshot.snapshotContents.writeBytes(blob.toByteArray(Charsets.UTF_8)) }.getOrDefault(false)
+            if (!written) {
+                client.discardAndClose(snapshot)
+                post { done(CloudResult.Failed("error:write")) }
+                return@addOnCompleteListener
+            }
             val change = SnapshotMetadataChange.Builder().setDescription(description).build()
             client.commitAndClose(snapshot, change).addOnCompleteListener { c ->
                 post { done(if (c.isSuccessful) CloudResult.Ok(Unit) else failure(c.exception)) }

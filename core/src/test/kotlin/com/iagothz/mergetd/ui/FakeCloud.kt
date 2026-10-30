@@ -39,6 +39,7 @@ class FakeCloud : CloudSave {
         when {
             !signedIn -> done(CloudResult.Failed("signed-out"))
             offline -> done(CloudResult.Failed("offline"))
+            (this.blob?.let { CloudBlob.version(it) } ?: -1) >= (CloudBlob.version(blob) ?: 0) -> done(CloudResult.Failed("stale"))
             else -> {
                 this.blob = blob
                 uploads += blob

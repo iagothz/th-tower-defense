@@ -21,6 +21,7 @@ class CloudControllerTest {
         save.syncHash = "stale"
         fake.blob = cloudAhead
         c.open()
+        c.tick(0f)
     }
 
     @Test
@@ -38,6 +39,7 @@ class CloudControllerTest {
     fun openingWithCloudAheadAdoptsSilently() {
         fake.blob = cloudAhead
         c.open()
+        c.tick(0f)
         assertEquals(900, save.xp)
         assertEquals(3, save.syncVersion)
         assertEquals("Progresso da nuvem aplicado", c.notice)
@@ -71,6 +73,7 @@ class CloudControllerTest {
         bothChanged()
         assertTrue(seen.isEmpty())
         c.inMatch = false
+        c.tick(0f)
         assertEquals(listOf(cloudAhead), seen)
         assertEquals(cloudAhead, c.conflict)
     }
@@ -104,21 +107,87 @@ class CloudControllerTest {
         fake.deliver() // download
         assertEquals(100, save.xp)
         c.inMatch = false
+        assertEquals(100, save.xp, "nothing runs inside the screen switch itself")
+        c.tick(0f)
         assertEquals(900, save.xp)
         assertEquals(1, adopted)
     }
 
     @Test
+    fun pushWithoutAKnownCloudVersionReadsTheCloudFirst() {
+        save.recordMatch(com.iagothz.mergetd.logic.GameMap.DEFAULT, emptyList(), 5, 1, 0, 0)
+        fake.blob = cloudAhead
+        fake.offline = true
+        c.open()
+        assertEquals(Status.Offline, c.status)
+        fake.offline = false
+        c.push()
+        c.tick(0f)
+        assertEquals(cloudAhead, c.conflict, "the account's save is not blindly overwritten")
+        assertTrue(fake.uploads.isEmpty())
+    }
+
+    @Test
+    fun aStaleUploadIsRefusedAndTheCloudIsReadAgain() {
+        c.open()
+        assertEquals(1, fake.uploads.size)
+        fake.blob = "i:sync.at=20299\ni:sync.version=7\ni:xp=700" // another device moved on
+        save.xp = 500
+        c.push()
+        c.tick(0f)
+        assertEquals(1, fake.uploads.size, "the stale upload was refused")
+        assertEquals(fake.blob, c.conflict)
+    }
+
+    @Test
+    fun pushWhileAConflictWaitsDoesNothing() {
+        bothChanged()
+        c.push()
+        assertTrue(fake.uploads.isEmpty())
+        assertEquals(cloudAhead, c.conflict)
+    }
+
+    @Test
+    fun aQueuedUploadNeverDowngradesTheVersion() {
+        bothChanged()
+        fake.deliverLater = true
+        c.keepLocal() // version 4 in flight
+        c.push() // queued while uploading
+        fake.deliver()
+        fake.deliver()
+        assertEquals(listOf(4, 5), fake.uploads.map { CloudBlob.version(it) })
+        assertEquals(5, save.syncVersion)
+    }
+
+    @Test
+    fun anUploadFinishingAfterTheTimeoutIsStillRecorded() {
+        c.open() // version 1, the cloud is known
+        fake.deliverLater = true
+        c.push() // version 2 in flight
+        c.tick(CloudController.TIMEOUT + 1f)
+        assertEquals(Status.Error("timeout"), c.status)
+        fake.deliver()
+        assertEquals(2, save.syncVersion)
+        assertEquals(CloudBlob.hash(fake.blob!!), save.syncHash)
+        fake.deliverLater = false
+        c.open()
+        c.tick(0f)
+        assertNull(c.conflict, "the save is not in conflict with itself")
+        assertEquals(2, fake.uploads.size)
+    }
+
+    @Test
     fun pushWhileUploadingRunsOnceMoreAfterwards() {
+        c.open() // version 1, the cloud is known
         fake.deliverLater = true
         c.push()
         c.push()
         c.push()
         fake.deliver()
         fake.deliver()
-        assertEquals(2, fake.uploads.size)
-        assertEquals(2, save.syncVersion)
-        assertEquals(2, CloudBlob.version(fake.blob!!))
+        assertEquals(3, fake.uploads.size, "one upload for the first push, one more for the two that waited")
+        assertEquals(3, save.syncVersion)
+        assertEquals(3, CloudBlob.version(fake.blob!!))
     }
 
     @Test
@@ -126,6 +195,7 @@ class CloudControllerTest {
         save.recordMatch(com.iagothz.mergetd.logic.GameMap.DEFAULT, emptyList(), 5, 1, 0, 0)
         fake.blob = cloudAhead
         c.open()
+        c.tick(0f)
         assertEquals(cloudAhead, c.conflict)
     }
 
@@ -200,6 +270,7 @@ class CloudControllerTest {
         save.saveMatch("snapshot", 3)
         fake.blob = cloudAhead
         c.open()
+        c.tick(0f)
         assertNull(save.savedMatch)
     }
 
