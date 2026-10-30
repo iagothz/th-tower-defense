@@ -47,7 +47,10 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
         Cosmetics.load(save)
         save.retroCards(kotlin.random.Random(System.nanoTime()))
         S.language = Language.resolve(save.language, Locale.getDefault().language)
-        cloud = CloudController(save, cloudSave).also { it.onAdopted = { showTab(Tab.HOME) } }
+        cloud = CloudController(save, cloudSave).also {
+            it.onAdopted = { showTab(Tab.HOME) }
+            it.onConflict = { blob -> showCloudConflict(blob) }
+        }
         if (devMode || !resumeSavedMatch()) showMenu()
         cloud.open()
     }
@@ -74,6 +77,8 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
     )
 
     fun showDeck() = switchTo(DeckScreen(this))
+
+    fun showCloudConflict(blob: String) = switchTo(CloudConflictScreen(this, blob))
 
     fun showEnemies() = switchTo(EnemiesScreen(this))
 

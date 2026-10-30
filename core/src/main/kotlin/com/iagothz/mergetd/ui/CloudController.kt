@@ -42,6 +42,9 @@ class CloudController(private val save: SaveData, private val cloud: CloudSave, 
     /** The game recreates its screens after the cloud save replaces the local one. */
     var onAdopted: () -> Unit = {}
 
+    /** The game opens the conflict screen with the cloud blob; called only outside a match. */
+    var onConflict: (String) -> Unit = {}
+
     private var generation = 0
     private var uploading = false
     private var uploadAgain = false
@@ -118,7 +121,10 @@ class CloudController(private val save: SaveData, private val cloud: CloudSave, 
                     CloudSync.Action.Nothing -> status = Status.Synced(save.syncLastOk ?: today())
                     is CloudSync.Action.Upload -> upload(action.version)
                     CloudSync.Action.Adopt -> defer { adopt(blob!!) }
-                    CloudSync.Action.Ask -> defer { conflict = blob }
+                    CloudSync.Action.Ask -> defer {
+                        conflict = blob
+                        onConflict(blob!!)
+                    }
                 }
             }
         }

@@ -52,6 +52,8 @@ object S {
         "Nuvem: desligada" to "Cloud: off", "Nuvem: sem conta" to "Cloud: not signed in", "Nuvem: sincronizando…" to "Cloud: syncing…",
         "Nuvem: sincronizada hoje" to "Cloud: synced today", "Nuvem: sincronizada há %d dias" to "Cloud: synced %d days ago",
         "Nuvem: sem conexão" to "Cloud: no connection", "Nuvem: falhou" to "Cloud: failed",
+        "Qual progresso manter?" to "Which progress to keep?", "Este aparelho" to "This device", "Nuvem" to "Cloud",
+        "Manter este" to "Keep this one", "Manter a nuvem" to "Keep the cloud", "hoje" to "today", "há %d dias" to "%d days ago",
         "Ligar" to "Turn on", "Entrar" to "Sign in", "Desligar" to "Turn off", "Tentar" to "Retry",
         "Voltar" to "Back", "Confirmar" to "Confirm",
         // Match screen

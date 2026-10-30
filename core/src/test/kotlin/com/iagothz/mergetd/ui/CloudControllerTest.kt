@@ -64,6 +64,18 @@ class CloudControllerTest {
     }
 
     @Test
+    fun conflictCallbackFiresOnlyOutsideAMatch() {
+        val seen = mutableListOf<String>()
+        c.onConflict = { seen += it }
+        c.inMatch = true
+        bothChanged()
+        assertTrue(seen.isEmpty())
+        c.inMatch = false
+        assertEquals(listOf(cloudAhead), seen)
+        assertEquals(cloudAhead, c.conflict)
+    }
+
+    @Test
     fun keepLocalUploadsAboveTheCloudVersion() {
         bothChanged()
         c.keepLocal()

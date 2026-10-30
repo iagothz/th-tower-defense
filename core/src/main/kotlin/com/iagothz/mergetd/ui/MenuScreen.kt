@@ -1,5 +1,6 @@
 package com.iagothz.mergetd.ui
 
+import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
@@ -146,6 +147,13 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
 
     override fun onTouchUp(p: Vec2) {
         if (tap.release(play.takeIf { it.contains(p.x, p.y) }) === play) game.startMatch()
+    }
+
+    /** Dev mode only: C shows the cloud conflict screen with the current save on both sides. */
+    override fun onKey(keycode: Int) {
+        if (!game.devMode || keycode != Input.Keys.C) return
+        val day = DailyChallenge.today() - 2
+        game.showCloudConflict(game.save.export() + "\ni:sync.version=1\ni:sync.at=" + day)
     }
 
     private companion object {
