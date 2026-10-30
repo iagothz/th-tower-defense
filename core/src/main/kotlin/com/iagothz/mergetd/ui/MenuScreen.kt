@@ -71,11 +71,17 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.roundedRect(200f, 876f, 320f, 10f, 5f)
         shapes.color = Skin.GOLD
         shapes.roundedRect(200f, 876f, maxOf(10f, 320f * Progression.intoLevel(xp) / Progression.costToNext(level)), 10f, 5f)
+        // The record pill hugs its text (map, mode and record vary in length) and stays centred.
+        val record = S.f("%s · %s: recorde %d", S[game.save.map.title], S[game.save.mode.title], game.save.bestWave(game.save.map, game.save.mode))
+        val recordWidth = recordLayout.setText(game.font, record).let { recordLayout.width }
+        val pillWidth = RECORD_TEXT_X + recordWidth + RECORD_PAD
+        val pillX = 360f - pillWidth / 2
         shapes.color = Skin.PANEL
-        shapes.roundedRect(140f, 790f, 440f, 56f, 28f)
+        shapes.roundedRect(pillX, 790f, pillWidth, 56f, 28f)
         shapes.color = Skin.GOLD
-        shapes.rectLine(176f, 804f, 176f, 834f, 3f)
-        shapes.triangle(177f, 834f, 177f, 818f, 199f, 826f)
+        val flagX = pillX + RECORD_FLAG_X
+        shapes.rectLine(flagX, 804f, flagX, 834f, 3f)
+        shapes.triangle(flagX + 1f, 834f, flagX + 1f, 818f, flagX + 23f, 826f)
         play.drawShape(shapes)
         // Three little dice sitting on the title line.
         shapes.die(DieType.FIRE, 3, 236f, 1046f, 44f)
@@ -100,9 +106,7 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         game.batch.begin()
         game.batch.textShadowed(game.bigFont, "Merge TD", 360f, 960f)
         game.batch.textCentered(game.smallFont, S.f("Nível %d · %s", level, S[Progression.title(level)]), 360f, 912f)
-        val chosen = game.save.map
-        val mode = game.save.mode
-        game.batch.textLeft(game.font, S.f("%s · %s: recorde %d", S[chosen.title], S[mode.title], game.save.bestWave(chosen, mode)), 212f, 818f)
+        game.batch.textLeft(game.font, record, pillX + RECORD_TEXT_X, 818f)
         play.drawText(game.batch, game.font)
         game.font.color = Skin.GOLD
         game.batch.textLeft(game.font, S["Missões de hoje"], missionsPanel.x + 24f, missionsPanel.y + missionsPanel.height - 32f)
@@ -156,8 +160,14 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         game.showCloudConflict(game.save.export() + "\ni:sync.version=1\ni:sync.at=" + day)
     }
 
+    private val recordLayout = com.badlogic.gdx.graphics.g2d.GlyphLayout()
+
     private companion object {
         const val NOTICE_TIME = 3f
+        /** Flag pole and text start, from the pill's left edge; right padding after the text. */
+        const val RECORD_FLAG_X = 36f
+        const val RECORD_TEXT_X = 72f
+        const val RECORD_PAD = 28f
         const val DROPS = 12
         val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
         val ROW_DONE = Color(0.20f, 0.22f, 0.30f, 1f)
