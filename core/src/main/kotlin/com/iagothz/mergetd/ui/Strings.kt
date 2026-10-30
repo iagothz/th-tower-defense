@@ -47,6 +47,12 @@ object S {
         "Automático" to "Automatic", "Português" to "Portuguese", "English" to "English",
         "Privacidade: este jogo funciona sem internet, não coleta nem envia nenhum dado." to
             "Privacy: this game works offline and collects or sends no data at all.",
+        "Privacidade: este jogo funciona sem internet e não coleta nada. Com a nuvem ligada, seu progresso fica na sua conta do Google Play Games." to
+            "Privacy: this game works offline and collects nothing. With the cloud on, your progress is kept in your Google Play Games account.",
+        "Nuvem: desligada" to "Cloud: off", "Nuvem: sem conta" to "Cloud: not signed in", "Nuvem: sincronizando…" to "Cloud: syncing…",
+        "Nuvem: sincronizada hoje" to "Cloud: synced today", "Nuvem: sincronizada há %d dias" to "Cloud: synced %d days ago",
+        "Nuvem: sem conexão" to "Cloud: no connection", "Nuvem: falhou" to "Cloud: failed",
+        "Ligar" to "Turn on", "Entrar" to "Sign in", "Desligar" to "Turn off", "Tentar" to "Retry",
         "Voltar" to "Back", "Confirmar" to "Confirm",
         // Match screen
         "Partida" to "Match", "Modo" to "Mode", "Jogar código" to "Play a code", "Código inválido" to "Invalid code",

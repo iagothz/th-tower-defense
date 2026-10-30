@@ -30,6 +30,9 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
     private val missionsPanel = Rectangle(24f, 150f, 672f, 440f)
     private val rows = missions.mapIndexed { i, m -> m to Rectangle(missionsPanel.x + 16f, missionsPanel.y + missionsPanel.height - 74f - (i + 1) * 112f, missionsPanel.width - 32f, 102f) }
     private var time = 0f
+    /** The cloud's one-line message, taken from the controller when the tab opens and shown for a few seconds. */
+    private val notice = game.cloud.notice.also { game.cloud.notice = null }
+    private var noticeLeft = NOTICE_TIME
 
     private fun newDrop(y: Float) = Drop(
         DieType.entries.random(rng),
@@ -119,6 +122,10 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         game.smallFont.color = Color(1f, 1f, 1f, 0.4f)
         game.batch.textCentered(game.smallFont, "v${MergeTdGame.VERSION}", 360f, 128f)
         game.smallFont.color = Color.WHITE
+        if (notice != null && noticeLeft > 0f) {
+            noticeLeft -= delta
+            game.batch.textShadowed(game.tinyFont, S[notice], 360f, 770f, Skin.GOLD)
+        }
         game.batch.end()
     }
 
@@ -142,6 +149,7 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
     }
 
     private companion object {
+        const val NOTICE_TIME = 3f
         const val DROPS = 12
         val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
         val ROW_DONE = Color(0.20f, 0.22f, 0.30f, 1f)

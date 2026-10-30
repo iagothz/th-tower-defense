@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.utils.Align
+import com.iagothz.mergetd.logic.DailyChallenge
 import com.iagothz.mergetd.logic.Vec2
 import java.util.Locale
 
@@ -21,6 +22,8 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
     private val achievements = Button(Rectangle(257f, 124f, 206f, 80f), S["Conquistas"], color = Skin.PANEL)
     private val history = Button(Rectangle(474f, 124f, 206f, 80f), S["Histórico"], color = Skin.PANEL)
     private val links = listOf(stats, achievements, history)
+    /** The cloud row's button; its text follows the controller's state and it is drawn only when there is one. */
+    private val cloudButton = Button(Rectangle(468f, 352f, 192f, 56f), "", color = Skin.PANEL)
     private val tap = Tap<Button>()
     private var dragging: Rectangle? = null
 
@@ -45,6 +48,11 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
             b.drawShape(shapes)
         }
         links.forEach { it.drawShape(shapes) }
+        cloudLabel()?.let {
+            cloudButton.text = it
+            cloudButton.pressed = tap.current === cloudButton
+            cloudButton.drawShape(shapes)
+        }
         shapes.end()
 
         game.batch.begin()
@@ -58,8 +66,17 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
         game.batch.textLeft(game.smallFont, S["Idioma"], 60f, 610f)
         game.smallFont.color = Color.WHITE
         for ((_, b) in languages) b.drawText(game.batch, game.smallFont)
+        val cloud = game.cloud.status
+        if (cloud != CloudController.Status.Unavailable) {
+            game.smallFont.color = KEY_COLOR
+            game.batch.textLeft(game.smallFont, CloudText.line(cloud, DailyChallenge.today()), 60f, 388f)
+            game.smallFont.color = Color.WHITE
+            if (cloudLabel() != null) cloudButton.drawText(game.batch, game.smallFont)
+        }
         game.tinyFont.color = KEY_COLOR
-        game.tinyFont.draw(game.batch, S["Privacidade: este jogo funciona sem internet, não coleta nem envia nenhum dado."], 60f, 420f, 600f, Align.left, true)
+        val privacy = if (cloud == CloudController.Status.Unavailable) "Privacidade: este jogo funciona sem internet, não coleta nem envia nenhum dado."
+        else "Privacidade: este jogo funciona sem internet e não coleta nada. Com a nuvem ligada, seu progresso fica na sua conta do Google Play Games."
+        game.tinyFont.draw(game.batch, S[privacy], 60f, 330f, 600f, Align.left, true)
         game.tinyFont.color = Color.WHITE
         links.forEach { it.drawText(game.batch, game.smallFont) }
         game.batch.end()
@@ -91,7 +108,9 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
         if (r === soundSlider) game.save.soundVolume = v else game.save.musicVolume = v
     }
 
-    private fun buttonAt(p: Vec2) = (listOf(vibration, motion, largeText) + links + languages.map { it.second }).firstOrNull { it.contains(p.x, p.y) }
+    private fun cloudLabel(): String? = CloudText.button(game.cloud.status)?.let { S[it] }
+
+    private fun buttonAt(p: Vec2) = (listOf(vibration, motion, largeText) + links + languages.map { it.second } + listOfNotNull(cloudButton.takeIf { cloudLabel() != null })).firstOrNull { it.contains(p.x, p.y) }
 
     override fun onTouchDown(p: Vec2) {
         dragging = sliderAt(p)?.also { setSlider(it, p) }
@@ -114,6 +133,13 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
             return
         }
         when (val b = tap.release(buttonAt(p))) {
+            cloudButton -> when (game.cloud.status) {
+                CloudController.Status.SignedOut -> game.cloud.signIn()
+                CloudController.Status.Off -> game.cloud.setEnabled(true)
+                is CloudController.Status.Synced, CloudController.Status.Offline -> game.cloud.setEnabled(false)
+                is CloudController.Status.Error -> game.cloud.open()
+                else -> Unit
+            }
             stats -> game.showStats()
             achievements -> game.showAchievements()
             history -> game.showHistory()
