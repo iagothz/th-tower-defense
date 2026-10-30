@@ -389,4 +389,23 @@ class SaveData(private val prefs: Preferences) {
         prefs.remove("matchBest")
         prefs.flush()
     }
+
+    /** The account's progress as the cloud stores it (see [CloudBlob]); device-only keys stay out. */
+    fun export(): String = CloudBlob.encode(prefs.get())
+
+    /** Replaces every synced preference with the blob's; false (and nothing changed) when the blob is malformed. */
+    fun import(blob: String): Boolean {
+        val values = CloudBlob.decode(blob) ?: return false
+        for (key in prefs.get().keys.filter { !CloudBlob.isLocal(it) }) prefs.remove(key)
+        for ((key, value) in values) {
+            when (value) {
+                is Int -> prefs.putInteger(key, value)
+                is String -> prefs.putString(key, value)
+                is Boolean -> prefs.putBoolean(key, value)
+                is Float -> prefs.putFloat(key, value)
+            }
+        }
+        prefs.flush()
+        return true
+    }
 }
