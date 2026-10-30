@@ -152,13 +152,13 @@ Até isso existir, `isSignedIn` devolve `false`, Config mostra "Nuvem: sem conta
 ## Tratamento de erro
 
 - Qualquer falha da nuvem é silenciosa fora de Config: o estado aparece lá, nunca interrompe o jogo.
-- Blob corrompido na nuvem: `import` rejeita, o estado vira `ERROR("blob")`, e o próximo `push()` sobrescreve a nuvem com o local (tratado como `cloudVersion < localVersion`).
+- Blob corrompido na nuvem (inválido ou sem `sync.version`): `import` rejeita, o estado vira `ERROR("blob")`, e o blob é tratado como `cloudVersion = 0`, ou seja, o local sobe por cima na próxima abertura ou `push()`.
 - Dois aparelhos subindo quase ao mesmo tempo: a política `MOST_RECENTLY_MODIFIED` resolve o conflito do Google; o próximo que abrir vê a versão maior e aplica a regra. Com `sync.version` igual nos dois, mas conteúdo diferente, o hash diverge e vira `Upload`; o outro aparelho ao abrir vê versão maior e adota ou pergunta.
 
 ## Testes
 
 - `CloudSyncTest`: uma linha por célula da tabela de decisão.
-- `SaveDataTest`: export → import ida e volta reproduz todas as chaves sincronizáveis; chaves locais não entram no export e sobrevivem ao import; blob inválido não altera nada; escape de `\n` em valores (`history` tem vírgulas e pode ter quebras? não tem, mas o teste garante).
+- `SaveDataTest`: export → import ida e volta reproduz todas as chaves sincronizáveis; chaves locais não entram no export e sobrevivem ao import; blob inválido não altera nada; valores com `\n` e `\\` sobrevivem ao export e import.
 - `CloudBlobTest`: `hash` ignora `sync.*`; `summary` lê nível, partidas e dia; blob sem `total.games` dá 0 partidas.
 - `CloudControllerTest` com um `CloudSave` falso em memória (lista de blobs por versão, flags de offline/signed-out): abrir sem nuvem sobe; abrir com nuvem à frente adota; adotar durante partida fica pendente e aplica ao voltar; subir enquanto offline deixa o hash divergente e a próxima abertura sobe; duas subidas seguidas viram uma; `sync.enabled=false` não faz nada.
 - Android: só no aparelho, depois do console. No emulador sem projeto: build de release instala, Config mostra "sem conta", Entrar falha de forma limpa, partida e fim de jogo normais.
