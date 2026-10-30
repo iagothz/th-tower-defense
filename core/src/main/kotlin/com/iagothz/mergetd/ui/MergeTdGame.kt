@@ -17,8 +17,11 @@ import java.util.Locale
 import com.iagothz.mergetd.logic.MatchSetup
 
 /** [devMode] enables desktop-only cheat keys and disables record saving. */
-/** [shareText] is the platform's share sheet; without one, sharing copies to the clipboard. */
-class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String) -> Unit)? = null) : Game() {
+/**
+ * [shareText] is the platform's share sheet; without one, sharing copies to the clipboard. [cloudSave] is the
+ * account's online save; without one the cloud row never shows and everything stays on the device.
+ */
+class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String) -> Unit)? = null, private val cloudSave: CloudSave = NoCloud) : Game() {
     lateinit var shapes: ShapeRenderer
     lateinit var batch: SpriteBatch
     lateinit var font: BitmapFont
@@ -27,6 +30,7 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
     lateinit var tinyFont: BitmapFont
     lateinit var save: SaveData
     lateinit var sfx: Sfx
+    lateinit var cloud: CloudController
     val backdrop = Backdrop()
     val fader = Fader()
     /** Seconds since launch, for ambient animation. */
@@ -43,7 +47,9 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
         Cosmetics.load(save)
         save.retroCards(kotlin.random.Random(System.nanoTime()))
         S.language = Language.resolve(save.language, Locale.getDefault().language)
+        cloud = CloudController(save, cloudSave).also { it.onAdopted = { showTab(Tab.HOME) } }
         if (devMode || !resumeSavedMatch()) showMenu()
+        cloud.open()
     }
 
     override fun render() {
@@ -149,6 +155,7 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
     private fun apply(screen: Screen) {
         val old = this.screen
         sfx.calm()
+        cloud.inMatch = screen is MatchScreen || screen is GameOverScreen
         setScreen(screen)
         old?.dispose()
         next = null

@@ -60,6 +60,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         holdingPreset?.let { i ->
             if (hold.isHeld(game.clock) && selected.size == DeckCodec.SIZE) {
                 game.save.saveDeckSlot(i, selected.toList())
+                game.cloud.push()
                 say(S.f("Deck salvo no slot %d", i + 1))
                 holdingPreset = null
                 hold.up()
@@ -257,6 +258,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
                     shown = selected.first()
                 }
                 levelUp -> if (game.save.levelUp(shown)) {
+                    game.cloud.push()
                     say(S.f("%s subiu para o nível %d!", Skin.fullName(shown), game.save.dieLevel(shown)))
                     game.sfx.play(setOf("record"))
                 }
@@ -275,7 +277,10 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         holdingPreset = null
         hold.up()
         // A full deck is the deck: no confirm step.
-        if (selected.size == DeckCodec.SIZE && selected != game.save.deck) game.save.deck = selected.toList()
+        if (selected.size == DeckCodec.SIZE && selected != game.save.deck) {
+            game.save.deck = selected.toList()
+            game.cloud.push()
+        }
     }
 
     private companion object {

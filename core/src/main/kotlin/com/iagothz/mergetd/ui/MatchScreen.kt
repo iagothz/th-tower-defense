@@ -501,6 +501,7 @@ class MatchScreen(
 
     private fun finish() {
         val (fresh, reward) = book()
+        if (!game.devMode) game.cloud.push()
         val isRecord = !game.devMode && (if (match.week != null) match.score > previousBest else match.wave > previousBest)
         game.showGameOver(
             match.map, match.wave, isRecord, stats, match.challengeDay, match.mode, fresh,

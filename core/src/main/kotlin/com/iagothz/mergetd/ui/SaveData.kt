@@ -390,6 +390,44 @@ class SaveData(private val prefs: Preferences) {
         prefs.flush()
     }
 
+    /** Whether the player wants the cloud at all; off, nothing is downloaded or uploaded. */
+    var syncEnabled: Boolean
+        get() = prefs.getBoolean("sync.enabled", true)
+        set(value) {
+            prefs.putBoolean("sync.enabled", value)
+            prefs.flush()
+        }
+
+    /** The cloud version this save last matched; 0 before the first sync. */
+    var syncVersion: Int
+        get() = prefs.getInteger("sync.version", 0)
+        set(value) {
+            prefs.putInteger("sync.version", value)
+            prefs.flush()
+        }
+
+    /** [CloudBlob.hash] of the export at the last sync, to tell whether the save changed since. */
+    var syncHash: String
+        get() = prefs.getString("sync.hash", "")
+        set(value) {
+            prefs.putString("sync.hash", value)
+            prefs.flush()
+        }
+
+    /** The day of the last successful sync, for the settings row. */
+    var syncLastOk: Int?
+        get() = prefs.getInteger("sync.lastOk", -1).takeIf { it >= 0 }
+        set(value) {
+            prefs.putInteger("sync.lastOk", value ?: -1)
+            prefs.flush()
+        }
+
+    /**
+     * Whether the save moved since it last matched the cloud. A save that never synced counts as changed only
+     * once a match was played, so a fresh install takes the cloud save without asking.
+     */
+    fun localChanged(): Boolean = if (syncVersion == 0 && syncHash.isEmpty()) totals.games > 0 else CloudBlob.hash(export()) != syncHash
+
     /** The account's progress as the cloud stores it (see [CloudBlob]); device-only keys stay out. */
     fun export(): String = CloudBlob.encode(prefs.get())
 

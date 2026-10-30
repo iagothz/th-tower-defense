@@ -59,6 +59,7 @@ object S {
         "Ferradura" to "Horseshoe", "Serpente" to "Serpent", "Anel" to "Ring", "Reta" to "Straight",
         "Fácil" to "Easy", "Difícil" to "Hard",
         // Deck
+        "nível %d · %d partidas" to "level %d · %d games", "Progresso da nuvem aplicado" to "Cloud progress applied",
         "arraste %d" to "drag %d", "Arraste para fora para tirar do deck" to "Drag it out to take it off the deck",
         "Arraste até um espaço do deck para usar" to "Drag it onto a deck slot to use it", "Sinergias do deck: %s" to "Deck synergies: %s",
         "Sinergias do deck: nenhuma ainda (veja os pares na descrição de cada dado)" to
