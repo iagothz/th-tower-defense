@@ -204,6 +204,25 @@ class CloudControllerTest {
     }
 
     @Test
+    fun aReplyThatNeverComesTimesOutAndFreesTheNextPush() {
+        fake.deliverLater = true
+        c.open()
+        c.tick(CloudController.TIMEOUT - 1f)
+        assertEquals(Status.Working, c.status)
+        c.tick(2f)
+        assertEquals(Status.Error("timeout"), c.status)
+        fake.deliver()
+        fake.deliver()
+        assertEquals(100, save.xp, "the late reply is dropped")
+        fake.deliverLater = true
+        c.push()
+        c.tick(CloudController.TIMEOUT + 1f)
+        fake.deliverLater = false
+        c.push()
+        assertEquals(1, fake.uploads.size, "a hung upload no longer blocks the next one")
+    }
+
+    @Test
     fun errorsFromTheCloudShowAsErrors() {
         fake.blob = null
         fake.signedIn = true

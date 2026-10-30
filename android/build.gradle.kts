@@ -22,8 +22,8 @@ android {
         applicationId = "com.iagothz.mergetd"
         minSdk = 24
         targetSdk = 36
-        versionCode = 6
-        versionName = "0.6.0"
+        versionCode = 7
+        versionName = "0.7.0"
     }
 
     sourceSets["main"].apply {
@@ -68,6 +68,8 @@ kotlin {
 dependencies {
     implementation(project(":core"))
     implementation("com.badlogicgames.gdx:gdx-backend-android:$gdxVersion")
+    // Google Play Games Services v2: sign-in and Saved Games for the cloud save.
+    implementation("com.google.android.gms:play-services-games-v2:21.0.0")
     listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64").forEach {
         natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-$it")
         natives("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-$it")

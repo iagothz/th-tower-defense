@@ -60,6 +60,7 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
         clock += dt
         if (fader.update(dt)) next?.let { apply(it) }
         sfx.updateMusic(dt)
+        cloud.tick(dt)
         super.render()
     }
 
@@ -202,6 +203,6 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
 
     companion object {
         const val LARGE_TEXT = 1.15f
-        const val VERSION = "0.6.0"
+        const val VERSION = "0.7.0"
     }
 }

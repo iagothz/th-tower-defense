@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import com.badlogic.gdx.backends.android.AndroidApplication
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration
+import com.google.android.gms.games.PlayGamesSdk
 import com.iagothz.mergetd.ui.MergeTdGame
 
 class AndroidLauncher : AndroidApplication() {
@@ -20,15 +21,27 @@ class AndroidLauncher : AndroidApplication() {
             // 4x MSAA: everything is drawn with ShapeRenderer, so edges would be jagged without it.
             numSamples = 4
         }
-        val game = MergeTdGame(shareText = { text ->
-            runOnUiThread {
-                val send = Intent(Intent.ACTION_SEND).apply {
-                    type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, text)
+        PlayGamesSdk.initialize(this)
+        val game = MergeTdGame(
+            shareText = { text ->
+                runOnUiThread {
+                    val send = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, text)
+                    }
+                    startActivity(Intent.createChooser(send, null))
                 }
-                startActivity(Intent.createChooser(send, null))
-            }
-        })
+            },
+            cloudSave = PlayGamesCloud(this),
+        )
         initialize(game, config)
+    }
+
+    override fun onDestroy() {
+        try {
+            super.onDestroy()
+        } catch (e: NullPointerException) {
+            // Finished in onCreate before initialize(): libGDX has no keyboard-height provider to close.
+        }
     }
 }

@@ -9,7 +9,7 @@ object CloudText {
         Status.Unavailable -> ""
         Status.Off -> "Nuvem: desligada"
         Status.SignedOut -> "Nuvem: sem conta"
-        Status.Working -> "Nuvem: sincronizando…"
+        Status.Working -> "Nuvem: sincronizando..."
         is Status.Synced -> if (today - status.day <= 0) "Nuvem: sincronizada hoje" else "Nuvem: sincronizada há %d dias"
         Status.Offline -> "Nuvem: sem conexão"
         is Status.Error -> "Nuvem: falhou"

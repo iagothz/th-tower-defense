@@ -49,8 +49,25 @@ class CloudController(private val save: SaveData, private val cloud: CloudSave, 
     private var uploading = false
     private var uploadAgain = false
     private var pending: (() -> Unit)? = null
+    /** Seconds spent in [Status.Working]; past [TIMEOUT] the call is given up on. */
+    private var working = 0f
 
     private val active get() = cloud.available && save.syncEnabled
+
+    /** Called every frame: a cloud call that never answers (no project configured, a hung service) times out. */
+    fun tick(delta: Float) {
+        if (status != Status.Working) {
+            working = 0f
+            return
+        }
+        working += delta
+        if (working < TIMEOUT) return
+        working = 0f
+        generation++
+        uploading = false
+        uploadAgain = false
+        status = Status.Error("timeout")
+    }
 
     /** The opening flow: signed in? → download → decide → act. */
     fun open() {
@@ -178,6 +195,11 @@ class CloudController(private val save: SaveData, private val cloud: CloudSave, 
                 push()
             }
         }
+    }
+
+    companion object {
+        /** Seconds a cloud call may take before the row shows a failure and the next push is allowed. */
+        const val TIMEOUT = 20f
     }
 
     private fun failure(reason: String): Status = when (reason) {

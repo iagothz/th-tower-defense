@@ -17,7 +17,7 @@ class CloudTextTest {
         assertEquals("" to null, CloudText.line(Unavailable, 10) to CloudText.button(Unavailable))
         assertEquals("Nuvem: desligada" to "Ligar", CloudText.line(Off, 10) to CloudText.button(Off))
         assertEquals("Nuvem: sem conta" to "Entrar", CloudText.line(SignedOut, 10) to CloudText.button(SignedOut))
-        assertEquals("Nuvem: sincronizando…" to null, CloudText.line(Working, 10) to CloudText.button(Working))
+        assertEquals("Nuvem: sincronizando..." to null, CloudText.line(Working, 10) to CloudText.button(Working))
         assertEquals("Nuvem: sincronizada hoje" to "Desligar", CloudText.line(Synced(10), 10) to CloudText.button(Synced(10)))
         assertEquals("Nuvem: sincronizada há 3 dias", CloudText.line(Synced(7), 10))
         assertEquals("Nuvem: sem conexão" to "Desligar", CloudText.line(Offline, 10) to CloudText.button(Offline))

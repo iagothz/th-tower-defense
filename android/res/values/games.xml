@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Play Games Services project ID from the Play Console (not a secret). 0 until the project exists:
+         sign-in then fails cleanly and the game stays offline. -->
+    <string name="game_services_project_id" translatable="false">0</string>
+</resources>
