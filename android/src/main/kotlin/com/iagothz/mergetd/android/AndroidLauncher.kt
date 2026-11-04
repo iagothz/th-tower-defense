@@ -21,7 +21,10 @@ class AndroidLauncher : AndroidApplication() {
             // 4x MSAA: everything is drawn with ShapeRenderer, so edges would be jagged without it.
             numSamples = 4
         }
-        PlayGamesSdk.initialize(this)
+        // Initializing the SDK triggers Google's automatic sign-in (and, with no account on the device, its
+        // add-account screen), so it only happens while the player keeps the cloud on; PlayGamesCloud does it
+        // on demand if the cloud is turned on later.
+        if (getSharedPreferences("merge-td", MODE_PRIVATE).getBoolean("sync.enabled", true)) PlayGamesSdk.initialize(this)
         val game = MergeTdGame(
             shareText = { text ->
                 runOnUiThread {

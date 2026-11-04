@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.games.PlayGames
+import com.google.android.gms.games.PlayGamesSdk
 import com.google.android.gms.games.SnapshotsClient
 import com.google.android.gms.games.snapshot.Snapshot
 import com.google.android.gms.games.snapshot.SnapshotMetadataChange
@@ -21,19 +22,25 @@ import com.iagothz.mergetd.ui.CloudSave
 class PlayGamesCloud(private val activity: Activity) : CloudSave {
     override val available = true
 
+    /** Idempotent: the launcher skips it while the cloud is off, so every call makes sure it happened. */
+    private fun init() = PlayGamesSdk.initialize(activity)
+
     override fun signIn(done: (Boolean) -> Unit) {
+        init()
         PlayGames.getGamesSignInClient(activity).signIn().addOnCompleteListener { t ->
             post { done(t.isSuccessful && t.result.isAuthenticated) }
         }
     }
 
     override fun isSignedIn(done: (Boolean) -> Unit) {
+        init()
         PlayGames.getGamesSignInClient(activity).isAuthenticated.addOnCompleteListener { t ->
             post { done(t.isSuccessful && t.result.isAuthenticated) }
         }
     }
 
     override fun download(done: (CloudResult<String?>) -> Unit) {
+        init()
         val client = PlayGames.getSnapshotsClient(activity)
         open(client).addOnCompleteListener { t ->
             val snapshot = t.snapshot()
@@ -51,6 +58,7 @@ class PlayGamesCloud(private val activity: Activity) : CloudSave {
     }
 
     override fun upload(blob: String, description: String, done: (CloudResult<Unit>) -> Unit) {
+        init()
         val client = PlayGames.getSnapshotsClient(activity)
         open(client).addOnCompleteListener { t ->
             val snapshot = t.snapshot()
