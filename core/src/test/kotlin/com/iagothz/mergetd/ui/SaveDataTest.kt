@@ -236,6 +236,22 @@ class SaveDataTest {
     }
 
     @Test
+    fun missionPreviewAddsTheMatchSoFarWithoutSavingIt() {
+        val save = SaveData(memoryPrefs())
+        val missions = listOf(
+            Mission(MissionKind.MERGES, 10, 50),
+            Mission(MissionKind.REACH_WAVE, 8, 80, map = GameMap.DEFAULT),
+            Mission(MissionKind.BOSSES, 2, 70),
+        )
+        val day = 20_000
+        save.applyMissions(day, missions, listOf(MissionProgress(delta = 6), MissionProgress(absolute = 5), MissionProgress()))
+        val match = listOf(MissionProgress(delta = 7), MissionProgress(absolute = 3), MissionProgress(delta = 1))
+        assertEquals(listOf(10, 5, 1), save.missionPreview(day, missions, match), "capped at the target, best wave kept")
+        assertEquals(listOf(6, 5, 0), save.missionProgress(day, missions), "nothing was saved")
+        assertEquals(0, save.xp)
+    }
+
+    @Test
     fun hintsSeenPersistAsASet() {
         val prefs = memoryPrefs()
         assertTrue(SaveData(prefs).hints.isEmpty())

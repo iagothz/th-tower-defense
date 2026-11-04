@@ -215,7 +215,7 @@ A ordem dos 7 chefes é sorteada por partida (onda 10, 20, 30... seguem a lista;
 - Topo: onda, vidas e SP.
 - Centro: o caminho em volta do grid.
 - Embaixo: 5 botões de power-up mostrando o nível e o custo. Não há botão Comprar: toda célula vazia mostra o preço do próximo dado (dourado quando dá, cinza quando falta SP) e tocar nela compra o dado ali (`Match.buyDie(cell)`; a `buyDie()` aleatória fica para os bots).
-- Botão de pausa. O jogo pausa sozinho quando o app vai para segundo plano e salva a partida em `Preferences`. Se o Android fechar o app nesse meio-tempo, ao reabrir a partida volta pausada de onde parou. Sair da partida ou perder apaga esse save.
+- Botão de pausa; o menu de pausa mostra as missões do dia com o progresso desta partida já somado (`SaveData.missionPreview`, sem gravar; o mesmo `MissionsPanel` do Início). O jogo pausa sozinho quando o app vai para segundo plano e salva a partida em `Preferences`. Se o Android fechar o app nesse meio-tempo, ao reabrir a partida volta pausada de onde parou. Sair da partida ou perder apaga esse save.
 
 **Arrasto**
 - Arrastar um dado destaca os alvos compatíveis.

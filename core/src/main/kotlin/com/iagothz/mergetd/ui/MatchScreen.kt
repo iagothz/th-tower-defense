@@ -45,7 +45,10 @@ class MatchScreen(
     private val effects = Effects(path = match.path)
     private val stats = MatchStats()
     private val hints = Hints(game.save.hints.toMutableSet()) { game.save.hints = it }
-    private val missions = DailyMissions.of(DailyChallenge.today())
+    private val missionDay = DailyChallenge.today()
+    private val missions = DailyMissions.of(missionDay)
+    /** The pause menu shows the day's missions with this match's progress so far added in. */
+    private val missionsPanel = MissionsPanel(game, Rectangle(24f, 24f, 672f, MissionsPanel.HEIGHT), missionDay, missions)
     private val tracker = MissionTracker(missions, match)
     private val tutorial = Tutorial(active = restored == null && fresh == null && !game.save.tutorialDone)
 
@@ -71,9 +74,9 @@ class MatchScreen(
     private val powerButtons = match.deck.mapIndexed { i, t ->
         t to Button(Rectangle(26f + i * 136f, 50f, 124f, 120f), "", color = Skin.color(t))
     }
-    private val resume = Button(Rectangle(160f, 720f, 400f, 100f), S["Continuar"])
-    private val restart = Button(Rectangle(160f, 590f, 400f, 100f), S["Reiniciar"], color = Skin.PANEL)
-    private val quit = Button(Rectangle(160f, 460f, 400f, 100f), S["Sair"], color = DANGER)
+    private val resume = Button(Rectangle(160f, 780f, 400f, 100f), S["Continuar"])
+    private val restart = Button(Rectangle(160f, 650f, 400f, 100f), S["Reiniciar"], color = Skin.PANEL)
+    private val quit = Button(Rectangle(160f, 520f, 400f, 100f), S["Sair"], color = DANGER)
     private val yes = Button(Rectangle(160f, 560f, 400f, 100f), S["Sim"], color = DANGER)
     private val no = Button(Rectangle(160f, 690f, 400f, 100f), S["Não"])
     private val skipTutorial = Button(Rectangle(540f, 1080f, 140f, 56f), S["Pular"], color = Skin.PANEL)
@@ -348,11 +351,14 @@ class MatchScreen(
         shapes.color = Color(0f, 0f, 0f, 0.7f)
         shapes.rect(-400f, -400f, Layout.WORLD_W + 800f, Layout.WORLD_H + 800f)
         for (b in pauseButtons()) b.drawShape(shapes)
+        val progress = if (confirm == null) game.save.missionPreview(missionDay, missions, tracker.progress()) else null
+        if (progress != null) missionsPanel.drawShapes(progress)
         shapes.end()
         game.batch.begin()
         val c = confirm
         if (c == null) {
-            game.batch.textShadowed(game.bigFont, S["Pausa"], 360f, 920f)
+            game.batch.textShadowed(game.bigFont, S["Pausa"], 360f, 980f)
+            if (progress != null) missionsPanel.drawText(progress)
         } else {
             game.batch.textShadowed(game.font, S[c.question], 360f, 900f)
             game.batch.textCentered(game.smallFont, S["O progresso desta partida será perdido."], 360f, 850f)
@@ -510,7 +516,7 @@ class MatchScreen(
         val levelBefore = Progression.level(game.save.xp)
         val matchXp = Progression.xpForMatch(match.wave, stats.bosses)
         game.save.xp += matchXp
-        val done = game.save.applyMissions(DailyChallenge.today(), missions, tracker.progress())
+        val done = game.save.applyMissions(missionDay, missions, tracker.progress())
         val level = Progression.level(game.save.xp)
         val newDice = (levelBefore + 1..level).mapNotNull { DiceUnlocks.openedAt(it) }
         val chest = CardDrop.draw(game.save.cardCandidates(), CardDrop.count(match.wave, stats.bosses), kotlin.random.Random(System.nanoTime()))

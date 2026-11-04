@@ -180,16 +180,22 @@ class SaveData(private val prefs: Preferences) {
         return missions.indices.map { parts.getOrElse(it) { 0 } }
     }
 
+    /** What [applyMissions] would leave the day at with [progress] added, without saving: the pause menu shows it mid-match. */
+    fun missionPreview(day: Int, missions: List<Mission>, progress: List<MissionProgress>): List<Int> {
+        val before = missionProgress(day, missions)
+        return missions.mapIndexed { i, m ->
+            val p = progress.getOrElse(i) { MissionProgress() }
+            minOf(m.target, if (m.counts) before[i] + p.delta else maxOf(before[i], p.absolute))
+        }
+    }
+
     /**
      * Adds a match's [progress] to the day's missions: counters add up, wave goals keep their best, both capped at the
      * target. Missions that reach the target now pay their XP; returns them.
      */
     fun applyMissions(day: Int, missions: List<Mission>, progress: List<MissionProgress>): List<Mission> {
         val before = missionProgress(day, missions)
-        val after = missions.mapIndexed { i, m ->
-            val p = progress.getOrElse(i) { MissionProgress() }
-            minOf(m.target, if (m.counts) before[i] + p.delta else maxOf(before[i], p.absolute))
-        }
+        val after = missionPreview(day, missions, progress)
         val done = missions.filterIndexed { i, m -> before[i] < m.target && after[i] >= m.target }
         prefs.putString("missions.$day", after.joinToString("|"))
         if (done.isNotEmpty()) prefs.putInteger("xp", xp + done.sumOf { it.xp })
