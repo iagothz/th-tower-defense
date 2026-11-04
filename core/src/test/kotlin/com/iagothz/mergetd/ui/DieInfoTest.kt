@@ -8,17 +8,19 @@ import kotlin.test.assertTrue
 
 class DieInfoTest {
     private fun row(t: DieType, key: String): String? = DieInfo.of(t).rows.firstOrNull { it.first == key }?.second
+    private fun stat(t: DieType, kind: StatKind): Stat = DieInfo.of(t).stats.single { it.kind == kind }
 
     @Test
     fun fireShowsDamagePerPipAndRange() {
-        assertEquals("20 por pip (20 com 1 pip, 140 com 7)", row(DieType.FIRE, "Dano"))
-        assertEquals("Inimigo mais à frente", row(DieType.FIRE, "Alvo"))
+        assertEquals(Stat(StatKind.DAMAGE, "Dano", "20 → 140", "1 → 7 pips"), stat(DieType.FIRE, StatKind.DAMAGE))
+        assertEquals(Stat(StatKind.TARGET, "Alvo", "Primeiro", "o mais avançado"), stat(DieType.FIRE, StatKind.TARGET))
+        assertEquals("por mina, 1 → 7 pips", stat(DieType.TRAP, StatKind.DAMAGE).note)
     }
 
     @Test
     fun speedUsesDecimalCommaAndPipScaling() {
-        assertEquals("a cada 1 s (1 pip) até 0,53 s (7 pips)", row(DieType.FIRE, "Velocidade"))
-        assertEquals("a cada 0,35 s (1 pip) até 0,09 s (7 pips)", row(DieType.WIND, "Velocidade"))
+        assertEquals(Stat(StatKind.SPEED, "Velocidade", "1 → 0,53 s", "entre ataques"), stat(DieType.FIRE, StatKind.SPEED))
+        assertEquals("0,35 → 0,09 s", stat(DieType.WIND, StatKind.SPEED).value)
     }
 
     @Test
@@ -29,15 +31,18 @@ class DieInfoTest {
         assertTrue("8 de dano/s por pip" in poison && "3 s" in poison && "5" in poison, poison)
         assertTrue("45 s" in row(DieType.GROWTH, "Efeito")!!)
         assertTrue("34,6" in row(DieType.GROWTH, "Power-up")!! && "18" in row(DieType.GROWTH, "Power-up")!!, row(DieType.GROWTH, "Power-up")!!)
-        assertEquals("Inimigo mais à frente", row(DieType.LIGHT, "Alvo"))
-        assertEquals("Inimigo com mais vida", row(DieType.SNIPER, "Alvo"))
+        assertEquals("Primeiro", stat(DieType.LIGHT, StatKind.TARGET).value)
+        assertEquals(Stat(StatKind.TARGET, "Alvo", "Mais vida", "o mais resistente"), stat(DieType.SNIPER, StatKind.TARGET))
+        assertEquals("Todos", stat(DieType.QUAKE, StatKind.TARGET).value)
+        assertEquals("Caminho", stat(DieType.TRAP, StatKind.TARGET).value)
     }
 
     @Test
     fun mineDoesNotAttack() {
-        assertEquals("Não ataca", row(DieType.MINE, "Alvo"))
-        assertNull(row(DieType.MINE, "Dano"))
-        assertNull(row(DieType.MINE, "Velocidade"))
+        assertEquals(Stat(StatKind.TARGET, "Alvo", "Nenhum", "não ataca"), stat(DieType.MINE, StatKind.TARGET))
+        assertEquals("-", stat(DieType.MINE, StatKind.DAMAGE).value)
+        assertEquals("-", stat(DieType.MINE, StatKind.SPEED).value)
+        assertNull(row(DieType.MINE, "Alvo"), "the three numbers live in the stats, not in the rows")
         assertTrue("10 SP por pip a cada 5 s" in row(DieType.MINE, "Efeito")!!)
     }
 
@@ -46,6 +51,7 @@ class DieInfoTest {
         for (t in DieType.entries) {
             val info = DieInfo.of(t)
             assertTrue(info.summary.isNotBlank(), "$t")
+            assertEquals(StatKind.entries, info.stats.map { it.kind }, "$t: damage, speed, target in that order")
             assertTrue(row(t, "Efeito") != null, "$t effect")
             assertTrue(row(t, "Power-up") != null, "$t power-up")
         }
@@ -53,7 +59,7 @@ class DieInfoTest {
 
     @Test
     fun wildcardsDescribeTheirMergeRules() {
-        assertEquals("Inimigo mais à frente", row(DieType.BOOST, "Alvo"))
+        assertEquals("Primeiro", stat(DieType.BOOST, StatKind.TARGET).value)
         assertTrue("tipo do outro dado" in row(DieType.BOOST, "Efeito")!!)
         assertTrue("cópia" in row(DieType.CLONE, "Efeito")!!)
         assertTrue("sorteado" in row(DieType.MIRROR, "Efeito")!!)

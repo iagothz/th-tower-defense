@@ -8,38 +8,50 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.roundToInt
 
+enum class StatKind { DAMAGE, SPEED, TARGET }
+
+/** One of the three headline numbers on the deck screen: a short [value] to read at a glance and a [note] under it. */
+data class Stat(val kind: StatKind, val label: String, val value: String, val note: String)
+
 /**
- * Player-facing description of a die type. Every number is read from [Balance], so it can't drift;
+ * Player-facing description of a die type: damage, speed and target as [stats], the rest as labelled [rows]. Every number is read from [Balance], so it can't drift;
  * every sentence goes through [S], so it follows the language setting.
  */
-data class DieInfo(val summary: String, val rows: List<Pair<String, String>>) {
+data class DieInfo(val summary: String, val stats: List<Stat>, val rows: List<Pair<String, String>>) {
     companion object {
         private const val MAX = Balance.MAX_PIPS
 
         fun of(t: DieType): DieInfo {
-            val rows = mutableListOf(S["Alvo"] to target(t))
-            if (t.attacks) {
-                val dmg = Balance.stats(t).baseDamage
-                val key = if (t == DieType.TRAP) "%s por pip, por mina (%s com 1 pip, %s com %d)" else "%s por pip (%s com 1 pip, %s com %d)"
-                rows += S["Dano"] to S.f(key, num(dmg), num(dmg), num(dmg * MAX), MAX)
-                rows += S["Velocidade"] to S.f("a cada %s s (1 pip) até %s s (%d pips)", num(Combat.attackInterval(t, 1)), num(Combat.attackInterval(t, MAX)), MAX)
-            }
-            rows += S["Efeito"] to effect(t)
+            val rows = mutableListOf(S["Efeito"] to effect(t))
             rows += S["7 pips"] to maxed(t)
             synergy(t)?.let { rows += S["Sinergia"] to it }
             rows += S["Power-up"] to powerUp(t)
-            return DieInfo(summary(t), rows)
+            return DieInfo(summary(t), stats(t), rows)
         }
 
-        private fun target(t: DieType) = S[
-            when {
-                !t.attacks -> "Não ataca"
-                t == DieType.SNIPER -> "Inimigo com mais vida"
-                t == DieType.QUAKE -> "Todos os inimigos"
-                t == DieType.TRAP -> "O caminho à frente do primeiro inimigo"
-                else -> "Inimigo mais à frente"
-            },
-        ]
+        private fun stats(t: DieType): List<Stat> {
+            val pipRange = S.f("1 → %d pips", MAX)
+            val damage = if (!t.attacks) {
+                Stat(StatKind.DAMAGE, S["Dano"], "-", S["não ataca"])
+            } else {
+                val dmg = Balance.stats(t).baseDamage
+                val note = if (t == DieType.TRAP) S.f("por mina, %s", pipRange) else pipRange
+                Stat(StatKind.DAMAGE, S["Dano"], "${num(dmg)} → ${num(dmg * MAX)}", note)
+            }
+            val speed = if (!t.attacks) {
+                Stat(StatKind.SPEED, S["Velocidade"], "-", S["não ataca"])
+            } else {
+                Stat(StatKind.SPEED, S["Velocidade"], "${num(Combat.attackInterval(t, 1))} → ${num(Combat.attackInterval(t, MAX))} s", S["entre ataques"])
+            }
+            val (value, note) = when {
+                !t.attacks -> "Nenhum" to "não ataca"
+                t == DieType.SNIPER -> "Mais vida" to "o mais resistente"
+                t == DieType.QUAKE -> "Todos" to "de uma vez"
+                t == DieType.TRAP -> "Caminho" to "minas à frente"
+                else -> "Primeiro" to "o mais avançado"
+            }
+            return listOf(damage, speed, Stat(StatKind.TARGET, S["Alvo"], S[value], S[note]))
+        }
 
         private fun summary(t: DieType) = S[
             when (t) {

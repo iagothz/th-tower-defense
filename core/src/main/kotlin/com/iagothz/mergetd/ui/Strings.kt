@@ -180,11 +180,9 @@ object S {
         "%s (com %s): %s" to "%s (with %s): %s",
         // Die info rows and texts
         "Alvo" to "Target", "Dano" to "Damage", "Velocidade" to "Speed", "Efeito" to "Effect", "7 pips" to "7 pips", "Sinergia" to "Synergy", "Power-up" to "Power-up",
-        "Não ataca" to "Doesn't attack", "Inimigo com mais vida" to "Enemy with most HP", "Todos os inimigos" to "Every enemy",
-        "O caminho à frente do primeiro inimigo" to "The path ahead of the leading enemy", "Inimigo mais à frente" to "Leading enemy",
-        "%s por pip (%s com 1 pip, %s com %d)" to "%s per pip (%s at 1 pip, %s at %d)",
-        "%s por pip, por mina (%s com 1 pip, %s com %d)" to "%s per pip, per mine (%s at 1 pip, %s at %d)",
-        "a cada %s s (1 pip) até %s s (%d pips)" to "every %s s (1 pip) down to %s s (%d pips)",
+        "1 → %d pips" to "1 → %d pips", "por mina, %s" to "per mine, %s", "não ataca" to "doesn't attack", "entre ataques" to "between attacks",
+        "Nenhum" to "None", "Mais vida" to "Most HP", "o mais resistente" to "the toughest one", "Todos" to "All", "de uma vez" to "at once",
+        "Caminho" to "Path", "minas à frente" to "mines ahead", "Primeiro" to "Leader", "o mais avançado" to "the furthest along",
         "%s de SP gerado (níveis 2 a 5)" to "%s SP generated (levels 2 to 5)", "%s no dano e no veneno (níveis 2 a 5)" to "%s to damage and poison (levels 2 to 5)",
         "%s no dano das explosões (níveis 2 a 5)" to "%s to blast damage (levels 2 to 5)", "%s de dano (níveis 2 a 5)" to "%s damage (levels 2 to 5)",
     ) + DIE_TEXTS + TIPS

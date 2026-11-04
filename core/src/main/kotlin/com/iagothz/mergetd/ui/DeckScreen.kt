@@ -42,6 +42,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     private val tap = Tap<Button>()
     private val slots = List(DeckCodec.SIZE) { Rectangle(186f + it * 72f, 1112f, 60f, 60f) }
     private val editor = DeckEditor(selected, tiles, slots, ::isOpen)
+    private val measure = com.badlogic.gdx.graphics.g2d.GlyphLayout()
 
     private fun isOpen(t: DieType) = DiceUnlocks.isUnlocked(t, level)
 
@@ -138,6 +139,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         random.drawShape(shapes)
         presets.forEach { it.drawShape(shapes) }
         if (levelUpShown()) levelUp.drawShape(shapes)
+        drawStatShapes()
         editor.dragging?.let { t -> editor.pointer?.let { p -> shapes.die(t, 1, p.x, p.y + DRAG_LIFT, 72f) } }
         shapes.end()
 
@@ -169,6 +171,15 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         if (levelUpShown()) levelUp.drawText(game.batch, game.smallFont)
         if (toastLeft > 0f) game.batch.textShadowed(game.tinyFont, toast, 360f, TOAST_Y, Skin.GOLD)
         game.batch.end()
+        // The font has no arrow glyph: the "→" in the stat texts is drawn here, in the gaps left for it.
+        shapes.begin(ShapeRenderer.ShapeType.Filled)
+        for (a in arrows) {
+            shapes.color = a.color
+            shapes.rectLine(a.x - a.size * 0.45f, a.y, a.x + a.size * 0.2f, a.y, a.size * 0.16f)
+            shapes.triangle(a.x + a.size * 0.05f, a.y + a.size * 0.3f, a.x + a.size * 0.05f, a.y - a.size * 0.3f, a.x + a.size * 0.5f, a.y)
+        }
+        shapes.end()
+        arrows.clear()
     }
 
     /** Under the stars of an open die: its bonus and the cards towards the next level. */
@@ -179,10 +190,101 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         return S.f("+%d%% · cartas %d/%d", bonus, game.save.cards(shown), cost)
     }
 
+    /** Width the summary wraps at: it leaves room for the level-up button when that shows. */
+    private fun summaryWidth() = panel.width - 48f - (if (levelUpShown()) 196f else 0f)
+
+    /** Top of the damage/speed/target blocks, just under the summary (and the level-up button). */
+    private fun statsTop(): Float {
+        val summary = measure.apply { setText(game.smallFont, DieInfo.of(shown).summary, Color.WHITE, summaryWidth(), Align.left, true) }.height
+        return panel.y + panel.height - 68f - maxOf(summary, if (levelUpShown()) 52f else 0f) - 18f
+    }
+
+    private fun statRect(i: Int, top: Float): Rectangle {
+        val w = (panel.width - 48f - 2 * STAT_GAP) / 3
+        return Rectangle(panel.x + 24f + i * (w + STAT_GAP), top - STAT_H, w, STAT_H)
+    }
+
+    /** The three blocks (damage, speed, target), each a card with its icon in its own colour. */
+    private fun drawStatShapes() {
+        val shapes = game.shapes
+        val top = statsTop()
+        for ((i, s) in DieInfo.of(shown).stats.withIndex()) {
+            val r = statRect(i, top)
+            shapes.color = Skin.CELL
+            shapes.roundedRect(r.x, r.y, r.width, r.height, 14f)
+            shapes.color = statColor(s.kind)
+            shapes.roundedRect(r.x, r.y + r.height - 5f, r.width, 5f, 2.5f)
+            statIcon(shapes, s.kind, r.x + 24f, r.y + r.height - 28f)
+        }
+    }
+
+    private fun statColor(k: StatKind): Color = when (k) {
+        StatKind.DAMAGE -> Skin.HEART
+        StatKind.SPEED -> SPEED_COLOR
+        StatKind.TARGET -> Skin.GOLD
+    }
+
+    /** Sword, stopwatch or crosshair, about 28 px, centred on (cx, cy). */
+    private fun statIcon(shapes: ShapeRenderer, k: StatKind, cx: Float, cy: Float) {
+        shapes.color = statColor(k)
+        when (k) {
+            StatKind.DAMAGE -> {
+                shapes.rectLine(cx - 9f, cy - 9f, cx + 11f, cy + 11f, 5f)
+                shapes.triangle(cx + 9f, cy + 13f, cx + 14f, cy + 14f, cx + 13f, cy + 9f)
+                shapes.rectLine(cx - 13f, cy - 3f, cx - 3f, cy - 13f, 4f)
+                shapes.rectLine(cx - 10f, cy - 10f, cx - 15f, cy - 15f, 4f)
+            }
+            StatKind.SPEED -> {
+                shapes.ring(cx, cy - 1f, 12f, 3.5f, 24)
+                shapes.rect(cx - 3f, cy + 12f, 6f, 5f)
+                shapes.rectLine(cx, cy - 1f, cx, cy + 7f, 3f)
+                shapes.rectLine(cx, cy - 1f, cx + 6f, cy - 4f, 3f)
+            }
+            StatKind.TARGET -> {
+                shapes.ring(cx, cy, 11f, 3.5f, 24)
+                shapes.rectLine(cx - 16f, cy, cx - 7f, cy, 3f)
+                shapes.rectLine(cx + 7f, cy, cx + 16f, cy, 3f)
+                shapes.rectLine(cx, cy - 16f, cx, cy - 7f, 3f)
+                shapes.rectLine(cx, cy + 7f, cx, cy + 16f, 3f)
+                shapes.circle(cx, cy, 3f, 12)
+            }
+        }
+    }
+
+    private class Arrow(val x: Float, val y: Float, val size: Float, val color: Color)
+    private val arrows = mutableListOf<Arrow>()
+
+    /** Left-aligned text vertically centred on [y]; each "→" becomes a gap with an arrow drawn in it after the batch. */
+    private fun textWithArrow(font: com.badlogic.gdx.graphics.g2d.BitmapFont, text: String, x: Float, y: Float, color: Color) {
+        val parts = text.split("→")
+        val arrowW = font.capHeight * 1.6f
+        var cx = x
+        font.color = color
+        for ((i, part) in parts.withIndex()) {
+            val p = if (i == 0) part.trimEnd() else part.trim()
+            game.batch.textLeft(font, p, cx, y)
+            cx += measure.apply { setText(font, p) }.width
+            if (i < parts.size - 1) {
+                arrows += Arrow(cx + arrowW / 2 + 2f, y, font.capHeight * 1.1f, color.cpy())
+                cx += arrowW + 4f
+            }
+        }
+        font.color = Color.WHITE
+    }
+
+    /** Labels of the detail rows in a colour each, so they read as separate things. */
+    private fun rowColor(key: String): Color = when (key) {
+        S["Efeito"] -> EFFECT_COLOR
+        S["7 pips"] -> Skin.GOLD
+        S["Sinergia"] -> SYNERGY_COLOR
+        S["Power-up"] -> POWER_COLOR
+        else -> KEY_COLOR
+    }
+
     private fun drawInfo() {
         val info = DieInfo.of(shown)
         val left = panel.x + 24f
-        val keyWidth = 150f
+        val keyWidth = 112f
         val valueWidth = panel.width - 48f - keyWidth
         var y = panel.y + panel.height - 30f
 
@@ -194,16 +296,27 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         }
         y -= 38f
         // The level-up button sits on the right of the summary, which wraps before it.
-        val summaryWidth = panel.width - 48f - (if (levelUpShown()) 196f else 0f)
-        y -= maxOf(game.smallFont.draw(game.batch, info.summary, left, y, summaryWidth, Align.left, true).height, if (levelUpShown()) 52f else 0f) + 8f
+        game.smallFont.draw(game.batch, info.summary, left, y, summaryWidth(), Align.left, true)
+
+        val top = statsTop()
+        for ((i, s) in info.stats.withIndex()) {
+            val r = statRect(i, top)
+            game.tinyFont.color = statColor(s.kind)
+            game.batch.textLeft(game.tinyFont, s.label.uppercase(), r.x + 46f, r.y + r.height - 28f)
+            textWithArrow(game.smallFont, s.value, r.x + 14f, r.y + 38f, Color.WHITE)
+            textWithArrow(game.tinyFont, s.note, r.x + 14f, r.y + 14f, KEY_COLOR)
+        }
+        game.smallFont.color = Color.WHITE
+        y = top - STAT_H - 18f
 
         val locked = if (isOpen(shown)) emptyList() else listOf(S["Bloqueado"] to S.f("Abre no nível de conta %d", DiceUnlocks.unlockLevel(shown)))
         for ((key, value) in locked + info.rows) {
-            game.smallFont.color = KEY_COLOR
-            game.smallFont.draw(game.batch, key, left, y)
-            game.smallFont.color = Color.WHITE
-            y -= game.smallFont.draw(game.batch, value, left + keyWidth, y, valueWidth, Align.left, true).height + 8f
+            game.tinyFont.color = rowColor(key)
+            game.tinyFont.draw(game.batch, key.uppercase(), left, y)
+            game.tinyFont.color = Color.WHITE
+            y -= game.tinyFont.draw(game.batch, value, left + keyWidth, y, valueWidth, Align.left, true).height + 12f
         }
+        game.tinyFont.color = Color.WHITE
     }
 
     private fun buttonAt(p: Vec2) = (listOf(enemies, random) + presets + listOfNotNull(levelUp.takeIf { levelUpShown() })).firstOrNull { it.contains(p.x, p.y) }
@@ -297,5 +410,11 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         /** The toast sits in the gap between the title and the deck slots. */
         const val TOAST_Y = 1188f
         val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
+        const val STAT_H = 92f
+        const val STAT_GAP = 12f
+        val SPEED_COLOR = Color(0.45f, 0.72f, 1f, 1f)
+        val EFFECT_COLOR = Color(0.78f, 0.82f, 0.95f, 1f)
+        val SYNERGY_COLOR = Color(0.45f, 0.85f, 0.55f, 1f)
+        val POWER_COLOR = Color(0.78f, 0.55f, 1f, 1f)
     }
 }
