@@ -24,8 +24,6 @@ class MatchStats {
         private set
     var synergyUsed = false
         private set
-    var undoUsed = false
-        private set
     /** Held 1000 SP at some point. */
     var rich = false
         private set
@@ -54,10 +52,6 @@ class MatchStats {
                 is GameEvent.Merged -> merges++
                 is GameEvent.DieBought -> bought++
                 is GameEvent.Leaked -> killedBy = e.kind
-                is GameEvent.Unmerged -> {
-                    undoUsed = true
-                    merges--
-                }
                 else -> Unit
             }
         }

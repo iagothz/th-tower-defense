@@ -73,7 +73,7 @@ object S {
         "Sinergias do deck: nenhuma ainda (veja os pares na descrição de cada dado)" to
             "Deck synergies: none yet (each die's description lists its pairs)",
         // HUD and match
-        "Desfazer" to "Undo", "Continuar" to "Resume", "Reiniciar" to "Restart", "Sair" to "Quit",
+        "Continuar" to "Resume", "Reiniciar" to "Restart", "Sair" to "Quit",
         "Sim" to "Yes", "Não" to "No", "Pausa" to "Paused", "Reiniciar a partida?" to "Restart the match?",
         "Sair da partida?" to "Quit the match?", "O progresso desta partida será perdido." to "This match's progress will be lost.",
         "Pular" to "Skip", "MAX" to "MAX", "Nv%d" to "Lv%d",
@@ -125,7 +125,6 @@ object S {
         "Lento, com muita vida." to "Slow, with lots of HP.", "Cura os inimigos ao redor." to "Heals the enemies around it.",
         "Ignora lentidão, atordoamento, empurrão e armadilhas." to "Ignores slows, stuns, pushes and traps.",
         "Um coringa! Ele combina com qualquer dado de mesmos pips." to "A wildcard! It merges with any die of the same pips.",
-        "Errou o merge? Desfazer aparece por 3 s embaixo do tabuleiro." to "Wrong merge? Undo shows for 3 s under the board.",
         "Segure um dado parado para ver o que ele faz e quanto bate." to "Hold a die still to see what it does and how hard it hits.",
         "Sinergia ativa! Os dois tipos no tabuleiro ganham um bônus." to "Synergy on! Both types on the board get a bonus.",
         "Mais um merge e esse dado chega a 7 pips, com uma habilidade nova." to "One more merge and that die hits 7 pips, with a new ability.",
@@ -152,7 +151,7 @@ object S {
         "Cinco chefes seguidos" to "Five bosses in a row", "Chegue à onda 5 no Boss Rush" to "Reach wave 5 in Boss Rush",
         "Sobrevivente" to "Survivor", "Chegue à onda 15 em Sobrevivência" to "Reach wave 15 in Survival", "Veloz" to "Speedster",
         "Chegue à onda 15 no Rápido" to "Reach wave 15 in Rush", "Explorador" to "Explorer", "Onda 10 em todos os mapas" to "Wave 10 on every map",
-        "Arrependido" to "Second thoughts", "Use o Desfazer" to "Use Undo", "Economista" to "Economist", "Acumule 1000 SP numa partida" to "Hold 1000 SP in a match",
+        "Economista" to "Economist", "Acumule 1000 SP numa partida" to "Hold 1000 SP in a match",
         "Veterano" to "Veteran", "Jogue 10 partidas" to "Play 10 matches", "Fundidor" to "Smelter", "Faça 100 merges no total" to "Make 100 merges in total",
         // Dice names
         "Fogo" to "Fire", "Gelo" to "Ice", "Veneno" to "Poison", "Elétrico" to "Electric", "Vento" to "Wind", "Ferro" to "Iron", "Mina" to "Mine",

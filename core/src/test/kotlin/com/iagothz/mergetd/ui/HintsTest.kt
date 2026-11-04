@@ -31,13 +31,6 @@ class HintsTest {
     }
 
     @Test
-    fun undoHintAfterTheFirstMerge() {
-        val hints = Hints(mutableSetOf())
-        hints.update(0f, listOf(GameEvent.Merged(Cell(1, 1), pips = 2)), match())
-        assertEquals("undo", hints.current)
-    }
-
-    @Test
     fun holdHintAfterThreeBuysUnlessThePlayerAlreadyHeld() {
         val m = match()
         m.board[Cell(0, 0)] = Die(DieType.FIRE, 1)
@@ -75,11 +68,13 @@ class HintsTest {
         val m = match()
         m.board[Cell(0, 0)] = Die(DieType.FIRE, 1)
         m.board[Cell(0, 1)] = Die(DieType.WIND, 1)
+        m.board[Cell(0, 2)] = Die(DieType.FIRE, 6)
         val hints = Hints(mutableSetOf("synergy"))
-        hints.update(0f, listOf(GameEvent.Merged(Cell(0, 1), pips = 2), GameEvent.Merged(Cell(0, 1), pips = 2)), m)
-        assertEquals("undo", hints.current, "synergy was already seen; undo shows once")
+        hints.update(0f, none, m)
+        hints.update(0f, none, m)
+        assertEquals("seven", hints.current, "synergy was already seen; seven shows once")
         hints.update(Hints.SHOW_SECONDS + 0.1f, none, m)
         assertNull(hints.current)
-        assertEquals(setOf("synergy", "undo"), hints.seen)
+        assertEquals(setOf("synergy", "seven"), hints.seen)
     }
 }

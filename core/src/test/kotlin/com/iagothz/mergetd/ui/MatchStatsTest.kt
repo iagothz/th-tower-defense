@@ -43,7 +43,5 @@ class MatchStatsTest {
         assertEquals(42, stats.hunterStacks)
         assertEquals(true, stats.synergyUsed)
         assertEquals(true, stats.rich)
-        stats.consume(listOf(GameEvent.Unmerged(Cell(0, 0), Cell(0, 1))))
-        assertEquals(true, stats.undoUsed)
     }
 }

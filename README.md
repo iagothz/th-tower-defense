@@ -9,7 +9,7 @@ Tower defense de merge no estilo Random Dice, para jogar offline no Android. Fei
 - Compre dados com SP. Cada dado comprado é um tipo aleatório do seu deck, com 1 pip.
 - Arraste um dado sobre outro do **mesmo tipo e mesmo número de pips** para gerar um dado com +1 pip de tipo aleatório. O Espelho combina com qualquer tipo (resultado sorteado), o Reforço também, mas garante o tipo do outro dado, e o Clonador vira uma cópia do dado em que for solto. Entre dois coringas vale o efeito do dado que você arrasta: Reforço levado ao Clonador sobe o Clonador; Clonador levado ao Reforço clona o Reforço.
 - Gaste SP nos botões de baixo para aumentar o dano de um tipo (níveis 1 a 5).
-- Para comprar um dado, toque numa célula vazia: cada uma mostra o preço (dourado quando dá, cinza quando falta SP) e o dado nasce ali. Errou um merge? **Desfazer** aparece por 3 s embaixo do tabuleiro. Soltar o dado perto de um alvo compatível já vale: ele é puxado para a célula.
+- Para comprar um dado, toque numa célula vazia: cada uma mostra o preço (dourado quando dá, cinza quando falta SP) e o dado nasce ali. Soltar o dado perto de um alvo compatível já vale: ele é puxado para a célula.
 - **Segure** um dado no tabuleiro para ver o que ele faz e quanto está batendo agora. O botão **2x** acelera a partida; o de pausa tem Continuar, Reiniciar e Sair (os dois últimos pedem confirmação).
 - Entre as ondas, o topo mostra o que vem na próxima (quantos de cada inimigo) e em quantas ondas chega o chefe.
 - As ondas são infinitas, com um chefe a cada 10 ondas (7 chefes, em ordem sorteada por partida) e uma onda especial a cada 5 (Horda, Tanques, Corrida). Na primeira partida um tutorial de 3 passos mostra o básico. Você tem 3 vidas; o recorde é a maior onda alcançada.
@@ -19,14 +19,14 @@ Tower defense de merge no estilo Random Dice, para jogar offline no Android. Fei
 - **Barra inferior** com cinco abas: Início, Deck, Mapas, Desafios e Config (Estatísticas, Conquistas e Histórico ficam dentro de Config).
 - **Dados por nível**: você começa com 8 dados e cada nível de conta abre mais um (até o 18). Cada partida abre um baú de **cartas**; com 5/10/20/40 cartas de um dado ele sobe de nível (até 5), ganhando +10% permanentes por nível. Tudo na tela Deck.
 - **Nuvem** (Android): com uma conta do Google Play Games, o progresso (nível, dados, cartas, recordes, histórico) sobe ao fim de cada partida e desce ao abrir o jogo, então dá para jogar em dois aparelhos. Se os dois avançaram separados, o jogo pergunta qual progresso manter. Em Config dá para entrar, ligar e desligar; sem conta, tudo fica no aparelho como antes.
-- **Conquistas**: 20 medalhas; 13 destravam molduras, céus e formas de pip (só visual), equipados na tela Conquistas.
+- **Conquistas**: 19 medalhas; 13 destravam molduras, céus e formas de pip (só visual), equipados na tela Conquistas.
 - **Elite** (grande, cura a escolta, vale 30 SP) a cada três ondas e **Tesouro** (rápido, não tira vida, vale 60 SP) a cada quatro, a partir da onda 6.
 - **Mutadores** na tela Partida (Velozes, Resistentes, Pobres, Enxame): cada um multiplica a pontuação (onda × mutadores). O **Desafio semanal** fixa mapa, deck e dois mutadores para a semana.
 - **Desafio do dia**: o dia sorteia mapa, 5 dados e a seed; o recorde é por dia e os últimos ficam em **Estatísticas**, junto com totais, recorde por mapa e melhores decks.
 - **Sinergias**: oito pares de dados (Fogo+Vento, Gelo+Terremoto, Veneno+Maldição, Luz+Crítico, Elétrico+Tempo, Ferro+Sniper, Caçador+Vampiro, Gravidade+Armadilha) ligam um bônus enquanto os dois estão no tabuleiro. Todo dado ganha uma habilidade própria em **7 pips**.
 - **Modos** na tela Partida: Normal, Boss Rush, Sobrevivência e Rápido, com recorde por mapa e modo.
 - Na tela **Partida**, escolha entre 4 caminhos (Ferradura, Serpente, Anel e Reta), com dificuldade e recorde próprios.
-- Na tela **Deck**, o botão **Inimigos** abre a enciclopédia: o que cada inimigo e chefe faz e como vencer. Na partida, dicas de uma linha aparecem na primeira vez que algo novo acontece (coringa, desfazer, sinergia, 7 pips).
+- Na tela **Deck**, o botão **Inimigos** abre a enciclopédia: o que cada inimigo e chefe faz e como vencer. Na partida, dicas de uma linha aparecem na primeira vez que algo novo acontece (coringa, sinergia, 7 pips).
 - Na tela **Deck**, três slots guardam decks (toque carrega, segurar salva) e o **?** sorteia um deck. No fim de jogo, **Compartilhar** manda onda, mapa e código para qualquer app.
 - Na tela **Deck**, escolha 5 dos 25 tipos de dado arrastando: do grid para um espaço do deck entra (no lugar do que estava), de um espaço para fora sai, espaço sobre espaço troca de lugar. Tocar num dado só mostra o que ele faz: alvo, dano, velocidade, efeito e power-up.
 - **Configurações**: volume do som e da música, vibração, idioma (automático, português ou inglês), **Reduzir movimento** (sem tremor, vinheta nem câmera lenta) e **Texto grande**. A música ganha bateria enquanto um chefe está vivo e acelera no modo Rápido. O jogo funciona sem internet e não coleta nada ([PRIVACY.md](PRIVACY.md)).

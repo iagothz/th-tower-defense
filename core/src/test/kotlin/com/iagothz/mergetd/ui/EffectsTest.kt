@@ -172,13 +172,6 @@ class EffectsTest {
     }
 
     @Test
-    fun unmergePopsBothCells() {
-        fx.consume(listOf(GameEvent.Unmerged(Cell(0, 0), Cell(0, 1))))
-        assertTrue(fx.popScale(Cell(0, 0)) < 1f)
-        assertTrue(fx.popScale(Cell(0, 1)) < 1f)
-    }
-
-    @Test
     fun announcementsUseTheBanner() {
         fx.announce("Desafio do dia")
         assertEquals("Desafio do dia", fx.banner)
@@ -409,13 +402,6 @@ class EffectsTest {
         assertEquals("Onda limpa!", fx.banner)
         fx.update(Effects.CLEAR_BANNER_TIME + 0.01f)
         assertNull(fx.banner)
-    }
-
-    @Test
-    fun undoButtonPopsAfterAMerge() {
-        assertEquals(0f, fx.pulse("undo"))
-        fx.consume(listOf(GameEvent.Merged(Cell(1, 1), pips = 2)))
-        assertEquals(1f, fx.pulse("undo"))
     }
 
     @Test

@@ -65,8 +65,7 @@ class MatchScreen(
     /** Simulation speed multiplier: the 2x button, or dev keys up to 4x. */
     private var speed = 1
 
-    /** Dice are bought by tapping an empty cell; Undo takes the row under the board while it is available. */
-    private val undo = Button(Rectangle(160f, 320f, 400f, 100f), S["Desfazer"], color = Skin.PANEL)
+    /** Dice are bought by tapping an empty cell, so the HUD has no buy button. */
     private val speedButton = Button(Rectangle(528f, 1182f, 76f, 56f), "1x", color = Skin.PANEL)
     private val pauseButton = Button(Rectangle(616f, 1182f, 84f, 56f), "", color = Skin.PANEL)
     private val powerButtons = match.deck.mapIndexed { i, t ->
@@ -78,7 +77,7 @@ class MatchScreen(
     private val yes = Button(Rectangle(160f, 560f, 400f, 100f), S["Sim"], color = DANGER)
     private val no = Button(Rectangle(160f, 690f, 400f, 100f), S["Não"])
     private val skipTutorial = Button(Rectangle(540f, 1080f, 140f, 56f), S["Pular"], color = Skin.PANEL)
-    private val allButtons = listOf(undo, speedButton, pauseButton, resume, restart, quit, yes, no, skipTutorial) + powerButtons.map { it.second }
+    private val allButtons = listOf(speedButton, pauseButton, resume, restart, quit, yes, no, skipTutorial) + powerButtons.map { it.second }
 
     override val skyMap get() = match.map
 
@@ -156,7 +155,6 @@ class MatchScreen(
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         renderer.drawShapes(match, drag, effects)
         drawVignette(effects.vignetteAlpha(), effects.vignetteColor())
-        if (match.canUndo) undo.drawShape(shapes)
         speedButton.drawShape(shapes)
         pauseButton.drawShape(shapes)
         shapes.color = Color.WHITE
@@ -191,7 +189,6 @@ class MatchScreen(
             game.smallFont.color = Color.WHITE
         }
         drawPrices(batch)
-        if (match.canUndo) undo.drawText(batch, game.font)
         speedButton.drawText(batch, game.font)
         for ((t, b) in powerButtons) {
             val cx = b.rect.x + b.rect.width / 2
@@ -337,7 +334,6 @@ class MatchScreen(
 
     private fun refreshButtons() {
         speedButton.text = "${speed}x"
-        undo.scale = 1f - 0.3f * effects.pulse("undo")
         for ((t, b) in powerButtons) {
             val cost = match.powerUpCost(t)
             b.enabled = cost != null && match.sp >= cost
@@ -369,7 +365,6 @@ class MatchScreen(
 
     private fun buttonAt(p: Vec2): Button? {
         val visible = if (paused) pauseButtons() else listOf(speedButton, pauseButton) + powerButtons.map { it.second } +
-            listOfNotNull(undo.takeIf { match.canUndo }) +
             listOfNotNull(skipTutorial.takeIf { tutorial.step != null && tutorial.step != Tutorial.Step.DONE })
         return visible.firstOrNull { it.contains(p.x, p.y) }
     }
@@ -452,7 +447,6 @@ class MatchScreen(
                 Confirm.QUIT -> abandon(restartAfter = false)
                 null -> Unit
             }
-            undo -> match.undoMerge()
             speedButton -> speed = if (speed == 1) 2 else 1
             skipTutorial -> tutorial.skip()
             pauseButton -> {
@@ -510,7 +504,7 @@ class MatchScreen(
         val progress = AchievementProgress(
             wave = match.wave, mode = match.mode, kills = t.kills, bosses = t.bosses, merges = t.merges, games = t.games,
             maxPips = stats.maxPips, synergy = stats.synergyUsed, hunterStacks = stats.hunterStacks,
-            daily = match.challengeDay != null, undo = stats.undoUsed, rich = stats.rich, mapsAtTen = game.save.mapsAt(10),
+            daily = match.challengeDay != null, rich = stats.rich, mapsAtTen = game.save.mapsAt(10),
         )
         val fresh = game.save.unlock(Achievements.earned(progress))
         val levelBefore = Progression.level(game.save.xp)

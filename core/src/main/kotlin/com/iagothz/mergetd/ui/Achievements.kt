@@ -66,7 +66,6 @@ enum class Achievement(val id: String, val title: String, val description: Strin
     SURVIVOR("survivor", "Sobrevivente", "Chegue à onda 15 em Sobrevivência"),
     SPEEDSTER("speedster", "Veloz", "Chegue à onda 15 no Rápido"),
     EXPLORER("explorer", "Explorador", "Onda 10 em todos os mapas", Cosmetic.PIPS_STAR),
-    UNDO("undo", "Arrependido", "Use o Desfazer"),
     RICH("rich", "Economista", "Acumule 1000 SP numa partida"),
     VETERAN("veteran", "Veterano", "Jogue 10 partidas"),
     MERGES_100("merges100", "Fundidor", "Faça 100 merges no total"),
@@ -89,7 +88,6 @@ data class AchievementProgress(
     val synergy: Boolean,
     val hunterStacks: Int,
     val daily: Boolean,
-    val undo: Boolean,
     val rich: Boolean,
     val mapsAtTen: Int,
 )
@@ -114,7 +112,6 @@ object Achievements {
             Achievement.SURVIVOR -> p.mode == GameMode.SURVIVAL && p.wave >= 15
             Achievement.SPEEDSTER -> p.mode == GameMode.RUSH && p.wave >= 15
             Achievement.EXPLORER -> p.mapsAtTen >= 4
-            Achievement.UNDO -> p.undo
             Achievement.RICH -> p.rich
             Achievement.VETERAN -> p.games >= 10
             Achievement.MERGES_100 -> p.merges >= 100

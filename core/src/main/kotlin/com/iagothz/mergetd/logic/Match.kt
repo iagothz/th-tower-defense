@@ -55,10 +55,6 @@ class Match(
 
     private val trapList = mutableListOf<Trap>()
 
-    /** The last merge, while it can still be taken back. */
-    private class Undo(val from: Cell, val to: Cell, val a: Die, val b: Die, val result: Die, var left: Float)
-    private var undo: Undo? = null
-    val canUndo: Boolean get() = undo != null
     val traps: List<Trap> get() = trapList
 
     private var purchases = 0
@@ -149,27 +145,8 @@ class Match(
     fun merge(from: Cell, to: Cell): Boolean {
         if (isGameOver) return false
         val result = board.resultCell(from, to)
-        val a = board[from]
-        val b = board[to]
         if (!board.merge(from, to, deck, rng)) return false
         events += GameEvent.Merged(result, board[result]?.pips ?: 0)
-        // A clone leaves both dice in place; only a consuming merge can be undone.
-        undo = if (result == to && a != null && b != null && board[from] == null) {
-            Undo(from, to, a, b, board[to]!!, Balance.UNDO_WINDOW)
-        } else {
-            null
-        }
-        return true
-    }
-
-    /** Puts the two dice of the last merge back, if it is recent and its result is still where it landed. */
-    fun undoMerge(): Boolean {
-        val u = undo ?: return false
-        undo = null
-        if (isGameOver || board[u.to] !== u.result || board[u.from] != null) return false
-        board[u.from] = u.a
-        board[u.to] = u.b
-        events += GameEvent.Unmerged(u.from, u.to)
         return true
     }
 
@@ -288,10 +265,6 @@ class Match(
     }
 
     private fun step(dt: Float) {
-        undo?.let {
-            it.left -= dt
-            if (it.left <= 0f) undo = null
-        }
         updateSpawner(dt)
         auras(dt)
         moveEnemies(dt)

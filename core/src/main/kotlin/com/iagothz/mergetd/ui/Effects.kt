@@ -156,13 +156,8 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
                     pops[e.cell] = 0f
                     drops[e.cell] = 0f
                 }
-                is GameEvent.Unmerged -> {
-                    pops[e.from] = 0f
-                    pops[e.to] = 0f
-                }
                 is GameEvent.Merged -> {
                     pops[e.cell] = 0f
-                    pulses["undo"] = 0f
                     // The impact waits for the sliding die to arrive.
                     val delay = slides.firstOrNull { it.to == e.cell }?.let { SLIDE_TIME - it.age } ?: 0f
                     if (delay > 0f) landings[e.cell] = Landing(delay, e.pips) else land(e.cell, e.pips)

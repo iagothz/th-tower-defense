@@ -6,8 +6,8 @@ import com.iagothz.mergetd.logic.GameEvent
 import com.iagothz.mergetd.logic.Match
 
 /**
- * One-line tips shown once ever, the first time each thing happens in a match: a wildcard bought, the first merge
- * (undo), a few buys without ever holding a die, a synergy lighting up, a die one merge from 7 pips.
+ * One-line tips shown once ever, the first time each thing happens in a match: a wildcard bought,
+ * a few buys without ever holding a die, a synergy lighting up, a die one merge from 7 pips.
  * [seen] is the persisted set; [onSeen] is called whenever it grows.
  */
 class Hints(private val shown: MutableSet<String>, private val onSeen: (Set<String>) -> Unit = {}) {
@@ -39,7 +39,6 @@ class Hints(private val shown: MutableSet<String>, private val onSeen: (Set<Stri
                     if (t != null && (t.wildcard || t == DieType.CLONE)) want("wildcard")
                     if (buys >= HOLD_AFTER && !held) want("hold")
                 }
-                is GameEvent.Merged -> want("undo")
                 else -> Unit
             }
         }
@@ -70,7 +69,6 @@ class Hints(private val shown: MutableSet<String>, private val onSeen: (Set<Stri
         const val HOLD_AFTER = 3
         val TEXTS = linkedMapOf(
             "wildcard" to "Um coringa! Ele combina com qualquer dado de mesmos pips.",
-            "undo" to "Errou o merge? Desfazer aparece por 3 s embaixo do tabuleiro.",
             "hold" to "Segure um dado parado para ver o que ele faz e quanto bate.",
             "synergy" to "Sinergia ativa! Os dois tipos no tabuleiro ganham um bônus.",
             "seven" to "Mais um merge e esse dado chega a 7 pips, com uma habilidade nova.",

@@ -30,7 +30,7 @@ Compre dados com SP, arraste dois iguais um sobre o outro e eles viram um dado m
 • 7 chefes com truques próprios, ondas especiais, elites e tesouros.
 • Mutadores para quem quer mais: inimigos mais rápidos, mais resistentes, mais numerosos.
 • Desafio do dia e desafio da semana, iguais para todo mundo.
-• Nível de conta com XP, três missões por dia e 20 conquistas que destravam molduras, céus e pips.
+• Nível de conta com XP, três missões por dia e 19 conquistas que destravam molduras, céus e pips.
 • Desbloqueie um dado novo a cada nível e suba o nível dos seus dados com as cartas de cada partida.
 • Código de partida: mande para um amigo jogar exatamente a mesma partida.
 • Histórico, estatísticas e enciclopédia de inimigos.

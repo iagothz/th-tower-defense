@@ -18,15 +18,14 @@ class AchievementsTest {
         synergy: Boolean = false,
         hunterStacks: Int = 0,
         daily: Boolean = false,
-        undo: Boolean = false,
         rich: Boolean = false,
         mapsAtTen: Int = 0,
-    ) = AchievementProgress(wave, mode, kills, bosses, merges, games, maxPips, synergy, hunterStacks, daily, undo, rich, mapsAtTen)
+    ) = AchievementProgress(wave, mode, kills, bosses, merges, games, maxPips, synergy, hunterStacks, daily, rich, mapsAtTen)
 
     @Test
-    fun twentyAchievementsWithUniqueIdsAndRealCosmetics() {
-        assertEquals(20, Achievement.entries.size)
-        assertEquals(20, Achievement.entries.map { it.id }.toSet().size)
+    fun nineteenAchievementsWithUniqueIdsAndRealCosmetics() {
+        assertEquals(19, Achievement.entries.size)
+        assertEquals(19, Achievement.entries.map { it.id }.toSet().size)
         for (a in Achievement.entries) assertTrue(a.title.isNotBlank() && a.description.isNotBlank(), "$a")
         val cosmetics = Achievement.entries.mapNotNull { it.unlocks }
         assertEquals(cosmetics.size, cosmetics.toSet().size, "each cosmetic is unlocked by one achievement")
@@ -56,8 +55,8 @@ class AchievementsTest {
 
     @Test
     fun flagsFromTheMatchEarnTheRest() {
-        val e = Achievements.earned(progress(maxPips = 7, synergy = true, hunterStacks = 50, daily = true, undo = true, rich = true, mapsAtTen = GameMap.entries.size, games = 10, merges = 100))
-        for (a in listOf(Achievement.SEVEN_PIPS, Achievement.SYNERGY, Achievement.HUNTER_50, Achievement.DAILY, Achievement.UNDO, Achievement.RICH, Achievement.EXPLORER, Achievement.VETERAN, Achievement.MERGES_100)) {
+        val e = Achievements.earned(progress(maxPips = 7, synergy = true, hunterStacks = 50, daily = true, rich = true, mapsAtTen = GameMap.entries.size, games = 10, merges = 100))
+        for (a in listOf(Achievement.SEVEN_PIPS, Achievement.SYNERGY, Achievement.HUNTER_50, Achievement.DAILY, Achievement.RICH, Achievement.EXPLORER, Achievement.VETERAN, Achievement.MERGES_100)) {
             assertTrue(a in e, "$a")
         }
     }

@@ -20,7 +20,6 @@ class SoundPlanner {
             when (e) {
                 is GameEvent.DieBought -> names += "buy"
                 is GameEvent.Merged -> names += if (e.pips >= Balance.MAX_PIPS) "max" else "merge_${e.pips.coerceIn(2, 6)}"
-                is GameEvent.Unmerged -> names += "buy"
                 is GameEvent.PoweredUp -> names += "power"
                 is GameEvent.Killed -> names += if (e.kind.isBoss) "bosskill" else "kill"
                 is GameEvent.Leaked -> names += "leak"
