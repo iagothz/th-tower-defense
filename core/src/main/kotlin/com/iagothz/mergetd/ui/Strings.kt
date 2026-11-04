@@ -73,7 +73,7 @@ object S {
         "Sinergias do deck: nenhuma ainda (veja os pares na descrição de cada dado)" to
             "Deck synergies: none yet (each die's description lists its pairs)",
         // HUD and match
-        "Comprar (%d)" to "Buy (%d)", "Desfazer" to "Undo", "Continuar" to "Resume", "Reiniciar" to "Restart", "Sair" to "Quit",
+        "Desfazer" to "Undo", "Continuar" to "Resume", "Reiniciar" to "Restart", "Sair" to "Quit",
         "Sim" to "Yes", "Não" to "No", "Pausa" to "Paused", "Reiniciar a partida?" to "Restart the match?",
         "Sair da partida?" to "Quit the match?", "O progresso desta partida será perdido." to "This match's progress will be lost.",
         "Pular" to "Skip", "MAX" to "MAX", "Nv%d" to "Lv%d",
@@ -86,7 +86,7 @@ object S {
         "pip" to "pip", "pips" to "pips", " · %d stacks" to " · %d stacks", "%s · %d %s%s" to "%s · %d %s%s",
         "Dano %s  ·  a cada %s s  ·  Nv%d" to "Damage %s  ·  every %s s  ·  Lv%d", "7 pips: %s" to "7 pips: %s",
         // Tutorial
-        "Toque em Comprar para colocar um dado no tabuleiro." to "Tap Buy to put a die on the board.",
+        "Toque numa célula vazia para comprar um dado ali." to "Tap an empty cell to buy a die there.",
         "Arraste um dado sobre outro do mesmo tipo e com os mesmos pips para juntar os dois." to
             "Drag a die onto another of the same type and pips to merge them.",
         "Gaste SP num power-up para fortalecer todos os dados daquele tipo." to "Spend SP on a power-up to strengthen every die of that type.",
@@ -125,7 +125,7 @@ object S {
         "Lento, com muita vida." to "Slow, with lots of HP.", "Cura os inimigos ao redor." to "Heals the enemies around it.",
         "Ignora lentidão, atordoamento, empurrão e armadilhas." to "Ignores slows, stuns, pushes and traps.",
         "Um coringa! Ele combina com qualquer dado de mesmos pips." to "A wildcard! It merges with any die of the same pips.",
-        "Errou o merge? Desfazer aparece por 3 s ao lado de Comprar." to "Wrong merge? Undo shows for 3 s next to Buy.",
+        "Errou o merge? Desfazer aparece por 3 s embaixo do tabuleiro." to "Wrong merge? Undo shows for 3 s under the board.",
         "Segure um dado parado para ver o que ele faz e quanto bate." to "Hold a die still to see what it does and how hard it hits.",
         "Sinergia ativa! Os dois tipos no tabuleiro ganham um bônus." to "Synergy on! Both types on the board get a bonus.",
         "Mais um merge e esse dado chega a 7 pips, com uma habilidade nova." to "One more merge and that die hits 7 pips, with a new ability.",

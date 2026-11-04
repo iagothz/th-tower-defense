@@ -65,8 +65,8 @@ class MatchScreen(
     /** Simulation speed multiplier: the 2x button, or dev keys up to 4x. */
     private var speed = 1
 
-    private val buy = Button(Rectangle(160f, 320f, 400f, 100f), "")
-    private val undo = Button(Rectangle(572f, 320f, 124f, 100f), S["Desfazer"], color = Skin.PANEL)
+    /** Dice are bought by tapping an empty cell; Undo takes the row under the board while it is available. */
+    private val undo = Button(Rectangle(160f, 320f, 400f, 100f), S["Desfazer"], color = Skin.PANEL)
     private val speedButton = Button(Rectangle(528f, 1182f, 76f, 56f), "1x", color = Skin.PANEL)
     private val pauseButton = Button(Rectangle(616f, 1182f, 84f, 56f), "", color = Skin.PANEL)
     private val powerButtons = match.deck.mapIndexed { i, t ->
@@ -78,7 +78,7 @@ class MatchScreen(
     private val yes = Button(Rectangle(160f, 560f, 400f, 100f), S["Sim"], color = DANGER)
     private val no = Button(Rectangle(160f, 690f, 400f, 100f), S["Não"])
     private val skipTutorial = Button(Rectangle(540f, 1080f, 140f, 56f), S["Pular"], color = Skin.PANEL)
-    private val allButtons = listOf(buy, undo, speedButton, pauseButton, resume, restart, quit, yes, no, skipTutorial) + powerButtons.map { it.second }
+    private val allButtons = listOf(undo, speedButton, pauseButton, resume, restart, quit, yes, no, skipTutorial) + powerButtons.map { it.second }
 
     override val skyMap get() = match.map
 
@@ -156,7 +156,6 @@ class MatchScreen(
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         renderer.drawShapes(match, drag, effects)
         drawVignette(effects.vignetteAlpha(), effects.vignetteColor())
-        buy.drawShape(shapes)
         if (match.canUndo) undo.drawShape(shapes)
         speedButton.drawShape(shapes)
         pauseButton.drawShape(shapes)
@@ -191,8 +190,8 @@ class MatchScreen(
             batch.textCentered(game.smallFont, "DEV ${speed}x  N B S L H K F", 360f, 1260f)
             game.smallFont.color = Color.WHITE
         }
-        buy.drawText(batch, game.font)
-        if (match.canUndo) undo.drawText(batch, game.smallFont)
+        drawPrices(batch)
+        if (match.canUndo) undo.drawText(batch, game.font)
         speedButton.drawText(batch, game.font)
         for ((t, b) in powerButtons) {
             val cx = b.rect.x + b.rect.width / 2
@@ -268,7 +267,7 @@ class MatchScreen(
         val shapes = game.shapes
         val pulse = 0.5f + 0.5f * kotlin.math.sin(game.clock * 5f)
         val target: Rectangle? = when (step.target) {
-            Tutorial.Target.BUY -> buy.rect
+            Tutorial.Target.BUY -> match.board.emptyCells().firstOrNull()?.let { cellRect(it) } ?: MatchRenderer.BOARD
             Tutorial.Target.BOARD -> MatchRenderer.BOARD
             Tutorial.Target.POWER -> POWER_ROW
             null -> null
@@ -337,10 +336,6 @@ class MatchScreen(
         if (f == f.toInt().toFloat()) "${f.toInt()}" else "%.2f".format(f).trimEnd('0').trimEnd('.', ',').replace('.', ',')
 
     private fun refreshButtons() {
-        buy.text = S.f("Comprar (%d)", match.buyCost)
-        buy.enabled = match.canBuy()
-        // Breathes while you can afford a die.
-        buy.scale = if (buy.enabled && !paused) 1f + 0.02f + 0.02f * sin(clock * 6f) else 1f
         speedButton.text = "${speed}x"
         undo.scale = 1f - 0.3f * effects.pulse("undo")
         for ((t, b) in powerButtons) {
@@ -373,7 +368,7 @@ class MatchScreen(
     private fun pauseButtons(): List<Button> = if (confirm != null) listOf(no, yes) else listOf(resume, restart, quit)
 
     private fun buttonAt(p: Vec2): Button? {
-        val visible = if (paused) pauseButtons() else listOf(buy, speedButton, pauseButton) + powerButtons.map { it.second } +
+        val visible = if (paused) pauseButtons() else listOf(speedButton, pauseButton) + powerButtons.map { it.second } +
             listOfNotNull(undo.takeIf { match.canUndo }) +
             listOfNotNull(skipTutorial.takeIf { tutorial.step != null && tutorial.step != Tutorial.Step.DONE })
         return visible.firstOrNull { it.contains(p.x, p.y) }
@@ -387,14 +382,45 @@ class MatchScreen(
             return
         }
         if (!paused) {
+            // An empty cell is the shop: tapping it buys a die right there, or says no when SP is short.
+            val cell = Layout.cellAt(p)
+            if (cell != null && match.board[cell] == null) {
+                if (!match.buyDie(cell)) {
+                    effects.hudPulse("buy")
+                    game.sfx.play(setOf("deny"))
+                }
+                return
+            }
             // A tap on something you can't afford says no instead of doing nothing.
-            val denied = (listOf(buy) + powerButtons.map { it.second }).firstOrNull { !it.enabled && it.rect.contains(p.x, p.y) }
+            val denied = powerButtons.map { it.second }.firstOrNull { !it.enabled && it.rect.contains(p.x, p.y) }
             if (denied != null) {
                 denied.deny()
                 game.sfx.play(setOf("deny"))
             }
         }
         buttonTap.press(buttonAt(p))
+    }
+
+    private fun cellRect(cell: Cell): Rectangle {
+        val c = Layout.cellCenter(cell)
+        return Rectangle(c.x - Layout.CELL / 2, c.y - Layout.CELL / 2, Layout.CELL, Layout.CELL)
+    }
+
+    /** The price of the next die on every empty cell: gold while affordable, grey otherwise, bigger for a moment after a refused tap. */
+    private fun drawPrices(batch: com.badlogic.gdx.graphics.g2d.SpriteBatch) {
+        if (match.isGameOver) return
+        val affordable = match.sp >= match.buyCost
+        val font = game.smallFont
+        val scale = 1f + 0.35f * effects.pulse("buy")
+        font.data.setScale(scale)
+        font.color = if (affordable) Skin.GOLD else PRICE_OFF
+        val text = match.buyCost.toString()
+        for (cell in match.board.emptyCells()) {
+            val c = Layout.cellCenter(cell)
+            batch.textCentered(font, text, c.x, c.y)
+        }
+        font.data.setScale(1f)
+        font.color = Color.WHITE
     }
 
     override fun onDrag(p: Vec2) {
@@ -426,7 +452,6 @@ class MatchScreen(
                 Confirm.QUIT -> abandon(restartAfter = false)
                 null -> Unit
             }
-            buy -> match.buyDie()
             undo -> match.undoMerge()
             speedButton -> speed = if (speed == 1) 2 else 1
             skipTutorial -> tutorial.skip()
@@ -518,6 +543,8 @@ class MatchScreen(
         const val ZOOM_IN = 0.05f
         val DANGER = Color(0.7f, 0.25f, 0.25f, 1f)
         val KEY_COLOR = Color(0.75f, 0.77f, 0.85f, 1f)
+        /** Price on an empty cell while SP is short. */
+        val PRICE_OFF = Color(0.42f, 0.44f, 0.52f, 1f)
         /** Die info card, in the sky above the board. */
         val INFO = Rectangle(24f, 840f, 672f, 270f)
         /** One-time hint strip, just above the board. */

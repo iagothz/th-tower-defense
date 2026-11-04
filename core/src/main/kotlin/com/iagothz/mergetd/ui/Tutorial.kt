@@ -8,7 +8,7 @@ class Tutorial(active: Boolean = true) {
     enum class Target { BUY, BOARD, POWER }
 
     enum class Step(val text: String, val target: Target?) {
-        BUY("Toque em Comprar para colocar um dado no tabuleiro.", Target.BUY),
+        BUY("Toque numa célula vazia para comprar um dado ali.", Target.BUY),
         MERGE("Arraste um dado sobre outro do mesmo tipo e com os mesmos pips para juntar os dois.", Target.BOARD),
         POWER("Gaste SP num power-up para fortalecer todos os dados daquele tipo.", Target.POWER),
         DONE("Pronto! Segure um dado para ver o que ele faz. Boa sorte.", null),

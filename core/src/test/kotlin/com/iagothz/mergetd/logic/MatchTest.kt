@@ -53,6 +53,33 @@ class MatchTest {
     }
 
     @Test
+    fun buyingAtACellPutsTheDieThere() {
+        val m = match()
+        val cell = Cell(2, 1)
+        assertTrue(m.canBuyAt(cell))
+        assertTrue(m.buyDie(cell))
+        assertEquals(1, m.board[cell]?.pips)
+        assertTrue(m.board[cell]!!.type in m.deck)
+        assertEquals(150 - 10, m.sp)
+        assertEquals(20, m.buyCost)
+        assertEquals(GameEvent.DieBought(cell), m.drainEvents().last { it is GameEvent.DieBought })
+    }
+
+    @Test
+    fun buyingAtAnOccupiedCellOrWithoutSpDoesNothing() {
+        val m = match()
+        val cell = Cell(0, 0)
+        assertTrue(m.buyDie(cell))
+        assertFalse(m.canBuyAt(cell))
+        assertFalse(m.buyDie(cell))
+        assertEquals(140, m.sp)
+        m.sp = 5
+        assertFalse(m.canBuyAt(Cell(1, 1)))
+        assertFalse(m.buyDie(Cell(1, 1)))
+        assertEquals(5, m.sp)
+    }
+
+    @Test
     fun buyOnFullBoardKeepsSp() {
         val m = match()
         m.fill()

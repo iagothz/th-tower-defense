@@ -125,9 +125,18 @@ class Match(
 
     fun canBuy(): Boolean = !isGameOver && sp >= buyCost && board.emptyCells().isNotEmpty()
 
+    /** Whether a bought die could go on [cell]: the match affords one and the cell is empty. */
+    fun canBuyAt(cell: Cell): Boolean = !isGameOver && sp >= buyCost && board[cell] == null
+
+    /** Buys a one-pip die of a random deck type on an empty cell picked at random (the bots' way). */
     fun buyDie(): Boolean {
         if (!canBuy()) return false
-        val cell = board.emptyCells().random(rng)
+        return buyDie(board.emptyCells().random(rng))
+    }
+
+    /** Buys a one-pip die of a random deck type on [cell], the player's pick. */
+    fun buyDie(cell: Cell): Boolean {
+        if (!canBuyAt(cell)) return false
         board[cell] = Die(deck.random(rng), 1)
         sp -= buyCost
         purchases++

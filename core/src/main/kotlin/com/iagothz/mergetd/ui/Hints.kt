@@ -70,7 +70,7 @@ class Hints(private val shown: MutableSet<String>, private val onSeen: (Set<Stri
         const val HOLD_AFTER = 3
         val TEXTS = linkedMapOf(
             "wildcard" to "Um coringa! Ele combina com qualquer dado de mesmos pips.",
-            "undo" to "Errou o merge? Desfazer aparece por 3 s ao lado de Comprar.",
+            "undo" to "Errou o merge? Desfazer aparece por 3 s embaixo do tabuleiro.",
             "hold" to "Segure um dado parado para ver o que ele faz e quanto bate.",
             "synergy" to "Sinergia ativa! Os dois tipos no tabuleiro ganham um bônus.",
             "seven" to "Mais um merge e esse dado chega a 7 pips, com uma habilidade nova.",
