@@ -28,7 +28,7 @@ class DieWindow(private val game: MergeTdGame, private val accountLevel: Int, pr
     private val measure = GlyphLayout()
     private val card = Rectangle()
     private val close = Rectangle()
-    private val levelUp = Button(Rectangle(), S["Subir nível"], color = LEVEL_COLOR)
+    private val levelUp = Button(Rectangle(), S["Subir nível"], style = ButtonStyle.REWARD)
     private val tap = Tap<Any>()
 
     private fun unlocked(t: DieType) = DiceUnlocks.isUnlocked(t, accountLevel)
@@ -181,6 +181,5 @@ class DieWindow(private val game: MergeTdGame, private val accountLevel: Int, pr
         const val CENTER_Y = 655f
         const val LEVEL_UP_H = 64f
         val CLOSE = Any()
-        val LEVEL_COLOR = Color(0.72f, 0.52f, 0.12f, 1f)
     }
 }

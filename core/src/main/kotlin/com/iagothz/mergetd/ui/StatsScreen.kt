@@ -11,9 +11,9 @@ import com.iagothz.mergetd.logic.Vec2
 class StatsScreen(game: MergeTdGame) : BaseScreen(game) {
     override val tab get() = Tab.SETTINGS
 
-    private val back = Button(Rectangle(474f, 124f, 206f, 80f), S["Voltar"], color = Skin.PANEL)
-    private val achievements = Button(Rectangle(40f, 124f, 206f, 80f), S["Conquistas"])
-    private val history = Button(Rectangle(257f, 124f, 206f, 80f), S["Histórico"])
+    private val back = Button(Rectangle(474f, 124f, 206f, 80f), S["Voltar"], style = ButtonStyle.SECONDARY)
+    private val achievements = Button(Rectangle(40f, 124f, 206f, 80f), S["Conquistas"], style = ButtonStyle.SECONDARY)
+    private val history = Button(Rectangle(257f, 124f, 206f, 80f), S["Histórico"], style = ButtonStyle.SECONDARY)
     private val tap = Tap<Button>()
     private val totalsPanel = Rectangle(24f, 1010f, 672f, 170f)
     private val mapsPanel = Rectangle(24f, 850f, 672f, 140f)

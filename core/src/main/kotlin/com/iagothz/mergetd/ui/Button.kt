@@ -9,12 +9,28 @@ import com.badlogic.gdx.math.Rectangle
 import kotlin.math.abs
 import kotlin.math.sin
 
+/** What a button is for, which sets its fill: one primary action per screen, danger for losing progress. */
+enum class ButtonStyle(val fill: Color) {
+    PRIMARY(Skin.PRIMARY),
+    SECONDARY(Skin.PANEL),
+    DANGER(Skin.DANGER),
+    SELECTED(Skin.SELECTED),
+    REWARD(Skin.REWARD),
+}
+
+/** [color], when set, overrides the style's fill (power-ups wear their die's colour). */
 class Button(
     val rect: Rectangle,
     var text: String,
     var enabled: Boolean = true,
-    var color: Color = Color(0.25f, 0.45f, 0.85f, 1f),
+    var style: ButtonStyle = ButtonStyle.PRIMARY,
+    var color: Color? = null,
 ) {
+    val fill: Color get() = color ?: style.fill
+
+    /** Text colour that reads on [fill]. */
+    val ink: Color get() = Skin.inkOn(fill)
+
     /** True while a finger is down on this button; it sinks and darkens. */
     var pressed = false
 
@@ -45,18 +61,18 @@ class Button(
 
     fun drawShape(shapes: ShapeRenderer) {
         update(Gdx.graphics.deltaTime)
-        val base = if (enabled) color else DISABLED
+        val base = if (enabled) fill else DISABLED
         val inset = 3f * press
-        val fill = if (press > 0f) tmp.set(base).lerp(Color.BLACK, 0.18f * press) else base
+        val shade = if (press > 0f) tmp.set(base).lerp(Color.BLACK, 0.18f * press) else base
         val w = rect.width * scale
         val h = rect.height * scale
         val x = rect.x + (rect.width - w) / 2 + shakeX()
         val y = rect.y + (rect.height - h) / 2
-        shapes.bevelRect(x + inset, y + inset, w - 2 * inset, h - 2 * inset, 16f, fill, 5f - 3f * press)
+        shapes.bevelRect(x + inset, y + inset, w - 2 * inset, h - 2 * inset, 16f, shade, 5f - 3f * press)
     }
 
     fun drawText(batch: SpriteBatch, font: BitmapFont) {
-        font.color = if (enabled) Color.WHITE else Color.LIGHT_GRAY
+        font.color = if (enabled) ink else Color.LIGHT_GRAY
         batch.textCentered(font, text, rect.x + rect.width / 2 + shakeX(), rect.y + rect.height / 2 + 2f - 2f * press)
         font.color = Color.WHITE
     }

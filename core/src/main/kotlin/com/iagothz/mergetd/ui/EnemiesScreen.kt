@@ -13,7 +13,7 @@ class EnemiesScreen(game: MergeTdGame) : BaseScreen(game) {
 
     private val rows = EnemyKind.entries.mapIndexed { i, k -> k to Rectangle(24f, 1082f - i * 55f, 672f, 50f) }
     private val panel = Rectangle(24f, 200f, 672f, 150f)
-    private val back = Button(Rectangle(160f, 124f, 400f, 80f), S["Voltar"], color = Skin.PANEL)
+    private val back = Button(Rectangle(160f, 124f, 400f, 80f), S["Voltar"], style = ButtonStyle.SECONDARY)
     private val tap = Tap<Button>()
     private var selected: EnemyKind = EnemyKind.NORMAL
 

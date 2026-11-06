@@ -12,7 +12,7 @@ class HistoryScreen(game: MergeTdGame) : BaseScreen(game) {
 
     private val records = game.save.history()
     private val rows = records.mapIndexed { i, r -> r to Rectangle(24f, 1124f - i * 48f, 672f, 44f) }
-    private val back = Button(Rectangle(160f, 120f, 400f, 80f), S["Voltar"], color = Skin.PANEL)
+    private val back = Button(Rectangle(160f, 120f, 400f, 80f), S["Voltar"], style = ButtonStyle.SECONDARY)
     private val tap = Tap<Button>()
 
     override fun draw(delta: Float) {

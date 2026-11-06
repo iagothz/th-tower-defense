@@ -17,8 +17,8 @@ class ChallengeScreen(game: MergeTdGame) : BaseScreen(game) {
     private val weekly = WeeklyChallenge.of(WeeklyChallenge.thisWeek())
     private val dailyCard = Rectangle(24f, 760f, 672f, 330f)
     private val weeklyCard = Rectangle(24f, 380f, 672f, 350f)
-    private val playDaily = Button(Rectangle(dailyCard.x + 24f, dailyCard.y + 24f, 624f, 80f), S["Jogar"], color = Color(0.55f, 0.30f, 0.75f, 1f))
-    private val playWeekly = Button(Rectangle(weeklyCard.x + 24f, weeklyCard.y + 24f, 624f, 80f), S["Jogar"], color = Color(0.75f, 0.35f, 0.30f, 1f))
+    private val playDaily = Button(Rectangle(dailyCard.x + 24f, dailyCard.y + 24f, 624f, 80f), S["Jogar"])
+    private val playWeekly = Button(Rectangle(weeklyCard.x + 24f, weeklyCard.y + 24f, 624f, 80f), S["Jogar"])
     private val buttons = listOf(playDaily, playWeekly)
     private val tap = Tap<Button>()
 

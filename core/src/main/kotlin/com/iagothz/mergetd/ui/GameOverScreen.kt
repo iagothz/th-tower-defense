@@ -32,8 +32,8 @@ class GameOverScreen(
 ) : BaseScreen(game) {
     private class Confetto(var x: Float, var y: Float, val speed: Float, val sway: Float, val color: Color, val w: Float, val h: Float)
 
-    private val menu = Button(Rectangle(370f, 40f, 310f, 100f), S["Menu"])
-    private val share = Button(Rectangle(40f, 40f, 310f, 100f), S["Compartilhar"], color = Skin.PANEL)
+    private val menu = Button(Rectangle(370f, 40f, 310f, 100f), S["Início"])
+    private val share = Button(Rectangle(40f, 40f, 310f, 100f), S["Compartilhar"], style = ButtonStyle.SECONDARY)
     private var copied = 0f
     private val tap = Tap<Button>()
     private val panel = Rectangle(70f, 300f, 580f, 480f)

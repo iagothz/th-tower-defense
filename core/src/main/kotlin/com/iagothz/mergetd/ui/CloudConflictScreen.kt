@@ -13,8 +13,8 @@ import com.iagothz.mergetd.logic.Vec2
 class CloudConflictScreen(game: MergeTdGame, private val cloudBlob: String) : BaseScreen(game) {
     private val local = Rectangle(40f, 700f, 640f, 300f)
     private val cloud = Rectangle(40f, 360f, 640f, 300f)
-    private val keepLocal = Button(Rectangle(local.x + 40f, local.y + 24f, 560f, 80f), S["Manter este"])
-    private val keepCloud = Button(Rectangle(cloud.x + 40f, cloud.y + 24f, 560f, 80f), S["Manter a nuvem"], color = Color(0.55f, 0.30f, 0.75f, 1f))
+    private val keepLocal = Button(Rectangle(local.x + 40f, local.y + 24f, 560f, 80f), S["Manter este"], style = ButtonStyle.SECONDARY)
+    private val keepCloud = Button(Rectangle(cloud.x + 40f, cloud.y + 24f, 560f, 80f), S["Manter a nuvem"], style = ButtonStyle.SECONDARY)
     private val tap = Tap<Button>()
     private val mine = CloudBlob.summary(game.save.export())
     private val theirs = CloudBlob.summary(cloudBlob)

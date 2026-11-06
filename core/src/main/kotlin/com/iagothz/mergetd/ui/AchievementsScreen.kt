@@ -10,7 +10,7 @@ class AchievementsScreen(game: MergeTdGame) : BaseScreen(game) {
     override val tab get() = Tab.SETTINGS
 
     private val rows = Achievement.entries.mapIndexed { i, a -> a to Rectangle(24f, 1120f - i * 47f, 672f, 44f) }
-    private val back = Button(Rectangle(160f, 124f, 400f, 80f), S["Voltar"], color = Skin.PANEL)
+    private val back = Button(Rectangle(160f, 124f, 400f, 80f), S["Voltar"], style = ButtonStyle.SECONDARY)
     private val tap = Tap<Button>()
 
     override fun draw(delta: Float) {

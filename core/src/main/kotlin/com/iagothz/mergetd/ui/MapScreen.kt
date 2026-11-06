@@ -26,7 +26,7 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
     }
     private val modes = GameMode.entries.mapIndexed { i, m -> m to Rectangle(24f + i * 170f, 440f, 162f, 64f) }
     private val play = Button(Rectangle(40f, 124f, 400f, 76f), S["Jogar"])
-    private val playCode = Button(Rectangle(456f, 124f, 240f, 76f), S["Jogar código"], color = Color(0.55f, 0.30f, 0.75f, 1f))
+    private val playCode = Button(Rectangle(456f, 124f, 240f, 76f), S["Jogar código"], style = ButtonStyle.SECONDARY)
     private var codeError = 0f
     private val tap = Tap<Button>()
 
@@ -55,7 +55,7 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
                 shapes.color = Skin.GOLD
                 shapes.roundedRect(r.x - 4f, r.y - 4f, r.width + 8f, r.height + 8f, 18f)
             }
-            shapes.bevelRect(r.x, r.y, r.width, r.height, 14f, if (m == mode) MODE_ON else Skin.PANEL)
+            shapes.bevelRect(r.x, r.y, r.width, r.height, 14f, if (m == mode) Skin.SELECTED else Skin.PANEL)
         }
         for ((m, r) in mutatorChips) shapes.bevelRect(r.x, r.y, r.width, r.height, 14f, if (m in mutators) MUTATOR_ON else Skin.PANEL)
         play.drawShape(shapes)
@@ -168,6 +168,5 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
     private companion object {
         val MUTATOR_ON = Color(0.70f, 0.30f, 0.30f, 1f)
         const val PREVIEW_SCALE = 0.15f
-        val MODE_ON = Color(0.55f, 0.30f, 0.75f, 1f)
     }
 }

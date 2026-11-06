@@ -14,16 +14,16 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
 
     private val soundSlider = Rectangle(60f, 980f, 600f, 40f)
     private val musicSlider = Rectangle(60f, 860f, 600f, 40f)
-    private val vibration = Button(Rectangle(60f, 740f, 292f, 80f), "", color = Skin.PANEL)
-    private val motion = Button(Rectangle(368f, 740f, 292f, 80f), "", color = Skin.PANEL)
-    private val largeText = Button(Rectangle(60f, 644f, 600f, 80f), "", color = Skin.PANEL)
-    private val languages = Language.entries.mapIndexed { i, l -> l to Button(Rectangle(60f + i * 204f, 500f, 192f, 80f), S[l.title], color = Skin.PANEL) }
-    private val stats = Button(Rectangle(40f, 124f, 206f, 80f), S["Estatísticas"], color = Skin.PANEL)
-    private val achievements = Button(Rectangle(257f, 124f, 206f, 80f), S["Conquistas"], color = Skin.PANEL)
-    private val history = Button(Rectangle(474f, 124f, 206f, 80f), S["Histórico"], color = Skin.PANEL)
+    private val vibration = Button(Rectangle(60f, 740f, 292f, 80f), "", style = ButtonStyle.SECONDARY)
+    private val motion = Button(Rectangle(368f, 740f, 292f, 80f), "", style = ButtonStyle.SECONDARY)
+    private val largeText = Button(Rectangle(60f, 644f, 600f, 80f), "", style = ButtonStyle.SECONDARY)
+    private val languages = Language.entries.mapIndexed { i, l -> l to Button(Rectangle(60f + i * 204f, 500f, 192f, 80f), S[l.title], style = ButtonStyle.SECONDARY) }
+    private val stats = Button(Rectangle(40f, 124f, 206f, 80f), S["Estatísticas"], style = ButtonStyle.SECONDARY)
+    private val achievements = Button(Rectangle(257f, 124f, 206f, 80f), S["Conquistas"], style = ButtonStyle.SECONDARY)
+    private val history = Button(Rectangle(474f, 124f, 206f, 80f), S["Histórico"], style = ButtonStyle.SECONDARY)
     private val links = listOf(stats, achievements, history)
     /** The cloud row's button; its text follows the controller's state and it is drawn only when there is one. */
-    private val cloudButton = Button(Rectangle(468f, 352f, 192f, 56f), "", color = Skin.PANEL)
+    private val cloudButton = Button(Rectangle(468f, 352f, 192f, 56f), "", style = ButtonStyle.SECONDARY)
     private val tap = Tap<Button>()
     private var dragging: Rectangle? = null
 
@@ -43,7 +43,7 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
         motion.drawShape(shapes)
         largeText.drawShape(shapes)
         for ((l, b) in languages) {
-            b.color = if (l == game.save.language) ON else Skin.PANEL
+            b.style = if (l == game.save.language) ButtonStyle.SELECTED else ButtonStyle.SECONDARY
             b.pressed = tap.current === b
             b.drawShape(shapes)
         }
@@ -160,9 +160,5 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
                 game.showSettings()
             }
         }
-    }
-
-    private companion object {
-        val ON = Color(0.55f, 0.30f, 0.75f, 1f)
     }
 }

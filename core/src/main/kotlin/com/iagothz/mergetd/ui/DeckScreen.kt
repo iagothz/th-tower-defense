@@ -23,10 +23,10 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     private val tiles = DieType.entries.mapIndexed { i, t ->
         t to Rectangle(GRID_X + (i % COLS) * STEP_X, GRID_TOP - TILE - (i / COLS) * STEP_Y, TILE, TILE)
     }
-    private val enemies = Button(Rectangle(24f, 1190f, 190f, 56f), S["Inimigos"], color = Skin.PANEL)
+    private val enemies = Button(Rectangle(24f, 1190f, 190f, 56f), S["Inimigos"], style = ButtonStyle.SECONDARY)
     /** Three preset slots (tap loads, hold saves) and a random deck button. */
-    private val presets = List(PRESETS) { Button(Rectangle(506f + it * 66f, 1190f, 60f, 56f), "${it + 1}", color = Skin.PANEL) }
-    private val random = Button(Rectangle(440f, 1190f, 60f, 56f), "?", color = Skin.PANEL)
+    private val presets = List(PRESETS) { Button(Rectangle(506f + it * 66f, 1190f, 60f, 56f), "${it + 1}", style = ButtonStyle.SECONDARY) }
+    private val random = Button(Rectangle(440f, 1190f, 60f, 56f), "?", style = ButtonStyle.SECONDARY)
     private val hold = LongPress(holdSeconds = 0.6f)
     private var holdingPreset: Int? = null
     private var toast = ""

@@ -69,17 +69,17 @@ class MatchScreen(
     private var speed = 1
 
     /** Dice are bought by tapping an empty cell, so the HUD has no buy button. */
-    private val speedButton = Button(Rectangle(528f, 1182f, 76f, 56f), "1x", color = Skin.PANEL)
-    private val pauseButton = Button(Rectangle(616f, 1182f, 84f, 56f), "", color = Skin.PANEL)
+    private val speedButton = Button(Rectangle(528f, 1182f, 76f, 56f), "1x", style = ButtonStyle.SECONDARY)
+    private val pauseButton = Button(Rectangle(616f, 1182f, 84f, 56f), "", style = ButtonStyle.SECONDARY)
     private val powerButtons = match.deck.mapIndexed { i, t ->
         t to Button(Rectangle(26f + i * 136f, 50f, 124f, 120f), "", color = Skin.color(t))
     }
     private val resume = Button(Rectangle(160f, 780f, 400f, 100f), S["Continuar"])
-    private val restart = Button(Rectangle(160f, 650f, 400f, 100f), S["Reiniciar"], color = Skin.PANEL)
-    private val quit = Button(Rectangle(160f, 520f, 400f, 100f), S["Sair"], color = Skin.DANGER)
-    private val yes = Button(Rectangle(160f, 560f, 400f, 100f), S["Sim"], color = Skin.DANGER)
+    private val restart = Button(Rectangle(160f, 650f, 400f, 100f), S["Reiniciar"], style = ButtonStyle.SECONDARY)
+    private val quit = Button(Rectangle(160f, 520f, 400f, 100f), S["Sair"], style = ButtonStyle.DANGER)
+    private val yes = Button(Rectangle(160f, 560f, 400f, 100f), S["Sim"], style = ButtonStyle.DANGER)
     private val no = Button(Rectangle(160f, 690f, 400f, 100f), S["Não"])
-    private val skipTutorial = Button(Rectangle(540f, 1080f, 140f, 56f), S["Pular"], color = Skin.PANEL)
+    private val skipTutorial = Button(Rectangle(540f, 1080f, 140f, 56f), S["Pular"], style = ButtonStyle.SECONDARY)
     private val allButtons = listOf(speedButton, pauseButton, resume, restart, quit, yes, no, skipTutorial) + powerButtons.map { it.second }
 
     override val skyMap get() = match.map
