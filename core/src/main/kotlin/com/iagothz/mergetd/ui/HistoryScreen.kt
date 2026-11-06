@@ -56,4 +56,10 @@ class HistoryScreen(game: MergeTdGame, val goBack: () -> Unit) : BaseScreen(game
     override fun onTouchUp(p: Vec2) {
         if (tap.release(header.takeIf { it.backHit(p) }) === header) goBack()
     }
+
+    override fun backState() = BackState(ScreenKind.SUBSCREEN)
+
+    override fun perform(a: BackAction) {
+        if (a == BackAction.TO_PARENT) goBack()
+    }
 }

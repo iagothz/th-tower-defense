@@ -552,4 +552,21 @@ class MatchScreen(
         val POWER_ROW = Rectangle(26f, 50f, 668f, 120f)
         val tmpColor = Color()
     }
+
+    /** The defeat animation can't be interrupted; otherwise back pauses, resumes or drops the confirmation. */
+    override fun backState() =
+        if (ending != null) BackState(ScreenKind.BLOCKING)
+        else BackState(ScreenKind.MATCH, paused = paused, confirming = confirm != null)
+
+    override fun perform(a: BackAction) {
+        when (a) {
+            BackAction.OPEN_PAUSE -> {
+                paused = true
+                confirm = null
+            }
+            BackAction.RESUME -> paused = false
+            BackAction.CANCEL_CONFIRM -> confirm = null
+            else -> Unit
+        }
+    }
 }

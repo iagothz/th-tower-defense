@@ -258,4 +258,10 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         /** The toast sits in the gap between the title and the deck slots. */
         const val TOAST_Y = 1188f
     }
+
+    override fun backState() = BackState(ScreenKind.TAB, overlayOpen = window.isOpen)
+
+    override fun perform(a: BackAction) {
+        if (a == BackAction.CLOSE_OVERLAY) window.close() else super.perform(a)
+    }
 }

@@ -39,6 +39,8 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
     private var next: Screen? = null
 
     override fun create() {
+        // Back navigates inside the game (see BaseScreen.onBack) instead of closing it.
+        Gdx.input.setCatchKey(com.badlogic.gdx.Input.Keys.BACK, true)
         shapes = ShapeRenderer()
         batch = SpriteBatch()
         save = SaveData(Gdx.app.getPreferences("merge-td"))

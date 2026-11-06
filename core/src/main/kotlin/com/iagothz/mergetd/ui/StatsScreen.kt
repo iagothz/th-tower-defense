@@ -118,4 +118,10 @@ class StatsScreen(game: MergeTdGame) : BaseScreen(game) {
     fun goBack() {
         game.showSettings()
     }
+
+    override fun backState() = BackState(ScreenKind.SUBSCREEN)
+
+    override fun perform(a: BackAction) {
+        if (a == BackAction.TO_PARENT) goBack()
+    }
 }

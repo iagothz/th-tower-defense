@@ -213,4 +213,10 @@ class GameOverScreen(
         const val CHEST_STAGGER = 0.15f
         const val CHEST_POP = 0.2f
     }
+
+    override fun backState() = BackState(ScreenKind.GAME_OVER)
+
+    override fun perform(a: BackAction) {
+        if (a == BackAction.TO_HOME) game.showMenu()
+    }
 }

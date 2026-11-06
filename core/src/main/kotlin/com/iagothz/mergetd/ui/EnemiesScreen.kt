@@ -80,6 +80,12 @@ class EnemiesScreen(game: MergeTdGame) : BaseScreen(game) {
         game.showDeck()
     }
 
+    override fun backState() = BackState(ScreenKind.SUBSCREEN)
+
+    override fun perform(a: BackAction) {
+        if (a == BackAction.TO_PARENT) goBack()
+    }
+
     companion object {
         val DESCRIPTIONS = mapOf(
             EnemyKind.NORMAL to "O básico: vem em grupo.",

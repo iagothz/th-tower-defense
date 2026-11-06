@@ -75,6 +75,12 @@ class AchievementsScreen(game: MergeTdGame, val goBack: () -> Unit) : BaseScreen
         if (tap.release(header.takeIf { it.backHit(p) }) === header) goBack()
     }
 
+    override fun backState() = BackState(ScreenKind.SUBSCREEN)
+
+    override fun perform(a: BackAction) {
+        if (a == BackAction.TO_PARENT) goBack()
+    }
+
     private companion object {
         val PILL_LOCKED = Color(0.25f, 0.26f, 0.32f, 1f)
     }

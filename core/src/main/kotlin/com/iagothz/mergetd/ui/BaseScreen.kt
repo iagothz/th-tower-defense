@@ -1,6 +1,7 @@
 package com.iagothz.mergetd.ui
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.Input
 import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.ScreenAdapter
 import com.badlogic.gdx.graphics.GL20
@@ -62,7 +63,11 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
         }
 
         override fun keyDown(keycode: Int): Boolean {
-            onKey(keycode)
+            if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
+                if (!onBack()) Gdx.app.exit()
+            } else {
+                onKey(keycode)
+            }
             return true
         }
 
@@ -140,6 +145,31 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
     open fun onTouchUp(p: Vec2) {}
     open fun onTouchCancelled() {}
     open fun onKey(keycode: Int) {}
+
+    /** Where this screen stands for the back key; tabs and Início by default, anything without the bar blocks. */
+    open fun backState(): BackState = BackState(
+        when (tab) {
+            null -> ScreenKind.BLOCKING
+            Tab.HOME -> ScreenKind.HOME
+            else -> ScreenKind.TAB
+        },
+    )
+
+    /** Carries out a back action; screens with overlays, parents or a pause add theirs. */
+    open fun perform(a: BackAction) {
+        if (a == BackAction.TO_HOME) game.showTab(Tab.HOME)
+    }
+
+    /** The back key: drops the touch in progress, then follows [backAction]. False means leave the app. */
+    fun onBack(): Boolean {
+        gesture.cancel()
+        nav?.pressed = null
+        onBar = false
+        onTouchCancelled()
+        val a = backAction(backState())
+        perform(a)
+        return a != BackAction.EXIT
+    }
 
     private companion object {
         val NO_SHAKE = Vec2(0f, 0f)
