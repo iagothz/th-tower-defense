@@ -16,34 +16,28 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
 
     private val soundSlider = Rectangle(60f, 980f, 600f, 40f)
     private val musicSlider = Rectangle(60f, 860f, 600f, 40f)
-    private val vibration = Button(Rectangle(60f, 740f, 292f, 80f), "", style = ButtonStyle.SECONDARY)
-    private val motion = Button(Rectangle(368f, 740f, 292f, 80f), "", style = ButtonStyle.SECONDARY)
-    private val largeText = Button(Rectangle(60f, 644f, 600f, 80f), "", style = ButtonStyle.SECONDARY)
-    private val languages = Language.entries.mapIndexed { i, l -> l to Button(Rectangle(60f + i * 204f, 500f, 192f, 80f), S[l.title], style = ButtonStyle.SECONDARY) }
+    private val reduced = { game.save.reduceMotion }
+    private val vibration = Toggle(Rectangle(60f, 748f, 600f, 72f), S["Vibração"], game.save.vibrationOn, reduced)
+    private val motion = Toggle(Rectangle(60f, 664f, 600f, 72f), S["Reduzir movimento"], game.save.reduceMotion, reduced)
+    private val largeText = Toggle(Rectangle(60f, 580f, 600f, 72f), S["Texto grande"], game.save.largeText, reduced)
+    private val toggles = listOf(vibration, motion, largeText)
+    private val languages = Language.entries.mapIndexed { i, l -> l to Button(Rectangle(60f + i * 204f, 432f, 192f, 80f), S[l.title], style = ButtonStyle.SECONDARY) }
     private val stats = Button(Rectangle(40f, 124f, 206f, 80f), S["Estatísticas"], style = ButtonStyle.SECONDARY)
     private val achievements = Button(Rectangle(257f, 124f, 206f, 80f), S["Conquistas"], style = ButtonStyle.SECONDARY)
     private val history = Button(Rectangle(474f, 124f, 206f, 80f), S["Histórico"], style = ButtonStyle.SECONDARY)
     private val links = listOf(stats, achievements, history)
     /** The cloud row's button; its text follows the controller's state and it is drawn only when there is one. */
     private val cloudButton = Button(Rectangle(468f, 352f, 192f, 56f), "", style = ButtonStyle.SECONDARY)
-    private val tap = Tap<Button>()
+    private val tap = Tap<Any>()
     private var dragging: Rectangle? = null
 
     override fun draw(delta: Float) {
         links.forEach { it.pressed = tap.current === it }
-        vibration.pressed = tap.current === vibration
-        motion.pressed = tap.current === motion
-        largeText.pressed = tap.current === largeText
-        vibration.text = "${S["Vibrar"]}: ${S[if (game.save.vibrationOn) "sim" else "não"]}"
-        motion.text = "${S["Reduzir movimento"]}: ${S[if (game.save.reduceMotion) "sim" else "não"]}"
-        largeText.text = "${S["Texto grande"]}: ${S[if (game.save.largeText) "sim" else "não"]}"
         val shapes = game.shapes
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         drawSlider(soundSlider, game.save.soundVolume)
         drawSlider(musicSlider, game.save.musicVolume)
-        vibration.drawShape(shapes)
-        motion.drawShape(shapes)
-        largeText.drawShape(shapes)
+        toggles.forEach { it.drawShapes(shapes) }
         for ((l, b) in languages) {
             b.style = if (l == game.save.language) ButtonStyle.SELECTED else ButtonStyle.SECONDARY
             b.pressed = tap.current === b
@@ -61,11 +55,9 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
         header.drawText(game.batch, game)
         label(S["Som"], game.save.soundVolume, soundSlider)
         label(S["Música"], game.save.musicVolume, musicSlider)
-        vibration.drawText(game.batch, game.smallFont)
-        motion.drawText(game.batch, game.smallFont)
-        largeText.drawText(game.batch, game.smallFont)
+        toggles.forEach { it.drawText(game.batch, game.smallFont) }
         game.smallFont.color = Skin.MUTED
-        game.batch.textLeft(game.smallFont, S["Idioma"], 60f, 610f)
+        game.batch.textLeft(game.smallFont, S["Idioma"], 60f, 540f)
         game.smallFont.color = Color.WHITE
         for ((_, b) in languages) b.drawText(game.batch, game.smallFont)
         val cloud = game.cloud.status
@@ -112,7 +104,7 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
 
     private fun cloudLabel(): String? = CloudText.button(game.cloud.status)?.let { S[it] }
 
-    private fun buttonAt(p: Vec2) = (listOf(vibration, motion, largeText) + links + languages.map { it.second } + listOfNotNull(cloudButton.takeIf { cloudLabel() != null })).firstOrNull { it.contains(p.x, p.y) }
+    private fun buttonAt(p: Vec2): Any? = toggles.firstOrNull { it.contains(p.x, p.y) } ?: (links + languages.map { it.second } + listOfNotNull(cloudButton.takeIf { cloudLabel() != null })).firstOrNull { it.contains(p.x, p.y) }
 
     override fun onTouchDown(p: Vec2) {
         dragging = sliderAt(p)?.also { setSlider(it, p) }
@@ -146,12 +138,17 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
             achievements -> game.showAchievements { game.showSettings() }
             history -> game.showHistory { game.showSettings() }
             vibration -> {
-                game.save.vibrationOn = !game.save.vibrationOn
+                vibration.toggle()
+                game.save.vibrationOn = vibration.on
                 if (game.save.vibrationOn) game.sfx.play(setOf("boss"))
             }
-            motion -> game.save.reduceMotion = !game.save.reduceMotion
+            motion -> {
+                motion.toggle()
+                game.save.reduceMotion = motion.on
+            }
             largeText -> {
-                game.save.largeText = !game.save.largeText
+                largeText.toggle()
+                game.save.largeText = largeText.on
                 game.buildFonts()
                 game.showSettings()
             }

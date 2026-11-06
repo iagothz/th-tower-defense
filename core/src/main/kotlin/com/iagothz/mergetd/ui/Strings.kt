@@ -43,7 +43,7 @@ object S {
         "Configurações" to "Settings", "Junte dados iguais, segure as ondas" to "Merge matching dice, hold the waves",
         "%s · %s: recorde %d" to "%s · %s: best %d",
         // Settings
-        "Som" to "Sound", "Música" to "Music", "Vibrar" to "Vibration", "Idioma" to "Language", "sim" to "on", "não" to "off",
+        "Som" to "Sound", "Música" to "Music", "Vibrar" to "Vibration", "Vibração" to "Vibration", "Idioma" to "Language", "sim" to "on", "não" to "off",
         "Automático" to "Automatic", "Português" to "Portuguese", "English" to "English",
         "Privacidade: este jogo funciona sem internet, não coleta nem envia nenhum dado." to
             "Privacy: this game works offline and collects or sends no data at all.",
