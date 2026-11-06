@@ -92,6 +92,8 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
 
     fun showEnemies() = switchTo(EnemiesScreen(this))
 
+    fun showDice() = switchTo(DiceScreen(this))
+
     fun showMap() = switchTo(MapScreen(this))
 
     fun showStats() = switchTo(StatsScreen(this))
