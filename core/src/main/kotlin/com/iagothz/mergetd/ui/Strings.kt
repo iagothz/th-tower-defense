@@ -68,8 +68,8 @@ object S {
         "Fácil" to "Easy", "Difícil" to "Hard",
         // Deck
         "nível %d · %d partidas" to "level %d · %d games", "Progresso da nuvem aplicado" to "Cloud progress applied",
-        "arraste %d" to "drag %d", "Arraste para fora para tirar do deck" to "Drag it out to take it off the deck",
-        "Arraste até um espaço do deck para usar" to "Drag it onto a deck slot to use it", "Sinergias do deck: %s" to "Deck synergies: %s",
+        "arraste %d" to "drag %d",
+        "Sinergias do deck: %s" to "Deck synergies: %s",
         "Sinergias do deck: nenhuma ainda (veja os pares na descrição de cada dado)" to
             "Deck synergies: none yet (each die's description lists its pairs)",
         // HUD and match
@@ -180,7 +180,7 @@ object S {
         "%s (com %s): %s" to "%s (with %s): %s",
         // Die info rows and texts
         "Alvo" to "Target", "Dano" to "Damage", "Velocidade" to "Speed", "Efeito" to "Effect", "7 pips" to "7 pips", "Sinergia" to "Synergy", "Power-up" to "Power-up",
-        "Dados" to "Dice", "Toque num dado para ver tudo" to "Tap a die to see everything",
+        "Toque num dado para ver tudo · arraste para montar o deck" to "Tap a die to see everything · drag to build the deck",
         "1 → %d pips" to "1 → %d pips", "por mina, %s" to "per mine, %s", "não ataca" to "doesn't attack", "entre ataques" to "between attacks",
         "Nenhum" to "None", "Mais vida" to "Most HP", "o mais resistente" to "the toughest one", "Todos" to "All", "de uma vez" to "at once",
         "Caminho" to "Path", "minas à frente" to "mines ahead", "Primeiro" to "Leader", "o mais avançado" to "the furthest along",

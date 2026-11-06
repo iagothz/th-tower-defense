@@ -3,39 +3,30 @@ package com.iagothz.mergetd.ui
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
-import com.badlogic.gdx.utils.Align
 import com.iagothz.mergetd.logic.DeckCodec
 import com.iagothz.mergetd.logic.DiceUnlocks
-import com.iagothz.mergetd.logic.DieLevels
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.Synergy
 import com.iagothz.mergetd.logic.Vec2
-import kotlin.math.roundToInt
 
 /**
- * Tapping a die only shows what it does in the panel below; the deck changes by dragging (`DeckEditor`): a die
- * from the grid onto a slot, a slot's die out of the slots, slot onto slot to swap. Dice the account level hasn't
- * opened yet sit grey with a padlock and the level that opens them; an open die shows its level and the cards
- * towards the next one, with a button to take it.
+ * The 25 dice in a 5x5 grid. Tapping one opens its sheet (`DieWindow`), where it can also level up; the deck changes
+ * by dragging (`DeckEditor`): a die from the grid onto a slot, a slot's die out of the slots, slot onto slot to swap.
+ * Dice the account level has not opened yet sit grey with a padlock and the level that opens them; a die with
+ * enough cards for its next level carries an arrow badge.
  */
 class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     override val tab get() = Tab.DECK
 
     private val level = game.save.accountLevel
     private val selected = game.save.playableDeck().toMutableList()
-    private var shown = selected.firstOrNull() ?: DieType.FIRE
     private val tiles = DieType.entries.mapIndexed { i, t ->
-        t to Rectangle(24f + (i % COLS) * 98f, 1010f - (i / COLS) * 116f, 84f, 84f)
+        t to Rectangle(GRID_X + (i % COLS) * STEP_X, GRID_TOP - TILE - (i / COLS) * STEP_Y, TILE, TILE)
     }
-    private val panel = Rectangle(24f, 130f, 672f, 470f)
-    private val enemies = Button(Rectangle(24f, 1190f, 126f, 56f), S["Inimigos"], color = Skin.PANEL)
-    /** Opens the page with every die and its full sheet. */
-    private val dice = Button(Rectangle(156f, 1190f, 120f, 56f), S["Dados"], color = Skin.PANEL)
+    private val enemies = Button(Rectangle(24f, 1190f, 190f, 56f), S["Inimigos"], color = Skin.PANEL)
     /** Three preset slots (tap loads, hold saves) and a random deck button. */
     private val presets = List(PRESETS) { Button(Rectangle(506f + it * 66f, 1190f, 60f, 56f), "${it + 1}", color = Skin.PANEL) }
     private val random = Button(Rectangle(440f, 1190f, 60f, 56f), "?", color = Skin.PANEL)
-    /** Takes the shown die to its next level; drawn only while it has one to take. */
-    private val levelUp = Button(Rectangle(panel.x + panel.width - 196f, panel.y + panel.height - 124f, 172f, 48f), S["Subir nível"], color = LEVEL_COLOR)
     private val hold = LongPress(holdSeconds = 0.6f)
     private var holdingPreset: Int? = null
     private var toast = ""
@@ -44,18 +35,18 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     private val tap = Tap<Button>()
     private val slots = List(DeckCodec.SIZE) { Rectangle(186f + it * 72f, 1112f, 60f, 60f) }
     private val editor = DeckEditor(selected, tiles, slots, ::isOpen)
-    private val measure = com.badlogic.gdx.graphics.g2d.GlyphLayout()
-    private val stats = DieStatsView(game)
+    private val window = DieWindow(game, level) { t ->
+        if (game.save.levelUp(t)) {
+            game.cloud.push()
+            say(S.f("%s subiu para o nível %d!", Skin.fullName(t), game.save.dieLevel(t)))
+            game.sfx.play(setOf("record"))
+        }
+    }
 
     private fun isOpen(t: DieType) = DiceUnlocks.isUnlocked(t, level)
 
-    /** The level-up button belongs to an open die that isn't at the top yet. */
-    private fun levelUpShown() = isOpen(shown) && DieLevels.cardsToNext(game.save.dieLevel(shown)) != null
-
     override fun draw(delta: Float) {
         random.pressed = tap.current === random
-        levelUp.enabled = game.save.canLevelUp(shown)
-        levelUp.pressed = tap.current === levelUp
         for ((i, b) in presets.withIndex()) {
             b.pressed = tap.current === b
             b.color = if (game.save.deckSlot(i) != null) PRESET_FULL else Skin.PANEL
@@ -72,33 +63,33 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
             }
         }
         enemies.pressed = tap.current === enemies
-        dice.pressed = tap.current === dice
         val shapes = game.shapes
+        val k = TILE / 84f
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         for ((t, r) in tiles) {
             val cx = r.x + r.width / 2
             val cy = r.y + r.height / 2
-            if (t == shown) {
+            if (t == window.shown) {
                 shapes.color = Color.WHITE
-                shapes.roundedRect(r.x - 6, r.y - 6, r.width + 12, r.height + 12, 20f)
+                shapes.roundedRect(r.x - 6, r.y - 6, r.width + 12, r.height + 12, 22f)
             }
             if (!isOpen(t)) {
-                shapes.bevelRect(r.x, r.y, r.width, r.height, 16f, LOCKED)
-                shapes.glyph(t, cx, cy + 2f, 25f, LOCKED_INK, LOCKED)
+                shapes.bevelRect(r.x, r.y, r.width, r.height, 18f, LOCKED)
+                shapes.glyph(t, cx, cy + 2f, 25f * k, LOCKED_INK, LOCKED)
                 // A padlock: the shackle's lower half hides behind the body.
                 shapes.color = LOCK_COLOR
-                shapes.ring(cx, cy + 4f, 9f, 4f, 20)
-                shapes.roundedRect(cx - 13f, cy - 16f, 26f, 20f, 5f)
+                shapes.ring(cx, cy + 4f * k, 9f * k, 4f * k, 20)
+                shapes.roundedRect(cx - 13f * k, cy - 16f * k, 26f * k, 20f * k, 5f * k)
                 shapes.color = LOCKED
-                shapes.circle(cx, cy - 7f, 3f, 12)
+                shapes.circle(cx, cy - 7f * k, 3f * k, 12)
                 continue
             }
-            shapes.bevelRect(r.x, r.y, r.width, r.height, 16f, Skin.color(t))
-            shapes.glyph(t, cx, cy + 2f, 25f, Skin.glyphColor(t, 0.85f), Skin.color(t))
+            shapes.bevelRect(r.x, r.y, r.width, r.height, 18f, Skin.color(t))
+            shapes.glyph(t, cx, cy + 2f, 25f * k, Skin.glyphColor(t, 0.85f), Skin.color(t))
             if (t in selected) {
                 shapes.color = Skin.GOLD
-                shapes.circle(r.x + r.width - 2f, r.y + r.height - 2f, 14f, 20)
-                shapes.color = Color(0.15f, 0.15f, 0.2f, 1f)
+                shapes.circle(r.x + r.width - 2f, r.y + r.height - 2f, 15f, 20)
+                shapes.color = BADGE_INK
                 shapes.rectLine(r.x + r.width - 9f, r.y + r.height - 2f, r.x + r.width - 4f, r.y + r.height - 8f, 3.5f)
                 shapes.rectLine(r.x + r.width - 4f, r.y + r.height - 8f, r.x + r.width + 5f, r.y + r.height + 5f, 3.5f)
             }
@@ -106,7 +97,17 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
             if (dieLevel > 1) {
                 // Level pips along the bottom edge, one per level above the first.
                 shapes.color = Skin.GOLD
-                for (i in 1 until dieLevel) shapes.circle(r.x + 10f + (i - 1) * 11f, r.y + 7f, 3.5f, 10)
+                for (i in 1 until dieLevel) shapes.circle(r.x + 12f + (i - 1) * 12f, r.y + 9f, 4f, 10)
+            }
+            if (game.save.canLevelUp(t)) {
+                // Enough cards for the next level: an arrow badge on the bottom-right corner.
+                val bx = r.x + r.width - 2f
+                val by = r.y + 4f
+                shapes.color = LEVEL_BADGE
+                shapes.circle(bx, by, 15f, 20)
+                shapes.color = Color.WHITE
+                shapes.triangle(bx - 8f, by - 1f, bx + 8f, by - 1f, bx, by + 9f)
+                shapes.rect(bx - 3f, by - 9f, 6f, 9f)
             }
         }
         val target = editor.pointer?.let { editor.slotAt(it) }
@@ -124,27 +125,9 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
                 shapes.die(t, 1, r.x + r.width / 2, r.y + r.height / 2, r.width)
             }
         }
-        shapes.color = Skin.SHADOW
-        shapes.roundedRect(panel.x + 3f, panel.y - 8f, panel.width, panel.height, 18f)
-        shapes.color = Skin.PANEL
-        shapes.roundedRect(panel.x, panel.y, panel.width, panel.height, 18f)
-        shapes.color = if (isOpen(shown)) Skin.color(shown) else LOCKED
-        shapes.roundedRect(panel.x, panel.y + panel.height - 12f, panel.width, 12f, 6f)
-        shapes.glyph(shown, panel.x + 48f, panel.y + panel.height - 42f, 18f, if (isOpen(shown)) Skin.color(shown) else LOCKED_INK, Skin.PANEL)
-        if (isOpen(shown)) {
-            // Five level stars on the title line, lit up to the die's level.
-            val lit = game.save.dieLevel(shown)
-            for (i in 0 until DieLevels.MAX) {
-                shapes.color = if (i < lit) Skin.GOLD else STAR_OFF
-                shapes.polygon(panel.x + panel.width - 24f - (DieLevels.MAX - 1 - i) * 26f, panel.y + panel.height - 42f, 10f, 5, Math.PI.toFloat() / 2)
-            }
-        }
         enemies.drawShape(shapes)
-        dice.drawShape(shapes)
         random.drawShape(shapes)
         presets.forEach { it.drawShape(shapes) }
-        if (levelUpShown()) levelUp.drawShape(shapes)
-        drawStatShapes()
         editor.dragging?.let { t -> editor.pointer?.let { p -> shapes.die(t, 1, p.x, p.y + DRAG_LIFT, 72f) } }
         shapes.end()
 
@@ -157,81 +140,36 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         }
         for ((t, r) in tiles) {
             if (isOpen(t)) {
-                game.batch.textCentered(game.tinyFont, Skin.label(t), r.x + r.width / 2, r.y - 16f)
+                game.batch.textCentered(game.smallFont, Skin.label(t), r.x + r.width / 2, r.y - 18f)
             } else {
-                game.tinyFont.color = KEY_COLOR
-                game.batch.textCentered(game.tinyFont, S.f("Nv. %d", DiceUnlocks.unlockLevel(t)), r.x + r.width / 2, r.y - 16f)
-                game.tinyFont.color = Color.WHITE
+                game.smallFont.color = KEY_COLOR
+                game.batch.textCentered(game.smallFont, S.f("Nv. %d", DiceUnlocks.unlockLevel(t)), r.x + r.width / 2, r.y - 18f)
+                game.smallFont.color = Color.WHITE
             }
         }
-        drawInfo()
         val pairs = Synergy.forDeck(selected)
         game.tinyFont.color = Skin.GOLD
         val line = if (pairs.isEmpty()) S["Sinergias do deck: nenhuma ainda (veja os pares na descrição de cada dado)"] else S.f("Sinergias do deck: %s", pairs.joinToString(", ") { S[it.title] })
-        game.batch.textCentered(game.tinyFont, line, 360f, panel.y + 15f)
+        game.batch.textCentered(game.tinyFont, line, 360f, SYNERGY_Y)
+        game.tinyFont.color = KEY_COLOR
+        game.batch.textCentered(game.tinyFont, S["Toque num dado para ver tudo · arraste para montar o deck"], 360f, SYNERGY_Y - 32f)
         game.tinyFont.color = Color.WHITE
         enemies.drawText(game.batch, game.smallFont)
-        dice.drawText(game.batch, game.smallFont)
         random.drawText(game.batch, game.smallFont)
         presets.forEach { it.drawText(game.batch, game.smallFont) }
-        if (levelUpShown()) levelUp.drawText(game.batch, game.smallFont)
-        if (toastLeft > 0f) game.batch.textShadowed(game.tinyFont, toast, 360f, TOAST_Y, Skin.GOLD)
+        if (toastLeft > 0f && !window.isOpen) game.batch.textShadowed(game.tinyFont, toast, 360f, TOAST_Y, Skin.GOLD)
         game.batch.end()
-        stats.drawArrows()
-    }
 
-    /** Under the stars of an open die: its bonus and the cards towards the next level. */
-    private fun levelText(): String {
-        val lvl = game.save.dieLevel(shown)
-        val bonus = ((DieLevels.mult(lvl) - 1f) * 100f).roundToInt()
-        val cost = DieLevels.cardsToNext(lvl) ?: return S.f("máximo · +%d%%", bonus)
-        return S.f("+%d%% · cartas %d/%d", bonus, game.save.cards(shown), cost)
-    }
-
-    /** Width the summary wraps at: it leaves room for the level-up button when that shows. */
-    private fun summaryWidth() = panel.width - 48f - (if (levelUpShown()) 196f else 0f)
-
-    /** Top of the damage/speed/target blocks, just under the summary (and the level-up button). */
-    private fun statsTop(): Float {
-        val summary = measure.apply { setText(game.smallFont, DieInfo.of(shown).summary, Color.WHITE, summaryWidth(), Align.left, true) }.height
-        return panel.y + panel.height - 68f - maxOf(summary, if (levelUpShown()) 52f else 0f) - 18f
-    }
-
-    /** The three blocks (damage, speed, target), each a card with its icon in its own colour. */
-    private fun drawStatShapes() = stats.drawShapes(DieInfo.of(shown), panel.x + 24f, panel.width - 48f, statsTop())
-
-    private fun drawInfo() {
-        val info = DieInfo.of(shown)
-        val left = panel.x + 24f
-        val keyWidth = 112f
-        val valueWidth = panel.width - 48f - keyWidth
-        var y = panel.y + panel.height - 30f
-
-        game.font.draw(game.batch, Skin.fullName(shown), left + 52f, y)
-        if (isOpen(shown)) {
-            game.tinyFont.color = KEY_COLOR
-            game.batch.textRight(game.tinyFont, levelText(), panel.x + panel.width - 24f, y - 36f)
-            game.tinyFont.color = Color.WHITE
+        window.draw(viewport.worldWidth, viewport.worldHeight)
+        if (toastLeft > 0f && window.isOpen) {
+            // Over the window: a level-up says so while the sheet stays open.
+            game.batch.begin()
+            game.batch.textShadowed(game.smallFont, toast, 360f, TOAST_Y, Skin.GOLD)
+            game.batch.end()
         }
-        y -= 38f
-        // The level-up button sits on the right of the summary, which wraps before it.
-        game.smallFont.draw(game.batch, info.summary, left, y, summaryWidth(), Align.left, true)
-
-        val top = statsTop()
-        stats.drawText(info, panel.x + 24f, panel.width - 48f, top)
-        y = top - DieStatsView.HEIGHT - 18f
-
-        val locked = if (isOpen(shown)) emptyList() else listOf(S["Bloqueado"] to S.f("Abre no nível de conta %d", DiceUnlocks.unlockLevel(shown)))
-        for ((key, value) in locked + info.rows) {
-            game.tinyFont.color = DieStatsView.rowColor(key)
-            game.tinyFont.draw(game.batch, key.uppercase(), left, y)
-            game.tinyFont.color = Color.WHITE
-            y -= game.tinyFont.draw(game.batch, value, left + keyWidth, y, valueWidth, Align.left, true).height + 12f
-        }
-        game.tinyFont.color = Color.WHITE
     }
 
-    private fun buttonAt(p: Vec2) = (listOf(enemies, dice, random) + presets + listOfNotNull(levelUp.takeIf { levelUpShown() })).firstOrNull { it.contains(p.x, p.y) }
+    private fun buttonAt(p: Vec2) = (listOf(enemies, random) + presets).firstOrNull { it.contains(p.x, p.y) }
 
     private fun say(text: String) {
         toast = text
@@ -239,6 +177,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     }
 
     override fun onTouchDown(p: Vec2) {
+        if (window.isOpen) return window.touchDown(p)
         tap.press(buttonAt(p))
         holdingPreset = presets.indexOfFirst { it.contains(p.x, p.y) }.takeIf { it >= 0 }
         if (holdingPreset != null) hold.down(p, game.clock)
@@ -246,6 +185,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     }
 
     override fun onDrag(p: Vec2) {
+        if (window.isOpen) return
         hold.move(p)
         val lifted = editor.dragging == null
         editor.move(p)
@@ -253,6 +193,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     }
 
     override fun onTouchCancelled() {
+        window.touchCancelled()
         tap.cancel()
         holdingPreset = null
         hold.up()
@@ -260,33 +201,22 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     }
 
     override fun onTouchUp(p: Vec2) {
+        if (window.isOpen) return window.touchUp(p)
         val wasDragging = editor.dragging != null
-        val onSlot = slots.any { it.contains(p.x, p.y) }
         val release = editor.up(p)
         val die = release.shown
         when {
-            die != null -> {
-                shown = die
-                when {
-                    release.changed -> game.sfx.play(setOf("drop"))
-                    wasDragging -> Unit
-                    // A tap only shows the die; the toast teaches the gesture that would move it.
-                    onSlot -> say(S["Arraste para fora para tirar do deck"])
-                    isOpen(die) && die !in selected -> say(S["Arraste até um espaço do deck para usar"])
-                }
+            die != null -> when {
+                release.changed -> game.sfx.play(setOf("drop"))
+                wasDragging -> Unit
+                // A plain tap opens the die's sheet; the deck only changes by dragging.
+                else -> window.open(die)
             }
             else -> when (val b = tap.release(buttonAt(p))) {
                 enemies -> game.showEnemies()
-                dice -> game.showDice()
                 random -> {
                     selected.clear()
                     selected.addAll(DeckCodec.random(rng, DiceUnlocks.unlocked(level)))
-                    shown = selected.first()
-                }
-                levelUp -> if (game.save.levelUp(shown)) {
-                    game.cloud.push()
-                    say(S.f("%s subiu para o nível %d!", Skin.fullName(shown), game.save.dieLevel(shown)))
-                    game.sfx.play(setOf("record"))
                 }
                 else -> presets.indexOf(b).takeIf { it >= 0 }?.let { i ->
                     val deck = game.save.deckSlot(i)
@@ -295,7 +225,6 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
                     } else {
                         selected.clear()
                         selected.addAll(DiceUnlocks.sanitize(deck, level))
-                        shown = selected.first()
                     }
                 }
             }
@@ -312,12 +241,19 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     private companion object {
         const val PRESETS = 3
         val PRESET_FULL = Color(0.30f, 0.38f, 0.60f, 1f)
-        val LEVEL_COLOR = Color(0.72f, 0.52f, 0.12f, 1f)
+        val LEVEL_BADGE = Color(0.25f, 0.70f, 0.35f, 1f)
+        val BADGE_INK = Color(0.15f, 0.15f, 0.2f, 1f)
         val LOCKED = Color(0.22f, 0.23f, 0.29f, 1f)
         val LOCKED_INK = Color(0.32f, 0.33f, 0.40f, 1f)
         val LOCK_COLOR = Color(0.62f, 0.64f, 0.72f, 1f)
-        val STAR_OFF = Color(0.26f, 0.27f, 0.34f, 1f)
-        const val COLS = 7
+        /** 5x5 grid of bigger tiles now that the sheet opens in a window instead of a panel below. */
+        const val COLS = 5
+        const val TILE = 116f
+        const val STEP_X = 134f
+        const val STEP_Y = 152f
+        const val GRID_X = 34f
+        const val GRID_TOP = 1080f
+        const val SYNERGY_Y = 300f
         /** The dragged die floats this much above the finger so it isn't hidden under it. */
         const val DRAG_LIFT = 40f
         /** The toast sits in the gap between the title and the deck slots. */
