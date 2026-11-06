@@ -17,6 +17,8 @@ import com.iagothz.mergetd.logic.Vec2
 class MapScreen(game: MergeTdGame) : BaseScreen(game) {
     override val tab get() = Tab.MAPS
 
+    private val header = ScreenHeader(S["Mapas"])
+
     private var selected = game.save.map
     private var mode = game.save.mode
     private val mutators = game.save.mutators.toMutableSet()
@@ -63,7 +65,7 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.end()
 
         game.batch.begin()
-        game.batch.textShadowed(game.bigFont, S["Mapas"], 360f, 1222f)
+        header.drawText(game.batch, game)
         for ((m, r) in cards) {
             game.batch.textCentered(game.font, S[m.title], r.x + r.width / 2, r.y + r.height - 30f)
             game.smallFont.color = Skin.difficultyColor(m.difficulty)

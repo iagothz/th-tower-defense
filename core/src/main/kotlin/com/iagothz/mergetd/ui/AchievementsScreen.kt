@@ -6,15 +6,15 @@ import com.badlogic.gdx.math.Rectangle
 import com.iagothz.mergetd.logic.Vec2
 
 /** The twenty badges, done or not, each with the cosmetic it unlocks; tap an unlocked cosmetic to wear it. */
-class AchievementsScreen(game: MergeTdGame) : BaseScreen(game) {
+class AchievementsScreen(game: MergeTdGame, val goBack: () -> Unit) : BaseScreen(game) {
     override val tab get() = Tab.SETTINGS
 
     private val rows = Achievement.entries.mapIndexed { i, a -> a to Rectangle(24f, 1120f - i * 47f, 672f, 44f) }
-    private val back = Button(Rectangle(160f, 124f, 400f, 80f), S["Voltar"], style = ButtonStyle.SECONDARY)
-    private val tap = Tap<Button>()
+    private val header = ScreenHeader(S["Conquistas"], back = true)
+    private val tap = Tap<ScreenHeader>()
 
     override fun draw(delta: Float) {
-        back.pressed = tap.current === back
+        header.pressed = tap.current === header
         val done = Achievement.entries.count { game.save.hasAchievement(it) }
         val shapes = game.shapes
         shapes.begin(ShapeRenderer.ShapeType.Filled)
@@ -30,14 +30,12 @@ class AchievementsScreen(game: MergeTdGame) : BaseScreen(game) {
                 shapes.roundedRect(r.x + r.width - 150f, r.y + 8f, 140f, 30f, 10f)
             }
         }
-        back.drawShape(shapes)
+        header.drawShapes(shapes)
         shapes.end()
 
         game.batch.begin()
-        game.batch.textShadowed(game.bigFont, S["Conquistas"], 360f, 1222f)
-        game.smallFont.color = Skin.MUTED
-        game.batch.textCentered(game.smallFont, S.f("%d de %d", done, Achievement.entries.size), 360f, 1176f)
-        game.smallFont.color = Color.WHITE
+        header.subtitle = S.f("%d de %d", done, Achievement.entries.size)
+        header.drawText(game.batch, game)
         for ((a, r) in rows) {
             val has = game.save.hasAchievement(a)
             game.smallFont.color = if (has) Color.WHITE else Skin.MUTED
@@ -52,7 +50,6 @@ class AchievementsScreen(game: MergeTdGame) : BaseScreen(game) {
         }
         game.tinyFont.color = Color.WHITE
         game.smallFont.color = Color.WHITE
-        back.drawText(game.batch, game.font)
         game.batch.end()
     }
 
@@ -60,7 +57,7 @@ class AchievementsScreen(game: MergeTdGame) : BaseScreen(game) {
     private fun pillColor(c: Cosmetic, has: Boolean): Color =
         if (game.save.equipped(c.slot) == c) Skin.GOLD else if (has) c.color else PILL_LOCKED
 
-    override fun onTouchDown(p: Vec2) = tap.press(back.takeIf { it.contains(p.x, p.y) })
+    override fun onTouchDown(p: Vec2) = tap.press(header.takeIf { it.backHit(p) })
 
     override fun onTouchCancelled() = tap.cancel()
 
@@ -75,7 +72,7 @@ class AchievementsScreen(game: MergeTdGame) : BaseScreen(game) {
                 return
             }
         }
-        if (tap.release(back.takeIf { it.contains(p.x, p.y) }) === back) game.showStats()
+        if (tap.release(header.takeIf { it.backHit(p) }) === header) goBack()
     }
 
     private companion object {

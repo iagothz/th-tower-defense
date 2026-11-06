@@ -7,16 +7,16 @@ import com.iagothz.mergetd.logic.DailyChallenge
 import com.iagothz.mergetd.logic.Vec2
 
 /** The last twenty matches: when, where, with what, how far, and the code to play them again. */
-class HistoryScreen(game: MergeTdGame) : BaseScreen(game) {
+class HistoryScreen(game: MergeTdGame, val goBack: () -> Unit) : BaseScreen(game) {
     override val tab get() = Tab.SETTINGS
 
     private val records = game.save.history()
     private val rows = records.mapIndexed { i, r -> r to Rectangle(24f, 1124f - i * 48f, 672f, 44f) }
-    private val back = Button(Rectangle(160f, 120f, 400f, 80f), S["Voltar"], style = ButtonStyle.SECONDARY)
-    private val tap = Tap<Button>()
+    private val header = ScreenHeader(S["Histórico"], back = true)
+    private val tap = Tap<ScreenHeader>()
 
     override fun draw(delta: Float) {
-        back.pressed = tap.current === back
+        header.pressed = tap.current === header
         val shapes = game.shapes
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         for ((r, rect) in rows) {
@@ -24,11 +24,11 @@ class HistoryScreen(game: MergeTdGame) : BaseScreen(game) {
             shapes.roundedRect(rect.x, rect.y, rect.width, rect.height, 12f)
             for ((j, t) in r.deck.withIndex()) shapes.die(t, 1, rect.x + 262f + j * 30f, rect.y + rect.height / 2, 24f)
         }
-        back.drawShape(shapes)
+        header.drawShapes(shapes)
         shapes.end()
 
         game.batch.begin()
-        game.batch.textShadowed(game.bigFont, S["Histórico"], 360f, 1222f)
+        header.drawText(game.batch, game)
         if (records.isEmpty()) {
             game.smallFont.color = Skin.MUTED
             game.batch.textCentered(game.smallFont, S["Nenhuma partida terminada ainda."], 360f, 1100f)
@@ -46,15 +46,14 @@ class HistoryScreen(game: MergeTdGame) : BaseScreen(game) {
             game.batch.textRight(game.font, "${r.wave}", rect.x + rect.width - 16f, cy)
             game.font.color = Color.WHITE
         }
-        back.drawText(game.batch, game.font)
         game.batch.end()
     }
 
-    override fun onTouchDown(p: Vec2) = tap.press(back.takeIf { it.contains(p.x, p.y) })
+    override fun onTouchDown(p: Vec2) = tap.press(header.takeIf { it.backHit(p) })
 
     override fun onTouchCancelled() = tap.cancel()
 
     override fun onTouchUp(p: Vec2) {
-        if (tap.release(back.takeIf { it.contains(p.x, p.y) }) === back) game.showStats()
+        if (tap.release(header.takeIf { it.backHit(p) }) === header) goBack()
     }
 }

@@ -18,6 +18,8 @@ import com.iagothz.mergetd.logic.Vec2
 class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
     override val tab get() = Tab.DECK
 
+    private val header = ScreenHeader(S["Deck"])
+
     private val level = game.save.accountLevel
     private val selected = game.save.playableDeck().toMutableList()
     private val tiles = DieType.entries.mapIndexed { i, t ->
@@ -132,7 +134,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.end()
 
         game.batch.begin()
-        game.batch.textShadowed(game.bigFont, S["Deck"], 360f, 1222f)
+        header.drawText(game.batch, game)
         if (selected.size < DeckCodec.SIZE) {
             game.smallFont.color = Skin.MUTED
             game.batch.textLeft(game.smallFont, S.f("arraste %d", DeckCodec.SIZE - selected.size), 556f, 1142f)

@@ -148,7 +148,8 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
         return false
     }
 
-    fun showHistory() = switchTo(HistoryScreen(this))
+    /** [back] leads to the screen it was opened from: Config or Estatísticas. */
+    fun showHistory(back: () -> Unit) = switchTo(HistoryScreen(this, back))
 
     /** Replays a shared match: its map, mode, deck and seed, booked for the totals only. */
     fun startFromCode(setup: MatchSetup) {
@@ -156,7 +157,8 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
         switchTo(MatchScreen(this, previousBest = save.bestWave(setup.map, setup.mode), fresh = setup.newMatch(save.dieLevels())))
     }
 
-    fun showAchievements() = switchTo(AchievementsScreen(this))
+    /** [back] leads to the screen it was opened from: Config or Estatísticas. */
+    fun showAchievements(back: () -> Unit) = switchTo(AchievementsScreen(this, back))
 
     /** Fades to black, swaps the screen, fades back in. The first screen, or one requested mid-fade, swaps at once. */
     private fun switchTo(screen: Screen) {

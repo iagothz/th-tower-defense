@@ -13,12 +13,12 @@ class EnemiesScreen(game: MergeTdGame) : BaseScreen(game) {
 
     private val rows = EnemyKind.entries.mapIndexed { i, k -> k to Rectangle(24f, 1082f - i * 55f, 672f, 50f) }
     private val panel = Rectangle(24f, 200f, 672f, 150f)
-    private val back = Button(Rectangle(160f, 124f, 400f, 80f), S["Voltar"], style = ButtonStyle.SECONDARY)
-    private val tap = Tap<Button>()
+    private val header = ScreenHeader(S["Inimigos"], back = true)
+    private val tap = Tap<ScreenHeader>()
     private var selected: EnemyKind = EnemyKind.NORMAL
 
     override fun draw(delta: Float) {
-        back.pressed = tap.current === back
+        header.pressed = tap.current === header
         val shapes = game.shapes
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         for ((k, r) in rows) {
@@ -42,11 +42,11 @@ class EnemiesScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.roundedRect(panel.x, panel.y, panel.width, panel.height, 20f)
         shapes.color = Skin.color(selected)
         shapes.roundedRect(panel.x, panel.y + panel.height - 10f, panel.width, 10f, 5f)
-        back.drawShape(shapes)
+        header.drawShapes(shapes)
         shapes.end()
 
         game.batch.begin()
-        game.batch.textShadowed(game.bigFont, S["Inimigos"], 360f, 1222f)
+        header.drawText(game.batch, game)
         for ((k, r) in rows) {
             game.batch.textLeft(game.smallFont, Skin.enemyName(k), r.x + 80f, r.y + r.height / 2 + 12f)
             game.tinyFont.color = Skin.MUTED
@@ -58,7 +58,6 @@ class EnemiesScreen(game: MergeTdGame) : BaseScreen(game) {
         game.batch.textLeft(game.smallFont, S["Como vencer"], panel.x + 24f, panel.y + panel.height - 34f)
         game.smallFont.color = Color.WHITE
         game.tinyFont.draw(game.batch, Tips.forKiller(selected), panel.x + 24f, panel.y + panel.height - 62f, panel.width - 48f, Align.left, true)
-        back.drawText(game.batch, game.font)
         game.batch.end()
     }
 
@@ -68,13 +67,17 @@ class EnemiesScreen(game: MergeTdGame) : BaseScreen(game) {
 
     private fun description(k: EnemyKind): String = if (k.isBoss) Skin.bossAbility(k) else S[DESCRIPTIONS.getValue(k)]
 
-    override fun onTouchDown(p: Vec2) = tap.press(back.takeIf { it.contains(p.x, p.y) })
+    override fun onTouchDown(p: Vec2) = tap.press(header.takeIf { it.backHit(p) })
 
     override fun onTouchCancelled() = tap.cancel()
 
     override fun onTouchUp(p: Vec2) {
         rows.firstOrNull { it.second.contains(p.x, p.y) }?.let { selected = it.first }
-        if (tap.release(back.takeIf { it.contains(p.x, p.y) }) === back) game.showDeck()
+        if (tap.release(header.takeIf { it.backHit(p) }) === header) goBack()
+    }
+
+    fun goBack() {
+        game.showDeck()
     }
 
     companion object {

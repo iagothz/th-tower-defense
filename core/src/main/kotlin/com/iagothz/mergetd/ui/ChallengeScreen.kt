@@ -13,6 +13,8 @@ import com.iagothz.mergetd.logic.WeeklyChallenge
 class ChallengeScreen(game: MergeTdGame) : BaseScreen(game) {
     override val tab get() = Tab.CHALLENGES
 
+    private val header = ScreenHeader(S["Desafios"])
+
     private val daily = DailyChallenge.of(DailyChallenge.today())
     private val weekly = WeeklyChallenge.of(WeeklyChallenge.thisWeek())
     private val dailyCard = Rectangle(24f, 760f, 672f, 330f)
@@ -40,7 +42,7 @@ class ChallengeScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.end()
 
         game.batch.begin()
-        game.batch.textShadowed(game.bigFont, S["Desafios"], 360f, 1222f)
+        header.drawText(game.batch, game)
         // Daily.
         game.batch.textLeft(game.font, S["Desafio do dia"], dailyCard.x + 28f, dailyCard.y + dailyCard.height - 40f)
         game.smallFont.color = Skin.MUTED

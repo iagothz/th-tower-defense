@@ -12,6 +12,8 @@ import java.util.Locale
 class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
     override val tab get() = Tab.SETTINGS
 
+    private val header = ScreenHeader(S["Configurações"])
+
     private val soundSlider = Rectangle(60f, 980f, 600f, 40f)
     private val musicSlider = Rectangle(60f, 860f, 600f, 40f)
     private val vibration = Button(Rectangle(60f, 740f, 292f, 80f), "", style = ButtonStyle.SECONDARY)
@@ -56,7 +58,7 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.end()
 
         game.batch.begin()
-        game.batch.textShadowed(game.bigFont, S["Configurações"], 360f, 1222f)
+        header.drawText(game.batch, game)
         label(S["Som"], game.save.soundVolume, soundSlider)
         label(S["Música"], game.save.musicVolume, musicSlider)
         vibration.drawText(game.batch, game.smallFont)
@@ -141,8 +143,8 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
                 else -> Unit
             }
             stats -> game.showStats()
-            achievements -> game.showAchievements()
-            history -> game.showHistory()
+            achievements -> game.showAchievements { game.showSettings() }
+            history -> game.showHistory { game.showSettings() }
             vibration -> {
                 game.save.vibrationOn = !game.save.vibrationOn
                 if (game.save.vibrationOn) game.sfx.play(setOf("boss"))
