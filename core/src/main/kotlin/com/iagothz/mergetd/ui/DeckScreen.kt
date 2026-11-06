@@ -10,7 +10,7 @@ import com.iagothz.mergetd.logic.Synergy
 import com.iagothz.mergetd.logic.Vec2
 
 /**
- * The 25 dice in a 5x5 grid. Tapping one opens its sheet (`DieWindow`), where it can also level up; the deck changes
+ * The 25 dice four to a row (seven rows, all on screen). Tapping one opens its sheet (`DieWindow`), where it can also level up; the deck changes
  * by dragging (`DeckEditor`): a die from the grid onto a slot, a slot's die out of the slots, slot onto slot to swap.
  * Dice the account level has not opened yet sit grey with a padlock and the level that opens them; a die with
  * enough cards for its next level carries an arrow badge.
@@ -152,7 +152,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         val line = if (pairs.isEmpty()) S["Sinergias do deck: nenhuma ainda (veja os pares na descrição de cada dado)"] else S.f("Sinergias do deck: %s", pairs.joinToString(", ") { S[it.title] })
         game.batch.textCentered(game.tinyFont, line, 360f, SYNERGY_Y)
         game.tinyFont.color = KEY_COLOR
-        game.batch.textCentered(game.tinyFont, S["Toque num dado para ver tudo · arraste para montar o deck"], 360f, SYNERGY_Y - 32f)
+        game.batch.textCentered(game.tinyFont, S["Toque num dado para ver tudo · arraste para montar o deck"], 360f, SYNERGY_Y - 26f)
         game.tinyFont.color = Color.WHITE
         enemies.drawText(game.batch, game.smallFont)
         random.drawText(game.batch, game.smallFont)
@@ -246,14 +246,14 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         val LOCKED = Color(0.22f, 0.23f, 0.29f, 1f)
         val LOCKED_INK = Color(0.32f, 0.33f, 0.40f, 1f)
         val LOCK_COLOR = Color(0.62f, 0.64f, 0.72f, 1f)
-        /** 5x5 grid of bigger tiles now that the sheet opens in a window instead of a panel below. */
-        const val COLS = 5
-        const val TILE = 116f
-        const val STEP_X = 134f
-        const val STEP_Y = 152f
-        const val GRID_X = 34f
+        /** Four dice to a row, spread across the width; seven rows fit between the deck slots and the bottom bar. */
+        const val COLS = 4
+        const val TILE = 92f
+        const val STEP_X = 168f
+        const val STEP_Y = 132f
+        const val GRID_X = 62f
         const val GRID_TOP = 1080f
-        const val SYNERGY_Y = 300f
+        const val SYNERGY_Y = 150f
         /** The dragged die floats this much above the finger so it isn't hidden under it. */
         const val DRAG_LIFT = 40f
         /** The toast sits in the gap between the title and the deck slots. */
