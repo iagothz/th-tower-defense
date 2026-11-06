@@ -1,6 +1,6 @@
 # Padrão visual (parte 1 da revisão de UI/UX)
 
-**Data:** 2026-11-06 · **Status:** aprovado na conversa, aguardando revisão desta spec
+**Data:** 2026-11-06 · **Status:** implementado (plano `docs/superpowers/plans/2026-11-06-visual-standard.md`)
 
 ## Contexto
 
