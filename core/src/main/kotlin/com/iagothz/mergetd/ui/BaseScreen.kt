@@ -64,7 +64,7 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
 
         override fun keyDown(keycode: Int): Boolean {
             if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
-                if (!onBack()) Gdx.app.exit()
+                game.back()
             } else {
                 onKey(keycode)
             }

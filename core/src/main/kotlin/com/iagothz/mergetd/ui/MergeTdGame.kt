@@ -77,6 +77,15 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
 
     fun showMenu() = switchTo(MenuScreen(this))
 
+    /**
+     * Back, from the key (desktop Escape, Android up to 15) or the system back callback (Android 16+, where apps
+     * targeting API 36 no longer get the key): the current screen decides, and only Início leaves the game.
+     */
+    fun back() {
+        val s = screen as? BaseScreen ?: return
+        if (!s.onBack()) Gdx.app.exit()
+    }
+
     /** Jumps to a bar tab with no fade: the bar stays put and only the content above it changes. */
     fun showTab(tab: Tab) = apply(
         when (tab) {

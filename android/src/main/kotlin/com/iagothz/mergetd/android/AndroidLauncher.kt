@@ -1,7 +1,10 @@
 package com.iagothz.mergetd.android
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.window.OnBackInvokedDispatcher
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.backends.android.AndroidApplication
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration
 import com.google.android.gms.games.PlayGamesSdk
@@ -38,6 +41,13 @@ class AndroidLauncher : AndroidApplication() {
             cloudSave = PlayGamesCloud(this),
         )
         initialize(game, config)
+        // Android 16 stops sending the back key to apps that target API 36 and uses this callback instead; on 13-15
+        // the callback is ignored (no enableOnBackInvokedCallback in the manifest) and the key still arrives.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            onBackInvokedDispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT) {
+                Gdx.app.postRunnable { game.back() }
+            }
+        }
     }
 
     override fun onDestroy() {
