@@ -5,6 +5,7 @@ import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.EnemyKind
 import kotlin.math.sqrt
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class SkinTest {
@@ -48,5 +49,30 @@ class SkinTest {
     @Test
     fun everyBossExplainsItself() {
         for (k in EnemyKind.entries.filter { it.isBoss }) assertTrue(Skin.bossAbility(k).isNotBlank(), "$k")
+    }
+
+    @Test
+    fun inkOnPicksWhiteOnDarkFills() {
+        for (c in listOf(Skin.PANEL, Skin.PRIMARY, Skin.DANGER)) assertEquals(Color.WHITE, Skin.inkOn(c), "$c")
+    }
+
+    @Test
+    fun inkOnPicksDarkOnLightFills() {
+        for (c in listOf(Skin.GOLD, Color.WHITE, Cosmetic.FRAME_GOLD.color, Cosmetic.FRAME_SILVER.color, Cosmetic.FRAME_DIAMOND.color)) {
+            assertEquals(Skin.INK_DARK, Skin.inkOn(c), "$c")
+        }
+    }
+
+    @Test
+    fun inkOnSwitchesAroundTheThreshold() {
+        assertEquals(Skin.INK_DARK, Skin.inkOn(Color(0.56f, 0.56f, 0.56f, 1f)))
+        assertEquals(Color.WHITE, Skin.inkOn(Color(0.54f, 0.54f, 0.54f, 1f)))
+    }
+
+    @Test
+    fun inkOnClampsTintsAboveOne() {
+        for (c in listOf(Cosmetic.SKY_DUSK, Cosmetic.SKY_AURORA, Cosmetic.SKY_NEBULA, Cosmetic.SKY_GOLDEN)) {
+            assertEquals(Skin.INK_DARK, Skin.inkOn(c.color), "$c")
+        }
     }
 }

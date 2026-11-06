@@ -18,6 +18,32 @@ object Skin {
     /** Frame around the grid and its rim. */
     val BOARD = Color(0.12f, 0.13f, 0.18f, 1f)
     val BOARD_RIM = Color(0.26f, 0.28f, 0.36f, 1f)
+
+    // --- Interface palette: every screen takes its non-identity colours from here. ---
+    /** Secondary text: labels, notes, hints. */
+    val MUTED = Color(0.65f, 0.67f, 0.75f, 1f)
+    /** A die the account level hasn't reached: tile, glyph and padlock. */
+    val LOCKED = Color(0.22f, 0.23f, 0.29f, 1f)
+    val LOCKED_INK = Color(0.32f, 0.33f, 0.40f, 1f)
+    val LOCK_COLOR = Color(0.62f, 0.64f, 0.72f, 1f)
+    val STAR_OFF = Color(0.26f, 0.27f, 0.34f, 1f)
+    val ROW_DONE = Color(0.20f, 0.22f, 0.30f, 1f)
+    val ROW_SELECTED = Color(0.22f, 0.24f, 0.33f, 1f)
+    /** The veil behind windows and the pause. */
+    val DIM = Color(0f, 0f, 0f, 0.72f)
+    val PRIMARY = Color(0.25f, 0.45f, 0.85f, 1f)
+    val DANGER = Color(0.70f, 0.25f, 0.25f, 1f)
+    val SELECTED = Color(0.55f, 0.30f, 0.75f, 1f)
+    val REWARD = Color(0.72f, 0.52f, 0.12f, 1f)
+    /** Dark text for light fills. */
+    val INK_DARK = Color(0.15f, 0.15f, 0.20f, 1f)
+
+    /** Brightness of [c] from its encoded channels, each clamped to 0..1 (sky tints go above 1). */
+    fun luminance(c: Color): Float =
+        0.2126f * c.r.coerceIn(0f, 1f) + 0.7152f * c.g.coerceIn(0f, 1f) + 0.0722f * c.b.coerceIn(0f, 1f)
+
+    /** Text colour that reads on [background]: dark ink on light fills, white on the rest. */
+    fun inkOn(background: Color): Color = if (luminance(background) > 0.55f) INK_DARK else Color.WHITE
     private val themes = mapOf(
         // Forest: earth under a blue night.
         GameMap.HORSESHOE to MapTheme(Color(0.24f, 0.21f, 0.17f, 1f), Color(0.16f, 0.13f, 0.10f, 1f), Color(0.10f, 0.11f, 0.19f, 1f), Color(0.05f, 0.06f, 0.09f, 1f)),
@@ -147,7 +173,7 @@ object Skin {
 
     fun color(t: DieType): Color = dieColors.getValue(t)
 
-    fun pipColor(t: DieType): Color = if (t in lightDice) Color(0.15f, 0.15f, 0.2f, 1f) else Color.WHITE
+    fun pipColor(t: DieType): Color = if (t in lightDice) INK_DARK else Color.WHITE
 
     /** Glyph colour: the die's own colour pushed toward its pip colour, so it reads as a watermark. */
     fun glyphColor(t: DieType, strength: Float = 0.45f): Color = Color(color(t)).lerp(pipColor(t), strength)

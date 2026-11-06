@@ -57,7 +57,7 @@ class MissionsPanel(private val game: MergeTdGame, val rect: Rectangle, private 
         game.font.color = Skin.GOLD
         batch.textLeft(game.font, S["Missões de hoje"], rect.x + 24f, rect.y + rect.height - 32f)
         game.font.color = Color.WHITE
-        game.tinyFont.color = KEY_COLOR
+        game.tinyFont.color = Skin.MUTED
         batch.textRight(game.tinyFont, "${DailyChallenge.of(day).dateLabel} · ${S["Renova amanhã"]}", rect.x + rect.width - 24f, rect.y + rect.height - 32f)
         for ((i, m) in missions.withIndex()) {
             val c = cards[i]
@@ -65,10 +65,10 @@ class MissionsPanel(private val game: MergeTdGame, val rect: Rectangle, private 
             game.smallFont.color = Color.WHITE
             batch.textLeft(game.smallFont, m.text(), c.x + TEXT_X, c.y + c.height - 30f)
             val bw = c.width - TEXT_X - PILL_W - 28f
-            game.tinyFont.color = if (done) INK_ON_GOLD else Color.WHITE
+            game.tinyFont.color = if (done) Skin.inkOn(Skin.GOLD) else Color.WHITE
             batch.textCentered(game.tinyFont, "${minOf(progress[i], m.target)}/${m.target}", c.x + TEXT_X + bw / 2, c.y + BAR_Y + BAR_H / 2)
             val px = c.x + c.width - PILL_W - 14f
-            game.tinyFont.color = if (done) INK_ON_GOLD else Skin.GOLD
+            game.tinyFont.color = if (done) Skin.inkOn(Skin.GOLD) else Skin.GOLD
             batch.textCentered(game.tinyFont, if (done) S["Concluída"] else S.f("+%d XP", m.xp), px + PILL_W / 2, c.y + BAR_Y + BAR_H / 2)
         }
         game.tinyFont.color = Color.WHITE
@@ -122,7 +122,7 @@ class MissionsPanel(private val game: MergeTdGame, val rect: Rectangle, private 
             shapes.circle(bx + 1f, by - 2f, 15f, 20)
             shapes.color = Skin.GOLD
             shapes.circle(bx, by, 14f, 20)
-            shapes.color = INK_ON_GOLD
+            shapes.color = Skin.inkOn(Skin.GOLD)
             shapes.rectLine(bx - 7f, by, bx - 2f, by - 6f, 4f)
             shapes.rectLine(bx - 2f, by - 6f, bx + 8f, by + 6f, 4f)
         }
@@ -143,11 +143,9 @@ class MissionsPanel(private val game: MergeTdGame, val rect: Rectangle, private 
         private const val BAR_Y = 20f
         private const val BAR_H = 24f
         private const val PILL_W = 118f
-        val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
         private val CARD_DONE = Color(0.22f, 0.21f, 0.18f, 1f)
         private val BAR_BACK = Color(0.11f, 0.12f, 0.16f, 1f)
         private val PILL = Color(0.11f, 0.12f, 0.16f, 1f)
-        private val INK_ON_GOLD = Color(0.22f, 0.16f, 0.04f, 1f)
         private val TILE_BOSS = Color(0.45f, 0.14f, 0.20f, 1f)
         private val TILE_MODE = Color(0.22f, 0.38f, 0.72f, 1f)
     }

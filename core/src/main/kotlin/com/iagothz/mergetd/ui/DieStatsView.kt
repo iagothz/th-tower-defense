@@ -40,7 +40,7 @@ class DieStatsView(private val game: MergeTdGame) {
             game.tinyFont.color = color(s.kind)
             game.batch.textLeft(game.tinyFont, s.label.uppercase(), r.x + 46f, r.y + r.height - 28f)
             textWithArrow(game.smallFont, s.value, r.x + 14f, r.y + 38f, Color.WHITE)
-            textWithArrow(game.tinyFont, s.note, r.x + 14f, r.y + 14f, KEY_COLOR)
+            textWithArrow(game.tinyFont, s.note, r.x + 14f, r.y + 14f, Skin.MUTED)
         }
         game.tinyFont.color = Color.WHITE
     }
@@ -109,7 +109,6 @@ class DieStatsView(private val game: MergeTdGame) {
     companion object {
         const val HEIGHT = 92f
         const val GAP = 12f
-        val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
         private val SPEED_COLOR = Color(0.45f, 0.72f, 1f, 1f)
         private val EFFECT_COLOR = Color(0.78f, 0.82f, 0.95f, 1f)
         private val SYNERGY_COLOR = Color(0.45f, 0.85f, 0.55f, 1f)
@@ -127,7 +126,7 @@ class DieStatsView(private val game: MergeTdGame) {
             S["7 pips"] -> Skin.GOLD
             S["Sinergia"] -> SYNERGY_COLOR
             S["Power-up"] -> POWER_COLOR
-            else -> KEY_COLOR
+            else -> Skin.MUTED
         }
     }
 }

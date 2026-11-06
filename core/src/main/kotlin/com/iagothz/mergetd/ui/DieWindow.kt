@@ -71,13 +71,13 @@ class DieWindow(private val game: MergeTdGame, private val accountLevel: Int, pr
         val shapes = game.shapes
         Gdx.gl.glEnable(GL20.GL_BLEND)
         shapes.begin(ShapeRenderer.ShapeType.Filled)
-        shapes.color = DIM
+        shapes.color = Skin.DIM
         shapes.rect(-400f, -400f, worldWidth + 800f, worldHeight + 800f)
         shapes.color = Skin.SHADOW
         shapes.roundedRect(card.x + 3f, card.y - 10f, card.width, card.height, 24f)
         shapes.color = Skin.PANEL
         shapes.roundedRect(card.x, card.y, card.width, card.height, 24f)
-        shapes.color = if (unlocked(t)) Skin.color(t) else LOCKED
+        shapes.color = if (unlocked(t)) Skin.color(t) else Skin.LOCKED
         shapes.roundedRect(card.x, top - 14f, card.width, 14f, 7f)
         drawDie(shapes, t, left + 48f, top - 84f, 96f)
         val cx = close.x + close.width / 2
@@ -90,7 +90,7 @@ class DieWindow(private val game: MergeTdGame, private val accountLevel: Int, pr
         if (unlocked(t)) {
             val lit = game.save.dieLevel(t)
             for (i in 0 until DieLevels.MAX) {
-                shapes.color = if (i < lit) Skin.GOLD else STAR_OFF
+                shapes.color = if (i < lit) Skin.GOLD else Skin.STAR_OFF
                 shapes.polygon(left + 124f + i * 26f, top - 112f, 10f, 5, Math.PI.toFloat() / 2)
             }
         }
@@ -102,7 +102,7 @@ class DieWindow(private val game: MergeTdGame, private val accountLevel: Int, pr
         val batch = game.batch
         batch.begin()
         game.font.draw(batch, Skin.fullName(t), left + 112f, top - 50f)
-        game.tinyFont.color = DieStatsView.KEY_COLOR
+        game.tinyFont.color = Skin.MUTED
         val sub = if (unlocked(t)) levelText(t) else S.f("Abre no nível de conta %d", DiceUnlocks.unlockLevel(t))
         batch.textLeft(game.tinyFont, sub, left + (if (unlocked(t)) 252f else 112f), top - 112f)
         game.tinyFont.color = Color.WHITE
@@ -141,12 +141,12 @@ class DieWindow(private val game: MergeTdGame, private val accountLevel: Int, pr
             return
         }
         val h = size / 2
-        shapes.bevelRect(cx - h, cy - h, size, size, size * 0.19f, LOCKED)
-        shapes.glyph(t, cx, cy + 2f, size * 0.3f, LOCKED_INK, LOCKED)
-        shapes.color = LOCK_COLOR
+        shapes.bevelRect(cx - h, cy - h, size, size, size * 0.19f, Skin.LOCKED)
+        shapes.glyph(t, cx, cy + 2f, size * 0.3f, Skin.LOCKED_INK, Skin.LOCKED)
+        shapes.color = Skin.LOCK_COLOR
         shapes.ring(cx, cy + 4f, size * 0.11f, 4f, 20)
         shapes.roundedRect(cx - size * 0.15f, cy - size * 0.19f, size * 0.3f, size * 0.23f, 5f)
-        shapes.color = LOCKED
+        shapes.color = Skin.LOCKED
         shapes.circle(cx, cy - size * 0.08f, 3f, 12)
     }
 
@@ -181,11 +181,6 @@ class DieWindow(private val game: MergeTdGame, private val accountLevel: Int, pr
         const val CENTER_Y = 655f
         const val LEVEL_UP_H = 64f
         val CLOSE = Any()
-        val DIM = Color(0f, 0f, 0f, 0.72f)
         val LEVEL_COLOR = Color(0.72f, 0.52f, 0.12f, 1f)
-        val LOCKED = Color(0.22f, 0.23f, 0.29f, 1f)
-        val LOCKED_INK = Color(0.32f, 0.33f, 0.40f, 1f)
-        val LOCK_COLOR = Color(0.62f, 0.64f, 0.72f, 1f)
-        val STAR_OFF = Color(0.26f, 0.27f, 0.34f, 1f)
     }
 }

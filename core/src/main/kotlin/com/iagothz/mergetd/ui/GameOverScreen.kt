@@ -122,7 +122,7 @@ class GameOverScreen(
         for ((i, row) in rows.withIndex()) {
             val (key, value) = row
             val shown = counters.getOrNull(i - 1)?.first?.shown?.toString() ?: value
-            game.smallFont.color = KEY_COLOR
+            game.smallFont.color = Skin.MUTED
             game.batch.textLeft(game.smallFont, key, panel.x + 32f, y)
             game.smallFont.color = Color.WHITE
             game.font.color = if (key == S["Onda alcançada"]) Skin.GOLD else Color.WHITE
@@ -142,7 +142,7 @@ class GameOverScreen(
             game.smallFont.color = Color.WHITE
         }
         if (code != null) {
-            game.tinyFont.color = KEY_COLOR
+            game.tinyFont.color = Skin.MUTED
             game.batch.textCentered(game.tinyFont, S.f("Código da partida: %s", code), 360f, 1080f)
             game.tinyFont.color = Color.WHITE
         }
@@ -212,6 +212,5 @@ class GameOverScreen(
         const val CHEST_FROM = 0.9f
         const val CHEST_STAGGER = 0.15f
         const val CHEST_POP = 0.2f
-        val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
     }
 }

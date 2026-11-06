@@ -43,14 +43,14 @@ class ChallengeScreen(game: MergeTdGame) : BaseScreen(game) {
         game.batch.textShadowed(game.bigFont, S["Desafios"], 360f, 1222f)
         // Daily.
         game.batch.textLeft(game.font, S["Desafio do dia"], dailyCard.x + 28f, dailyCard.y + dailyCard.height - 40f)
-        game.smallFont.color = KEY_COLOR
+        game.smallFont.color = Skin.MUTED
         game.batch.textRight(game.smallFont, daily.dateLabel, dailyCard.x + dailyCard.width - 28f, dailyCard.y + dailyCard.height - 40f)
         game.batch.textLeft(game.smallFont, S[daily.map.title], dailyCard.x + 28f, dailyCard.y + dailyCard.height - 86f)
         game.smallFont.color = Color.WHITE
         game.batch.textRight(game.smallFont, S.f("recorde %d", game.save.dailyBest(daily.day)), dailyCard.x + dailyCard.width - 28f, dailyCard.y + dailyCard.height - 86f)
         // Weekly.
         game.batch.textLeft(game.font, S["Desafio semanal"], weeklyCard.x + 28f, weeklyCard.y + weeklyCard.height - 40f)
-        game.smallFont.color = KEY_COLOR
+        game.smallFont.color = Skin.MUTED
         game.batch.textRight(game.smallFont, S.f("Semana de %s", weekly.dateLabel), weeklyCard.x + weeklyCard.width - 28f, weeklyCard.y + weeklyCard.height - 40f)
         game.batch.textLeft(game.smallFont, S[weekly.map.title], weeklyCard.x + 28f, weeklyCard.y + weeklyCard.height - 86f)
         game.smallFont.color = Color.WHITE
@@ -75,9 +75,5 @@ class ChallengeScreen(game: MergeTdGame) : BaseScreen(game) {
             playDaily -> game.startDaily()
             playWeekly -> game.startWeekly()
         }
-    }
-
-    private companion object {
-        val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
     }
 }

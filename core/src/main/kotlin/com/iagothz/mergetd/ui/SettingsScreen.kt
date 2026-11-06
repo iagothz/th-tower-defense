@@ -62,18 +62,18 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
         vibration.drawText(game.batch, game.smallFont)
         motion.drawText(game.batch, game.smallFont)
         largeText.drawText(game.batch, game.smallFont)
-        game.smallFont.color = KEY_COLOR
+        game.smallFont.color = Skin.MUTED
         game.batch.textLeft(game.smallFont, S["Idioma"], 60f, 610f)
         game.smallFont.color = Color.WHITE
         for ((_, b) in languages) b.drawText(game.batch, game.smallFont)
         val cloud = game.cloud.status
         if (cloud != CloudController.Status.Unavailable) {
-            game.smallFont.color = KEY_COLOR
+            game.smallFont.color = Skin.MUTED
             game.batch.textLeft(game.smallFont, CloudText.line(cloud, DailyChallenge.today()), 60f, 388f)
             game.smallFont.color = Color.WHITE
             if (cloudLabel() != null) cloudButton.drawText(game.batch, game.smallFont)
         }
-        game.tinyFont.color = KEY_COLOR
+        game.tinyFont.color = Skin.MUTED
         val privacy = if (cloud == CloudController.Status.Unavailable) "Privacidade: este jogo funciona sem internet, não coleta nem envia nenhum dado."
         else "Privacidade: este jogo funciona sem internet e não coleta nada. Com a nuvem ligada, seu progresso fica na sua conta do Google Play Games."
         game.tinyFont.draw(game.batch, S[privacy], 60f, 330f, 600f, Align.left, true)
@@ -93,7 +93,7 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
     }
 
     private fun label(text: String, value: Float, r: Rectangle) {
-        game.smallFont.color = KEY_COLOR
+        game.smallFont.color = Skin.MUTED
         game.batch.textLeft(game.smallFont, text, r.x, r.y + r.height + 30f)
         game.smallFont.color = Color.WHITE
         game.batch.textRight(game.smallFont, "${(value * 100).toInt()}%", r.x + r.width, r.y + r.height + 30f)
@@ -163,7 +163,6 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
     }
 
     private companion object {
-        val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
         val ON = Color(0.55f, 0.30f, 0.75f, 1f)
     }
 }

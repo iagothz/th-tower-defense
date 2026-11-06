@@ -55,7 +55,7 @@ class StatsScreen(game: MergeTdGame) : BaseScreen(game) {
         for ((i, kv) in t.withIndex()) {
             val x = totalsPanel.x + 24f + (i % 2) * 336f
             val y = totalsPanel.y + totalsPanel.height - 66f - (i / 2) * 38f
-            game.smallFont.color = KEY_COLOR
+            game.smallFont.color = Skin.MUTED
             game.batch.textLeft(game.smallFont, kv.first, x, y)
             game.smallFont.color = Color.WHITE
             game.batch.textRight(game.smallFont, kv.second, x + 300f, y)
@@ -64,7 +64,7 @@ class StatsScreen(game: MergeTdGame) : BaseScreen(game) {
         for ((i, m) in GameMap.entries.withIndex()) {
             val x = mapsPanel.x + 24f + (i % 2) * 336f
             val y = mapsPanel.y + mapsPanel.height - 66f - (i / 2) * 38f
-            game.smallFont.color = KEY_COLOR
+            game.smallFont.color = Skin.MUTED
             game.batch.textLeft(game.smallFont, S[m.title], x, y)
             game.smallFont.color = Color.WHITE
             game.batch.textRight(game.smallFont, S.f("onda %d", game.save.bestWave(m)), x + 300f, y)
@@ -79,7 +79,7 @@ class StatsScreen(game: MergeTdGame) : BaseScreen(game) {
         if (daily.isEmpty()) empty(dailyPanel, S["Nenhum desafio jogado ainda."])
         for ((i, entry) in daily.withIndex()) {
             val y = dailyPanel.y + dailyPanel.height - 70f - i * 44f
-            game.smallFont.color = KEY_COLOR
+            game.smallFont.color = Skin.MUTED
             game.batch.textLeft(game.smallFont, DailyChallenge.of(entry.first).dateLabel, dailyPanel.x + 24f, y)
             game.smallFont.color = Color.WHITE
             game.batch.textRight(game.font, S.f("onda %d", entry.second), dailyPanel.x + dailyPanel.width - 28f, y)
@@ -97,7 +97,7 @@ class StatsScreen(game: MergeTdGame) : BaseScreen(game) {
     }
 
     private fun empty(p: Rectangle, text: String) {
-        game.smallFont.color = KEY_COLOR
+        game.smallFont.color = Skin.MUTED
         game.batch.textLeft(game.smallFont, text, p.x + 24f, p.y + p.height - 72f)
         game.smallFont.color = Color.WHITE
     }
@@ -114,9 +114,5 @@ class StatsScreen(game: MergeTdGame) : BaseScreen(game) {
             achievements -> game.showAchievements()
             history -> game.showHistory()
         }
-    }
-
-    private companion object {
-        val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
     }
 }

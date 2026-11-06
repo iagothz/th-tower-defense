@@ -50,7 +50,7 @@ class CloudConflictScreen(game: MergeTdGame, private val cloudBlob: String) : Ba
         game.batch.textLeft(game.smallFont, S.f("nível %d · %d partidas", s.level, s.games), r.x + 32f, r.y + r.height - 92f)
         if (day != null) {
             val ago = DailyChallenge.today() - day
-            game.smallFont.color = KEY_COLOR
+            game.smallFont.color = Skin.MUTED
             game.batch.textLeft(game.smallFont, if (ago <= 0) S["hoje"] else S.f("há %d dias", ago), r.x + 32f, r.y + r.height - 132f)
             game.smallFont.color = Color.WHITE
         }
@@ -70,9 +70,5 @@ class CloudConflictScreen(game: MergeTdGame, private val cloudBlob: String) : Ba
         }
         game.sfx.click()
         game.showTab(Tab.HOME)
-    }
-
-    private companion object {
-        val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
     }
 }

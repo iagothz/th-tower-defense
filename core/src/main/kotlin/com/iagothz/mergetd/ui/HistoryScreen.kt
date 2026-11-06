@@ -30,13 +30,13 @@ class HistoryScreen(game: MergeTdGame) : BaseScreen(game) {
         game.batch.begin()
         game.batch.textShadowed(game.bigFont, S["Histórico"], 360f, 1222f)
         if (records.isEmpty()) {
-            game.smallFont.color = KEY_COLOR
+            game.smallFont.color = Skin.MUTED
             game.batch.textCentered(game.smallFont, S["Nenhuma partida terminada ainda."], 360f, 1100f)
             game.smallFont.color = Color.WHITE
         }
         for ((r, rect) in rows) {
             val cy = rect.y + rect.height / 2
-            game.tinyFont.color = KEY_COLOR
+            game.tinyFont.color = Skin.MUTED
             game.batch.textLeft(game.tinyFont, DailyChallenge.of(r.day).dateLabel.dropLast(5), rect.x + 12f, cy + 9f)
             game.batch.textLeft(game.tinyFont, "${S[r.map.title]} · ${S[r.mode.title]}", rect.x + 12f, cy - 10f)
             game.batch.textLeft(game.tinyFont, r.killedBy?.let { Skin.enemyName(it) } ?: "–", rect.x + 430f, cy - 10f)
@@ -56,9 +56,5 @@ class HistoryScreen(game: MergeTdGame) : BaseScreen(game) {
 
     override fun onTouchUp(p: Vec2) {
         if (tap.release(back.takeIf { it.contains(p.x, p.y) }) === back) game.showStats()
-    }
-
-    private companion object {
-        val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
     }
 }

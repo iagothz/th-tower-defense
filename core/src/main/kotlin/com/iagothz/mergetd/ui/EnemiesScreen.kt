@@ -22,7 +22,7 @@ class EnemiesScreen(game: MergeTdGame) : BaseScreen(game) {
         val shapes = game.shapes
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         for ((k, r) in rows) {
-            shapes.color = if (k == selected) ROW_SELECTED else Skin.PANEL
+            shapes.color = if (k == selected) Skin.ROW_SELECTED else Skin.PANEL
             shapes.roundedRect(r.x, r.y, r.width, r.height, 14f)
             val radius = Skin.enemyRadius(k) * 0.7f
             val cx = r.x + 40f
@@ -49,7 +49,7 @@ class EnemiesScreen(game: MergeTdGame) : BaseScreen(game) {
         game.batch.textShadowed(game.bigFont, S["Inimigos"], 360f, 1222f)
         for ((k, r) in rows) {
             game.batch.textLeft(game.smallFont, Skin.enemyName(k), r.x + 80f, r.y + r.height / 2 + 12f)
-            game.tinyFont.color = KEY_COLOR
+            game.tinyFont.color = Skin.MUTED
             game.batch.textLeft(game.tinyFont, description(k), r.x + 80f, r.y + r.height / 2 - 12f)
             game.batch.textRight(game.tinyFont, stats(k), r.x + r.width - 16f, r.y + r.height / 2 + 12f)
             game.tinyFont.color = Color.WHITE
@@ -87,7 +87,5 @@ class EnemiesScreen(game: MergeTdGame) : BaseScreen(game) {
             EnemyKind.ELITE to "Grande, cura a escolta e vale 30 SP.",
             EnemyKind.TREASURE to "Foge rápido; não tira vida, mas vale 60 SP.",
         )
-        private val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
-        private val ROW_SELECTED = Color(0.22f, 0.24f, 0.33f, 1f)
     }
 }

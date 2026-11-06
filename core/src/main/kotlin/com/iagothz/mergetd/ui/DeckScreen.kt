@@ -74,13 +74,13 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
                 shapes.roundedRect(r.x - 6, r.y - 6, r.width + 12, r.height + 12, 22f)
             }
             if (!isOpen(t)) {
-                shapes.bevelRect(r.x, r.y, r.width, r.height, 18f, LOCKED)
-                shapes.glyph(t, cx, cy + 2f, 25f * k, LOCKED_INK, LOCKED)
+                shapes.bevelRect(r.x, r.y, r.width, r.height, 18f, Skin.LOCKED)
+                shapes.glyph(t, cx, cy + 2f, 25f * k, Skin.LOCKED_INK, Skin.LOCKED)
                 // A padlock: the shackle's lower half hides behind the body.
-                shapes.color = LOCK_COLOR
+                shapes.color = Skin.LOCK_COLOR
                 shapes.ring(cx, cy + 4f * k, 9f * k, 4f * k, 20)
                 shapes.roundedRect(cx - 13f * k, cy - 16f * k, 26f * k, 20f * k, 5f * k)
-                shapes.color = LOCKED
+                shapes.color = Skin.LOCKED
                 shapes.circle(cx, cy - 7f * k, 3f * k, 12)
                 continue
             }
@@ -134,7 +134,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         game.batch.begin()
         game.batch.textShadowed(game.bigFont, S["Deck"], 360f, 1222f)
         if (selected.size < DeckCodec.SIZE) {
-            game.smallFont.color = KEY_COLOR
+            game.smallFont.color = Skin.MUTED
             game.batch.textLeft(game.smallFont, S.f("arraste %d", DeckCodec.SIZE - selected.size), 556f, 1142f)
             game.smallFont.color = Color.WHITE
         }
@@ -142,7 +142,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
             if (isOpen(t)) {
                 game.batch.textCentered(game.smallFont, Skin.label(t), r.x + r.width / 2, r.y - 18f)
             } else {
-                game.smallFont.color = KEY_COLOR
+                game.smallFont.color = Skin.MUTED
                 game.batch.textCentered(game.smallFont, S.f("Nv. %d", DiceUnlocks.unlockLevel(t)), r.x + r.width / 2, r.y - 18f)
                 game.smallFont.color = Color.WHITE
             }
@@ -151,7 +151,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         game.tinyFont.color = Skin.GOLD
         val line = if (pairs.isEmpty()) S["Sinergias do deck: nenhuma ainda (veja os pares na descrição de cada dado)"] else S.f("Sinergias do deck: %s", pairs.joinToString(", ") { S[it.title] })
         game.batch.textCentered(game.tinyFont, line, 360f, SYNERGY_Y)
-        game.tinyFont.color = KEY_COLOR
+        game.tinyFont.color = Skin.MUTED
         game.batch.textCentered(game.tinyFont, S["Toque num dado para ver tudo · arraste para montar o deck"], 360f, SYNERGY_Y - 26f)
         game.tinyFont.color = Color.WHITE
         enemies.drawText(game.batch, game.smallFont)
@@ -242,10 +242,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         const val PRESETS = 3
         val PRESET_FULL = Color(0.30f, 0.38f, 0.60f, 1f)
         val LEVEL_BADGE = Color(0.25f, 0.70f, 0.35f, 1f)
-        val BADGE_INK = Color(0.15f, 0.15f, 0.2f, 1f)
-        val LOCKED = Color(0.22f, 0.23f, 0.29f, 1f)
-        val LOCKED_INK = Color(0.32f, 0.33f, 0.40f, 1f)
-        val LOCK_COLOR = Color(0.62f, 0.64f, 0.72f, 1f)
+        val BADGE_INK = Skin.INK_DARK
         /** Four dice to a row, spread across the width; seven rows fit between the deck slots and the bottom bar. */
         const val COLS = 4
         const val TILE = 92f
@@ -258,6 +255,5 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         const val DRAG_LIFT = 40f
         /** The toast sits in the gap between the title and the deck slots. */
         const val TOAST_Y = 1188f
-        val KEY_COLOR = Color(0.65f, 0.67f, 0.75f, 1f)
     }
 }

@@ -76,8 +76,8 @@ class MatchScreen(
     }
     private val resume = Button(Rectangle(160f, 780f, 400f, 100f), S["Continuar"])
     private val restart = Button(Rectangle(160f, 650f, 400f, 100f), S["Reiniciar"], color = Skin.PANEL)
-    private val quit = Button(Rectangle(160f, 520f, 400f, 100f), S["Sair"], color = DANGER)
-    private val yes = Button(Rectangle(160f, 560f, 400f, 100f), S["Sim"], color = DANGER)
+    private val quit = Button(Rectangle(160f, 520f, 400f, 100f), S["Sair"], color = Skin.DANGER)
+    private val yes = Button(Rectangle(160f, 560f, 400f, 100f), S["Sim"], color = Skin.DANGER)
     private val no = Button(Rectangle(160f, 690f, 400f, 100f), S["Não"])
     private val skipTutorial = Button(Rectangle(540f, 1080f, 140f, 56f), S["Pular"], color = Skin.PANEL)
     private val allButtons = listOf(speedButton, pauseButton, resume, restart, quit, yes, no, skipTutorial) + powerButtons.map { it.second }
@@ -323,7 +323,7 @@ class MatchScreen(
         }
         val info = DieInfo.of(t)
         y -= game.smallFont.draw(batch, info.summary, left, y, INFO.width - 48f, Align.left, true).height + 10f
-        game.smallFont.color = KEY_COLOR
+        game.smallFont.color = Skin.MUTED
         y -= game.smallFont.draw(batch, info.rows.first { it.first == S["Efeito"] }.second, left, y, INFO.width - 48f, Align.left, true).height + 8f
         if (die.pips >= Balance.MAX_PIPS) {
             game.smallFont.color = Skin.GOLD
@@ -348,7 +348,7 @@ class MatchScreen(
         Gdx.gl.glEnable(GL20.GL_BLEND)
         val shapes = game.shapes
         shapes.begin(ShapeRenderer.ShapeType.Filled)
-        shapes.color = Color(0f, 0f, 0f, 0.7f)
+        shapes.color = Skin.DIM
         shapes.rect(-400f, -400f, Layout.WORLD_W + 800f, Layout.WORLD_H + 800f)
         for (b in pauseButtons()) b.drawShape(shapes)
         val progress = if (confirm == null) game.save.missionPreview(missionDay, missions, tracker.progress()) else null
@@ -541,8 +541,6 @@ class MatchScreen(
         const val END_TIME = 1.1f
         /** Camera lean-in at the peak of the boss-death slow motion. */
         const val ZOOM_IN = 0.05f
-        val DANGER = Color(0.7f, 0.25f, 0.25f, 1f)
-        val KEY_COLOR = Color(0.75f, 0.77f, 0.85f, 1f)
         /** Price on an empty cell while SP is short. */
         val PRICE_OFF = Color(0.42f, 0.44f, 0.52f, 1f)
         /** Die info card, in the sky above the board. */
