@@ -36,7 +36,7 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
     private fun newDrop(y: Float) = Drop(
         DieType.entries.random(rng),
         1 + rng.nextInt(7),
-        40f + rng.nextFloat() * (Layout.WORLD_W - 80f),
+        rainX(rng.nextFloat()),
         y,
         44f + rng.nextFloat() * 40f,
         25f + rng.nextFloat() * 35f,
@@ -48,8 +48,10 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         play.pressed = tap.current === play
         for (d in drops) {
             d.y -= d.speed * delta
-            if (d.y < -60f) {
-                val fresh = newDrop(Layout.WORLD_H + 60f)
+            // Off the visible world (taller than 1280 on long phones) before recycling, so none pops in or out on screen.
+            val half = viewport.worldHeight / 2
+            if (d.y < Layout.WORLD_H / 2 - half - 60f) {
+                val fresh = newDrop(Layout.WORLD_H / 2 + half + 60f)
                 d.type = fresh.type
                 d.pips = fresh.pips
                 d.x = fresh.x
@@ -130,3 +132,13 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         const val DROPS = 12
     }
 }
+
+/** The home screen's falling dice keep to two side lanes, [RAIN_LANE_MIN]..[RAIN_LANE_MAX] from each edge, so they
+ * never cross the title, the record pill or Jogar. [r] in 0..1: the first half fills the left lane, the rest the right. */
+fun rainX(r: Float): Float {
+    val lane = RAIN_LANE_MAX - RAIN_LANE_MIN
+    return if (r < 0.5f) RAIN_LANE_MIN + r * 2f * lane else Layout.WORLD_W - RAIN_LANE_MIN - (r - 0.5f) * 2f * lane
+}
+
+const val RAIN_LANE_MIN = 40f
+const val RAIN_LANE_MAX = 140f

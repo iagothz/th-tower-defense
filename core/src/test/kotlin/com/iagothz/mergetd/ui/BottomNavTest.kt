@@ -34,6 +34,26 @@ class BottomNavTest {
     }
 
     @Test
+    fun onTallerPhonesTheBarSitsOnTheScreenBottomAboveTheGestureStrip() {
+        val nav = BottomNav(Tab.DECK)
+        nav.place(-140f)
+        assertEquals(-140f + BottomNav.GESTURE_PAD, nav.base, 1e-3f)
+        assertEquals(Tab.CHALLENGES, nav.tabAt(500f, nav.base + 50f))
+        assertEquals(Tab.CHALLENGES, nav.tabAt(500f, -139f), "the gesture strip under it still answers")
+        assertNull(nav.tabAt(200f, nav.base + BottomNav.HEIGHT + 1f), "above the bar is the screen's")
+        assertNull(nav.tabAt(200f, 60f), "the old bar spot belongs to the screen now")
+    }
+
+    @Test
+    fun onA9by16ScreenTheBarStaysAtTheWorldBottom() {
+        val nav = BottomNav(Tab.DECK)
+        nav.place(0f)
+        assertEquals(0f, nav.base, 1e-3f)
+        nav.place(-5f)
+        assertEquals(0f, nav.base, 1e-3f, "a sliver smaller than the gesture strip doesn't move it")
+    }
+
+    @Test
     fun everyTabHasATranslatedTitle() {
         for (t in Tab.entries) assertTrue(S.has(Language.EN, t.title), t.title)
     }

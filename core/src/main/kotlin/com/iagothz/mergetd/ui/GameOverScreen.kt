@@ -112,11 +112,11 @@ class GameOverScreen(
         // The title slams in: big and settling over the first instants.
         val slam = (1f - (time / SLAM_TIME).coerceIn(0f, 1f))
         game.bigFont.data.setScale(1f + 1.2f * slam * slam)
-        game.batch.textShadowed(game.bigFont, S["Fim de jogo"], 360f, 1020f)
+        game.batch.textShadowed(game.bigFont, S["Fim de jogo"], 360f, 1160f)
         game.bigFont.data.setScale(1f)
         if (isRecord) {
             val pulse = 0.8f + 0.2f * sin(time * 4f)
-            game.batch.textShadowed(game.font, S["Novo recorde!"], 360f, 920f, Color(1f, 0.85f * pulse + 0.1f, 0.3f, 1f))
+            game.batch.textShadowed(game.font, S["Novo recorde!"], 360f, 950f, Color(1f, 0.85f * pulse + 0.1f, 0.3f, 1f))
         }
         var y = panel.y + panel.height - 44f
         for ((i, row) in rows.withIndex()) {
@@ -143,11 +143,11 @@ class GameOverScreen(
         }
         if (code != null) {
             game.tinyFont.color = Skin.MUTED
-            game.batch.textCentered(game.tinyFont, S.f("Código da partida: %s", code), 360f, 1080f)
+            game.batch.textCentered(game.tinyFont, S.f("Código da partida: %s", code), 360f, 1000f)
             game.tinyFont.color = Color.WHITE
         }
         if (score != null) {
-            game.batch.textShadowed(game.smallFont, S.f("Pontuação %d (onda %d × mutadores)", score, wave), 360f, 1172f, Skin.GOLD)
+            game.batch.textShadowed(game.smallFont, S.f("Pontuação %d (onda %d × mutadores)", score, wave), 360f, 1094f, Skin.GOLD)
         }
         for ((i, card) in chest.withIndex()) {
             if (cardScale(i) < 1f) continue
@@ -159,11 +159,11 @@ class GameOverScreen(
             game.sfx.play(setOf("pick"))
         }
         if (reward != null && reward.newDice.isNotEmpty()) {
-            game.batch.textShadowed(game.smallFont, S.f("Novo dado: %s", reward.newDice.joinToString(", ") { Skin.fullName(it) }), 360f, 888f, Skin.GOLD)
+            game.batch.textShadowed(game.smallFont, S.f("Novo dado: %s", reward.newDice.joinToString(", ") { Skin.fullName(it) }), 360f, 906f, Skin.GOLD)
         }
         if (reward != null) {
             val line = if (reward.leveledUp) S.f("Novo nível: %d!", reward.level) + "  ·  " + S.f("+%d XP", reward.xp) else S.f("+%d XP", reward.xp)
-            game.batch.textShadowed(game.smallFont, line, 360f, 1130f, if (reward.leveledUp) Skin.GOLD else Color.WHITE)
+            game.batch.textShadowed(game.smallFont, line, 360f, 1050f, if (reward.leveledUp) Skin.GOLD else Color.WHITE)
             var my = panel.y - 24f - achievementsHeight
             for (m in reward.missions) {
                 game.batch.textShadowed(game.tinyFont, S.f("Missão: %s", m.text()), 360f, my, Skin.GOLD)
@@ -171,7 +171,7 @@ class GameOverScreen(
             }
         }
         menu.drawText(game.batch, game.font)
-        share.drawText(game.batch, game.smallFont)
+        share.drawText(game.batch, game.font)
         if (copied > 0f) game.batch.textShadowed(game.smallFont, S["Copiado!"], 195f, 162f, Skin.GOLD)
         game.batch.end()
     }

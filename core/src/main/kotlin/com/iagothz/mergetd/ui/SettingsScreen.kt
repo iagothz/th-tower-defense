@@ -22,9 +22,9 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
     private val largeText = Toggle(Rectangle(60f, 580f, 600f, 72f), S["Texto grande"], game.save.largeText, reduced)
     private val toggles = listOf(vibration, motion, largeText)
     private val languages = Language.entries.mapIndexed { i, l -> l to Button(Rectangle(60f + i * 204f, 432f, 192f, 80f), S[l.title], style = ButtonStyle.SECONDARY) }
-    private val stats = Button(Rectangle(40f, 124f, 206f, 80f), S["Estatísticas"], style = ButtonStyle.SECONDARY)
-    private val achievements = Button(Rectangle(257f, 124f, 206f, 80f), S["Conquistas"], style = ButtonStyle.SECONDARY)
-    private val history = Button(Rectangle(474f, 124f, 206f, 80f), S["Histórico"], style = ButtonStyle.SECONDARY)
+    private val stats = Button(Rectangle(60f, 124f, 192f, 80f), S["Estatísticas"], style = ButtonStyle.SECONDARY)
+    private val achievements = Button(Rectangle(264f, 124f, 192f, 80f), S["Conquistas"], style = ButtonStyle.SECONDARY)
+    private val history = Button(Rectangle(468f, 124f, 192f, 80f), S["Histórico"], style = ButtonStyle.SECONDARY)
     private val links = listOf(stats, achievements, history)
     /** The cloud row's button; its text follows the controller's state and it is drawn only when there is one. */
     private val cloudButton = Button(Rectangle(468f, 352f, 192f, 56f), "", style = ButtonStyle.SECONDARY)

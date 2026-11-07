@@ -21,7 +21,8 @@ enum class Tab(val title: String) {
 
 /**
  * The bar along the bottom of every screen outside a match: one icon and label per [Tab], the [active] one lit.
- * It is [HEIGHT] tall in world units and, on phones taller than 9:16, its background runs on down to the edge.
+ * It is [HEIGHT] tall in world units. The screens are laid out for 9:16 and centred; on taller phones the bar moves
+ * down to the screen's bottom edge (see [place]) instead of floating over an empty band.
  */
 class BottomNav(val active: Tab) {
     val rects: List<Pair<Tab, Rectangle>> = Tab.entries.mapIndexed { i, t ->
@@ -42,21 +43,30 @@ class BottomNav(val active: Tab) {
     /** Tabs with a gold dot: something new waits there. */
     var badges: Set<Tab> = emptySet()
 
-    /** The tab under (x, y), reaching below 0 so the bar's extension on taller phones answers too. */
+    /** World y of the bar's bottom edge: 0 on a 9:16 screen, lower on taller phones. */
+    var base = 0f
+        private set
+
+    /** Puts the bar on the screen bottom ([visibleBottom], the lowest visible world y), over a [GESTURE_PAD] strip. */
+    fun place(visibleBottom: Float) {
+        base = minOf(0f, visibleBottom + GESTURE_PAD)
+    }
+
+    /** The tab under (x, y), reaching below [base] so the gesture strip under the bar answers too. */
     fun tabAt(x: Float, y: Float): Tab? {
-        if (y > HEIGHT) return null
+        if (y > base + HEIGHT) return null
         return rects.firstOrNull { (_, r) -> x >= r.x && x < r.x + r.width }?.first
     }
 
-    /** Shapes: the bar from [bottom] (the lowest visible world y) up to [HEIGHT], then the icons. */
-    fun draw(shapes: ShapeRenderer, bottom: Float) {
+    /** Shapes: the bar from below the screen up to [base] + [HEIGHT], then the icons. Call [place] first. */
+    fun draw(shapes: ShapeRenderer) {
         shapes.color = BAR
-        shapes.rect(-200f, bottom - 200f, Layout.WORLD_W + 400f, HEIGHT - bottom + 200f)
+        shapes.rect(-200f, base - 400f, Layout.WORLD_W + 400f, HEIGHT + 400f)
         shapes.color = LINE
-        shapes.rect(0f, HEIGHT - 2f, Layout.WORLD_W, 2f)
+        shapes.rect(0f, base + HEIGHT - 2f, Layout.WORLD_W, 2f)
         for ((t, r) in rects) {
             val cx = r.x + r.width / 2
-            val cy = ICON_Y
+            val cy = base + ICON_Y
             if (t == active) {
                 shapes.color = ACTIVE_PILL
                 shapes.roundedRect(cx - 34f, cy - 24f, 68f, 48f, 22f)
@@ -73,7 +83,7 @@ class BottomNav(val active: Tab) {
     fun drawText(batch: SpriteBatch, font: BitmapFont) {
         for ((t, r) in rects) {
             font.color = if (t == active) Skin.GOLD else INK
-            batch.textCentered(font, S[t.title], r.x + r.width / 2, LABEL_Y)
+            batch.textCentered(font, S[t.title], r.x + r.width / 2, base + LABEL_Y)
         }
         font.color = Color.WHITE
     }
@@ -118,6 +128,8 @@ class BottomNav(val active: Tab) {
         const val HEIGHT = 112f
         const val ICON_Y = 72f
         const val LABEL_Y = 26f
+        /** Room under the labels for the system's gesture handle. */
+        const val GESTURE_PAD = 12f
         val BAR = Color(0.09f, 0.10f, 0.14f, 0.97f)
         val LINE = Color(1f, 1f, 1f, 0.08f)
         val INK = Color(0.62f, 0.64f, 0.72f, 1f)

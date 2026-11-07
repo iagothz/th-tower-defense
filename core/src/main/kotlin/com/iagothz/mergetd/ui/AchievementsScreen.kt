@@ -9,7 +9,7 @@ import com.iagothz.mergetd.logic.Vec2
 class AchievementsScreen(game: MergeTdGame, val goBack: () -> Unit) : BaseScreen(game) {
     override val tab get() = Tab.SETTINGS
 
-    private val rows = Achievement.entries.mapIndexed { i, a -> a to Rectangle(24f, 1120f - i * 47f, 672f, 44f) }
+    private val rows = Achievement.entries.mapIndexed { i, a -> a to Rectangle(24f, 1100f - i * 47f, 672f, 44f) }
     private val header = ScreenHeader(S["Conquistas"], back = true)
     private val tap = Tap<ScreenHeader>()
 

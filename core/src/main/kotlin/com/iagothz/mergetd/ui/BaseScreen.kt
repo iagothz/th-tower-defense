@@ -109,7 +109,8 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
         draw(delta)
         nav?.let { bar ->
             game.shapes.begin(ShapeRenderer.ShapeType.Filled)
-            bar.draw(game.shapes, Layout.WORLD_H / 2 - viewport.worldHeight / 2)
+            bar.place(Layout.WORLD_H / 2 - viewport.worldHeight / 2)
+            bar.draw(game.shapes)
             game.shapes.end()
             game.batch.begin()
             bar.drawText(game.batch, game.tinyFont)
