@@ -10,13 +10,13 @@ import kotlin.test.assertTrue
 class SpriteAssetsTest {
     private val dir = listOf(File("../assets/sprites"), File("assets/sprites")).first { it.isDirectory }
 
-    private fun checkSheet(name: String, cols: Int, rows: Int) {
+    private fun checkSheet(name: String, cols: Int, rows: Int, square: Boolean = false) {
         val f = File(dir, "$name.png")
         assertTrue(f.isFile, "missing ${f.path}")
         val img = ImageIO.read(f)
         assertEquals(0, img.width % cols, "$name width splits into $cols frames")
         assertEquals(0, img.height % rows, "$name height splits into $rows rows")
-        assertEquals(img.width / cols, img.height / rows, "$name frames are square")
+        if (square) assertEquals(img.width / cols, img.height / rows, "$name frames are square")
     }
 
     @Test
@@ -29,7 +29,7 @@ class SpriteAssetsTest {
 
     @Test
     fun fireEffectsHaveTheirStrips() {
-        checkSheet("fire_impact", FireCats.BOOM_FRAMES, 1)
+        checkSheet("fire_impact", FireCats.BOOM_FRAMES, 1, square = true)
         assertTrue(File(dir, "fireball.png").isFile)
     }
 }

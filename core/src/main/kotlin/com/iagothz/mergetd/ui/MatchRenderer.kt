@@ -150,8 +150,8 @@ class MatchRenderer(
 
     /** The [pips]-level kitten of [cell] standing in a cell centred on (x, y); squash and stretch keep its feet down. */
     private fun drawCat(cell: Cell, pips: Int, x: Float, y: Float, scale: Float, brightness: Float, scaleX: Float = 1f, scaleY: Float = 1f) {
-        val w = CAT * scale * scaleX
-        val h = CAT * scale * scaleY
+        val w = CAT_H * Sprites.CAT_ASPECT * scale * scaleX
+        val h = CAT_H * scale * scaleY
         batch.setColor(brightness, brightness, brightness, 1f)
         batch.draw(sprites.cat(pips, cats.frame(cell)), x - w / 2, catFoot(y) - h * Sprites.CAT_FOOT, w, h)
     }
@@ -563,8 +563,8 @@ class MatchRenderer(
         private const val CELL_DEPTH = 20f
         private const val ENEMY_DEPTH = 10f
         const val DIE = Layout.CELL - 8f
-        /** Frame size of the fire kitten; the cat itself fills about two thirds of it. */
-        private const val CAT = Layout.CELL * 1.5f
+        /** Frame height of the fire kitten, so a bare kitten stands about one cell tall (hats rise above). */
+        private const val CAT_H = Layout.CELL * 1.04f / Sprites.CAT_FILL
         private const val CAT_BASE_W = Layout.CELL * 0.74f
         private const val CAT_BASE_H = Layout.CELL * 0.26f
         private const val BALL = 66f
