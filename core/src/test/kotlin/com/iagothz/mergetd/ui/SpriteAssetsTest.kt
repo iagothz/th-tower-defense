@@ -1,0 +1,35 @@
+package com.iagothz.mergetd.ui
+
+import java.io.File
+import javax.imageio.ImageIO
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+
+/** Every pip level the renderer draws as a kitten must ship its sheets, cut into whole frames. */
+class SpriteAssetsTest {
+    private val dir = listOf(File("../assets/sprites"), File("assets/sprites")).first { it.isDirectory }
+
+    private fun checkSheet(name: String, cols: Int, rows: Int) {
+        val f = File(dir, "$name.png")
+        assertTrue(f.isFile, "missing ${f.path}")
+        val img = ImageIO.read(f)
+        assertEquals(0, img.width % cols, "$name width splits into $cols frames")
+        assertEquals(0, img.height % rows, "$name height splits into $rows rows")
+        assertEquals(img.width / cols, img.height / rows, "$name frames are square")
+    }
+
+    @Test
+    fun everyKittenLevelHasItsSheets() {
+        for (pips in 1..Sprites.CAT_PIPS) {
+            checkSheet("fire_cat${pips}_idle", FireCats.IDLE_FRAMES, FireCats.ROWS.size)
+            checkSheet("fire_cat${pips}_attack", FireCats.ATTACK_FRAMES, FireCats.ROWS.size)
+        }
+    }
+
+    @Test
+    fun fireEffectsHaveTheirStrips() {
+        checkSheet("fire_impact", FireCats.BOOM_FRAMES, 1)
+        assertTrue(File(dir, "fireball.png").isFile)
+    }
+}

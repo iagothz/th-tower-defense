@@ -7,7 +7,7 @@ import kotlin.math.atan2
 import kotlin.math.roundToInt
 
 /**
- * Fire dice at 1 pip are drawn as a kitten. This keeps, per board cell, which way it faces and where it is in
+ * Fire dice at low pip levels are drawn as a kitten. This keeps, per board cell, which way it faces and where it is in
  * its idle or attack animation, plus the fireballs in flight and their bursts. Pure state: [MatchRenderer] draws it.
  */
 class FireCats {

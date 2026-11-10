@@ -67,11 +67,13 @@ class MatchRenderer(
             if (cat && cell != null) cats.shot(cell, chest(Layout.cellCenter(cell)), shot.to.first())
             traces += Trace(shot, traceTtl(shot.type), seedCounter++, cat)
         }
-        cats.retain(match.board.occupied().filter { isCat(it.second) }.map { it.first }.toSet())
+        val catCells = match.board.occupied().filter { isCat(it.second) }
+        catCells.forEach { sprites.prepareCat(it.second.pips) }
+        cats.retain(catCells.map { it.first }.toSet())
     }
 
-    /** Fire dice at 1 pip are drawn as the rendered kitten instead of a die. */
-    private fun isCat(die: Die) = die.type == DieType.FIRE && die.pips == 1
+    /** Fire dice are drawn as the rendered kitten, at the pip levels that have art. */
+    private fun isCat(die: Die) = die.type == DieType.FIRE && die.pips <= Sprites.CAT_PIPS
 
     private fun chest(cellCenter: Vec2) = Vec2(cellCenter.x, cellCenter.y + Layout.CELL * 0.02f)
 
@@ -126,16 +128,16 @@ class MatchRenderer(
             if (!isCat(die) || effects.slidingTo(cell)) continue
             val c = Layout.cellCenter(cell)
             if (cell == drag.dragging) {
-                drawCat(cell, c.x, c.y, 1f, 0.35f)
+                drawCat(cell, die.pips, c.x, c.y, 1f, 0.35f)
                 continue
             }
             val kick = effects.kickOffset(cell)
             val glow = effects.typeGlow(die.type)
             val s = effects.dieScale(cell)
-            drawCat(cell, c.x + kick.x, c.y + effects.dropOffset(cell) + kick.y, 1f + 0.1f * glow, if (die.disabled) 0.4f else 1f, s.x, s.y)
+            drawCat(cell, die.pips, c.x + kick.x, c.y + effects.dropOffset(cell) + kick.y, 1f + 0.1f * glow, if (die.disabled) 0.4f else 1f, s.x, s.y)
         }
         val from = drag.dragging
-        lifted(match, drag)?.let { (die, p) -> if (isCat(die) && from != null) drawCat(from, p.x, p.y, DRAG_SCALE, 1f) }
+        lifted(match, drag)?.let { (die, p) -> if (isCat(die) && from != null) drawCat(from, die.pips, p.x, p.y, DRAG_SCALE, 1f) }
         for (b in cats.balls) {
             val p = b.position
             val ox = BALL * Sprites.BALL_CORE_X
@@ -146,12 +148,12 @@ class MatchRenderer(
         batch.setColor(1f, 1f, 1f, 1f)
     }
 
-    /** The kitten of [cell] standing in a cell centred on (x, y); squash and stretch keep its feet on the ground. */
-    private fun drawCat(cell: Cell, x: Float, y: Float, scale: Float, brightness: Float, scaleX: Float = 1f, scaleY: Float = 1f) {
+    /** The [pips]-level kitten of [cell] standing in a cell centred on (x, y); squash and stretch keep its feet down. */
+    private fun drawCat(cell: Cell, pips: Int, x: Float, y: Float, scale: Float, brightness: Float, scaleX: Float = 1f, scaleY: Float = 1f) {
         val w = CAT * scale * scaleX
         val h = CAT * scale * scaleY
         batch.setColor(brightness, brightness, brightness, 1f)
-        batch.draw(sprites.cat(cats.frame(cell)), x - w / 2, catFoot(y) - h * Sprites.CAT_FOOT, w, h)
+        batch.draw(sprites.cat(pips, cats.frame(cell)), x - w / 2, catFoot(y) - h * Sprites.CAT_FOOT, w, h)
     }
 
     private fun catFoot(cellCenterY: Float) = cellCenterY - Layout.CELL * 0.36f
