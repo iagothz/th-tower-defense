@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
 import com.iagothz.mergetd.logic.Balance
+import com.iagothz.mergetd.logic.Cell
 import com.iagothz.mergetd.logic.Die
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.Enemy
@@ -25,17 +26,20 @@ import kotlin.math.sin
 class MatchRenderer(
     private val shapes: ShapeRenderer,
     private val batch: SpriteBatch,
+    private val sprites: Sprites,
     private val font: BitmapFont,
     private val smallFont: BitmapFont,
     private val tinyFont: BitmapFont,
 ) {
-    private class Trace(val shot: ShotEvent, val ttl: Float, val seed: Int) {
+    /** [cat]: thrown by a fire kitten, which draws its own fireball instead of a beam. */
+    private class Trace(val shot: ShotEvent, val ttl: Float, val seed: Int, val cat: Boolean = false) {
         var left = ttl
         /** 1 when fired, 0 when gone. */
         val life: Float get() = (left / ttl).coerceIn(0f, 1f)
     }
 
     private val traces = mutableListOf<Trace>()
+    private val cats = FireCats()
     private val tmp = Color()
     private val tmp2 = Color()
     private var seedCounter = 0
@@ -45,14 +49,29 @@ class MatchRenderer(
     private var bossSeen: Enemy? = null
     private var bossShown = 0f
 
-    /** Collects the shots of the last update and ages old traces. */
-    fun update(match: Match, delta: Float) {
+    /**
+     * Collects the shots of the last update and ages old traces. [newShots] is false while the match is frozen
+     * (game over), when the last update's shots are still listed but were already shown.
+     */
+    fun update(match: Match, delta: Float, newShots: Boolean = true) {
         clock += delta
         lastDelta = delta
         traces.forEach { it.left -= delta }
         traces.removeAll { it.left <= 0f }
-        match.lastShots.forEach { traces += Trace(it, traceTtl(it.type), seedCounter++) }
+        cats.update(delta)
+        if (newShots) for (shot in match.lastShots) {
+            val cell = Layout.cellAt(shot.from)
+            val cat = cell != null && match.board[cell]?.let(::isCat) == true
+            if (cat && cell != null) cats.shot(cell, chest(Layout.cellCenter(cell)), shot.to.first())
+            traces += Trace(shot, traceTtl(shot.type), seedCounter++, cat)
+        }
+        cats.retain(match.board.occupied().filter { isCat(it.second) }.map { it.first }.toSet())
     }
+
+    /** Fire dice at 1 pip are drawn as the rendered kitten instead of a die. */
+    private fun isCat(die: Die) = die.type == DieType.FIRE && die.pips == 1
+
+    private fun chest(cellCenter: Vec2) = Vec2(cellCenter.x, cellCenter.y + Layout.CELL * 0.02f)
 
     private fun traceTtl(t: DieType): Float = when (t) {
         DieType.SNIPER -> 0.22f
@@ -61,20 +80,28 @@ class MatchRenderer(
         else -> SHOT_TTL
     }
 
-    /** Call inside a Filled ShapeRenderer batch. */
-    fun drawShapes(match: Match, drag: DragController, effects: Effects) {
+    /** The ground layer: path, board and enemies. Call inside a Filled ShapeRenderer batch, before [drawSprites]. */
+    fun drawWorldShapes(match: Match, drag: DragController, effects: Effects) {
         drawPath(match)
         drawTraps(match)
         drawBoard(match, drag, effects)
         drawEnemies(match, effects)
+        lifted(match, drag)?.let { (die, p) ->
+            if (!isCat(die)) return@let
+            shapes.color = tmp2.set(0f, 0f, 0f, 0.35f)
+            val w = CAT_BASE_W * DRAG_SCALE
+            shapes.ellipse(p.x - w / 2 + 8f, catFoot(p.y) - 22f, w, CAT_BASE_H * DRAG_SCALE)
+        }
+    }
+
+    /** Above the sprites: slides, shot traces, effects, the lifted die and the HUD. Call inside a Filled ShapeRenderer batch. */
+    fun drawOverlayShapes(match: Match, drag: DragController, effects: Effects) {
         for (s in effects.slides) shapes.die(s.type, s.pips, s.x, s.y, DIE)
         drawTraces()
         effects.drawShapes(shapes)
-        val from = drag.dragging
-        val at = drag.pointer
-        if (from != null && at != null) match.board[from]?.let { die ->
-            // Lifted: bigger, with a shadow further below, and pulled onto a compatible cell when close.
-            val p = drag.snapTarget()?.let { Layout.cellCenter(it) } ?: at
+        lifted(match, drag)?.let { (die, p) ->
+            if (isCat(die)) return@let
+            // Lifted: bigger, with a shadow further below.
             val s = DIE * DRAG_SCALE
             shapes.color = tmp2.set(0f, 0f, 0f, 0.35f)
             shapes.roundedRect(p.x - s / 2 + 8f, p.y - s / 2 - 16f, s, s, 20f)
@@ -82,6 +109,50 @@ class MatchRenderer(
         }
         drawHudShapes(match, effects)
     }
+
+    /** The die being dragged and where it is drawn: at the finger, or pulled onto a compatible cell when close. */
+    private fun lifted(match: Match, drag: DragController): Pair<Die, Vec2>? {
+        val from = drag.dragging ?: return null
+        val at = drag.pointer ?: return null
+        val die = match.board[from] ?: return null
+        return die to (drag.snapTarget()?.let { Layout.cellCenter(it) } ?: at)
+    }
+
+    /** The fire kittens, their fireballs and the bursts. Call inside a SpriteBatch batch, between the two shape layers. */
+    fun drawSprites(match: Match, drag: DragController, effects: Effects) {
+        for ((cell, die) in match.board.occupied()) {
+            if (!isCat(die) || effects.slidingTo(cell)) continue
+            val c = Layout.cellCenter(cell)
+            if (cell == drag.dragging) {
+                drawCat(cell, c.x, c.y, 1f, 0.35f)
+                continue
+            }
+            val kick = effects.kickOffset(cell)
+            val glow = effects.typeGlow(die.type)
+            val s = effects.dieScale(cell)
+            drawCat(cell, c.x + kick.x, c.y + effects.dropOffset(cell) + kick.y, 1f + 0.1f * glow, if (die.disabled) 0.4f else 1f, s.x, s.y)
+        }
+        val from = drag.dragging
+        lifted(match, drag)?.let { (die, p) -> if (isCat(die) && from != null) drawCat(from, p.x, p.y, DRAG_SCALE, 1f) }
+        for (b in cats.balls) {
+            val p = b.position
+            val ox = BALL * Sprites.BALL_CORE_X
+            val oy = BALL * Sprites.BALL_CORE_Y
+            batch.draw(sprites.fireball(clock), p.x - ox, p.y - oy, ox, oy, BALL, BALL, 1f, 1f, b.angle)
+        }
+        for (b in cats.booms) batch.draw(sprites.impact(b.index), b.at.x - BOOM / 2, b.at.y - BOOM / 2, BOOM, BOOM)
+        batch.setColor(1f, 1f, 1f, 1f)
+    }
+
+    /** The kitten of [cell] standing in a cell centred on (x, y); squash and stretch keep its feet on the ground. */
+    private fun drawCat(cell: Cell, x: Float, y: Float, scale: Float, brightness: Float, scaleX: Float = 1f, scaleY: Float = 1f) {
+        val w = CAT * scale * scaleX
+        val h = CAT * scale * scaleY
+        batch.setColor(brightness, brightness, brightness, 1f)
+        batch.draw(sprites.cat(cats.frame(cell)), x - w / 2, catFoot(y) - h * Sprites.CAT_FOOT, w, h)
+    }
+
+    private fun catFoot(cellCenterY: Float) = cellCenterY - Layout.CELL * 0.36f
 
     /** Call inside a SpriteBatch batch. [sp] is the rolling counter's value, not the match's. */
     fun drawHud(match: Match, effects: Effects, sp: Int) {
@@ -253,6 +324,16 @@ class MatchRenderer(
             }
             val die = match.board[cell] ?: continue
             if (effects.slidingTo(cell)) continue
+            if (isCat(die)) {
+                // The kitten itself is a sprite (drawSprites); here only the warm spot it stands on.
+                val bright = if (die.disabled || cell == drag.dragging) 0.4f else 1f
+                val fy = catFoot(c.y + effects.dropOffset(cell))
+                shapes.color = tmp2.set(Skin.color(DieType.FIRE)).mul(0.55f * bright, 0.4f * bright, 0.4f * bright, 1f)
+                shapes.ellipse(c.x - CAT_BASE_W / 2, fy - CAT_BASE_H / 2 - 3f, CAT_BASE_W, CAT_BASE_H)
+                shapes.color = tmp2.set(Skin.color(DieType.FIRE)).mul(bright, bright, bright, 1f)
+                shapes.ellipse(c.x - CAT_BASE_W / 2, fy - CAT_BASE_H / 2, CAT_BASE_W, CAT_BASE_H)
+                continue
+            }
             val kick = effects.kickOffset(cell)
             val lifted = Vec2(c.x + kick.x, c.y + effects.dropOffset(cell) + kick.y)
             if (cell == drag.dragging) {
@@ -337,6 +418,11 @@ class MatchRenderer(
             val type = t.shot.type
             val color = tmp.set(Skin.color(type))
             val life = t.life
+            if (t.cat) {
+                // The kitten throws a rendered fireball (drawSprites); only a crit still gets its star.
+                if (t.shot.crit) drawCrit(t.shot.to.first(), life)
+                continue
+            }
             // Muzzle flash on the die.
             shapes.color = tmp2.set(color).lerp(Color.WHITE, 0.5f).also { it.a = life }
             shapes.circle(t.shot.from.x, t.shot.from.y, 6f + 10f * life, 12)
@@ -353,16 +439,17 @@ class MatchRenderer(
                 shapes.color = tmp2.set(color).also { it.a = life }
                 shapes.ring(hit.x, hit.y, r, 3f)
             }
-            if (t.shot.crit) {
-                val hit = t.shot.to.first()
-                shapes.color = tmp2.set(1f, 0.85f, 0.4f, life)
-                val s = 14f + 10f * (1f - life)
-                shapes.rectLine(hit.x - s, hit.y, hit.x + s, hit.y, 3f)
-                shapes.rectLine(hit.x, hit.y - s, hit.x, hit.y + s, 3f)
-                shapes.rectLine(hit.x - s * 0.7f, hit.y - s * 0.7f, hit.x + s * 0.7f, hit.y + s * 0.7f, 2f)
-                shapes.rectLine(hit.x - s * 0.7f, hit.y + s * 0.7f, hit.x + s * 0.7f, hit.y - s * 0.7f, 2f)
-            }
+            if (t.shot.crit) drawCrit(t.shot.to.first(), life)
         }
+    }
+
+    private fun drawCrit(hit: Vec2, life: Float) {
+        shapes.color = tmp2.set(1f, 0.85f, 0.4f, life)
+        val s = 14f + 10f * (1f - life)
+        shapes.rectLine(hit.x - s, hit.y, hit.x + s, hit.y, 3f)
+        shapes.rectLine(hit.x, hit.y - s, hit.x, hit.y + s, 3f)
+        shapes.rectLine(hit.x - s * 0.7f, hit.y - s * 0.7f, hit.x + s * 0.7f, hit.y + s * 0.7f, 2f)
+        shapes.rectLine(hit.x - s * 0.7f, hit.y + s * 0.7f, hit.x + s * 0.7f, hit.y - s * 0.7f, 2f)
     }
 
     /** Straight lines; chains hop from hit to hit, a quake fans out to every enemy from the die. */
@@ -450,6 +537,13 @@ class MatchRenderer(
         private const val URGENT = 3f
         const val PATH_WIDTH = 40f
         const val DIE = Layout.CELL - 8f
+        /** Frame size of the fire kitten; the cat itself fills about two thirds of it. */
+        private const val CAT = Layout.CELL * 1.5f
+        private const val CAT_BASE_W = Layout.CELL * 0.74f
+        private const val CAT_BASE_H = Layout.CELL * 0.26f
+        private const val BALL = 66f
+        /** The burst's ring roughly matches the fire splash. */
+        private const val BOOM = Balance.FIRE_SPLASH_RADIUS * 2.3f
         private const val BOARD_PAD = 18f
         val BOARD = Rectangle(
             Layout.GRID_X - BOARD_PAD,

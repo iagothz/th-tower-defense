@@ -24,6 +24,7 @@ import com.iagothz.mergetd.logic.MatchSetup
 class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String) -> Unit)? = null, private val cloudSave: CloudSave = NoCloud) : Game() {
     lateinit var shapes: ShapeRenderer
     lateinit var batch: SpriteBatch
+    lateinit var sprites: Sprites
     lateinit var font: BitmapFont
     lateinit var bigFont: BitmapFont
     lateinit var smallFont: BitmapFont
@@ -43,6 +44,7 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
         Gdx.input.setCatchKey(com.badlogic.gdx.Input.Keys.BACK, true)
         shapes = ShapeRenderer()
         batch = SpriteBatch()
+        sprites = Sprites()
         save = SaveData(Gdx.app.getPreferences("merge-td"))
         buildFonts()
         sfx = Sfx(save)
@@ -216,6 +218,7 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
         screen?.dispose()
         shapes.dispose()
         batch.dispose()
+        sprites.dispose()
         font.dispose()
         bigFont.dispose()
         smallFont.dispose()

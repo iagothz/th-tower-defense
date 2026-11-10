@@ -40,7 +40,7 @@ class MatchScreen(
     private val match = restored ?: fresh ?: Match.seeded(game.save.playableDeck(), game.save.map, game.save.mode, game.save.mutators, game.save.dieLevels())
     private val drag = DragController(match)
     private val hold = LongPress()
-    private val renderer = MatchRenderer(game.shapes, game.batch, game.font, game.smallFont, game.tinyFont)
+    private val renderer = MatchRenderer(game.shapes, game.batch, game.sprites, game.font, game.smallFont, game.tinyFont)
     private val buttonTap = Tap<Button>()
     private val effects = Effects(path = match.path)
     private val stats = MatchStats()
@@ -104,7 +104,7 @@ class MatchScreen(
         if (end != null) {
             // The world stands still while the screen shakes and goes red; then the game over screen.
             effects.update(delta)
-            renderer.update(match, delta)
+            renderer.update(match, delta, newShots = false)
             // Once the hold is over the result is booked exactly once; the frames until the fade swaps screens only draw.
             if (end > 0f) {
                 ending = end - delta
@@ -156,7 +156,14 @@ class MatchScreen(
         val shapes = game.shapes
         Gdx.gl.glEnable(GL20.GL_BLEND)
         shapes.begin(ShapeRenderer.ShapeType.Filled)
-        renderer.drawShapes(match, drag, effects)
+        renderer.drawWorldShapes(match, drag, effects)
+        shapes.end()
+        // Rendered sprites (the fire kittens and their fireballs) sit on the board, under effects and HUD.
+        game.batch.begin()
+        renderer.drawSprites(match, drag, effects)
+        game.batch.end()
+        shapes.begin(ShapeRenderer.ShapeType.Filled)
+        renderer.drawOverlayShapes(match, drag, effects)
         drawVignette(effects.vignetteAlpha(), effects.vignetteColor())
         speedButton.drawShape(shapes)
         pauseButton.drawShape(shapes)
