@@ -30,6 +30,8 @@ class Sprites : Disposable {
      * SpriteBatch pass: creating a texture binds it, which a batch in progress would not notice.
      */
     private val cats = HashMap<Int, CatSheets>()
+    /** Frame size and foot of each kitten level (each is cropped around the cat on its own). */
+    val catMetrics: CatMetrics = CatMetrics.parse(Gdx.files.internal("sprites/fire_cats.properties").readString("UTF-8"))
     private val fireball = sheet("fireball", FIREBALL_FRAMES, 1)[0]
     private val impact = sheet("fire_impact", FireCats.BOOM_FRAMES, 1)[0]
 
@@ -54,15 +56,9 @@ class Sprites : Disposable {
 
     companion object {
         /** Fire dice up to this many pips have kitten art (one pair of sheets per level). */
-        const val CAT_PIPS = 3
+        const val CAT_PIPS = 4
         private const val FIREBALL_FRAMES = 6
         private const val FIREBALL_FPS = 14f
-        /** Where the kitten's feet are in its frame, from the bottom, as a fraction of the frame height. */
-        const val CAT_FOOT = 0.05f
-        /** Frame width over height (frames are cropped around the kitten, taller than wide for the pip-3 hat). */
-        const val CAT_ASPECT = 0.79f
-        /** How much of the frame height the bare (pip-1) kitten fills. */
-        const val CAT_FILL = 0.658f
         /** The fireball's bright core in its frame (from the left, from the bottom); the tail trails to the left. */
         const val BALL_CORE_X = 0.746f
         const val BALL_CORE_Y = 1f - 0.498f

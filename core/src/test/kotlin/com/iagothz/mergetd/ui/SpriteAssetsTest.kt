@@ -28,6 +28,18 @@ class SpriteAssetsTest {
     }
 
     @Test
+    fun everyKittenLevelHasMetricsMatchingItsFrames() {
+        val m = CatMetrics.parse(File(dir, "fire_cats.properties").readText())
+        for (pips in 1..Sprites.CAT_PIPS) {
+            assertTrue(pips in m.pips, "fire_cats.properties lacks level $pips")
+            val img = ImageIO.read(File(dir, "fire_cat${pips}_idle.png"))
+            val f = m.frame(pips, 100f)
+            val sheetAspect = (img.width / FireCats.IDLE_FRAMES).toFloat() / (img.height / FireCats.ROWS.size)
+            assertEquals(f.width / f.height, sheetAspect, 0.02f, "level $pips frame aspect")
+        }
+    }
+
+    @Test
     fun fireEffectsHaveTheirStrips() {
         checkSheet("fire_impact", FireCats.BOOM_FRAMES, 1, square = true)
         assertTrue(File(dir, "fireball.png").isFile)
