@@ -48,7 +48,8 @@ fun ShapeRenderer.die(
     val hw = w / 2
     val hh = h / 2
     val face = minOf(scaleX, scaleY)
-    val lip = size * 0.052f
+    // A thick lip reads as the die's front face in the game's 3/4 view.
+    val lip = size * 0.14f
     if (pips >= Balance.MAX_PIPS) {
         color = ink.set(Skin.GOLD).also { it.a = alpha }
         roundedRect(cx - hw - 4f, cy - hh - 4f, w + 8f, h + 8f, size * 0.19f * face + 4f)

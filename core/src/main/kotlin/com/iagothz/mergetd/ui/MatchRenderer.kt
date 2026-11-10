@@ -42,6 +42,8 @@ class MatchRenderer(
     private val cats = FireCats()
     private val tmp = Color()
     private val tmp2 = Color()
+    private val cellSide = Color(Skin.CELL).mul(0.5f, 0.5f, 0.56f, 1f)
+    private val cellRim = Color(Skin.CELL).lerp(Color.WHITE, 0.12f)
     private var seedCounter = 0
     private var clock = 0f
     private var lastDelta = 0f
@@ -270,18 +272,24 @@ class MatchRenderer(
     private fun drawPath(match: Match) {
         val pts = match.path.points
         val theme = Skin.theme(match.map)
-        for ((c, w) in listOf(theme.edge to PATH_WIDTH + 8f, theme.ground to PATH_WIDTH)) {
+        // Seen at an angle the path is a sunken track: the rim, then its far wall (darker), then the floor a
+        // little lower, which leaves the wall showing along the top.
+        val wall = tmp.set(theme.ground).mul(0.5f, 0.5f, 0.55f, 1f)
+        for ((c, w, dy) in listOf(Triple(theme.edge, PATH_WIDTH + 14f, 0f), Triple(wall, PATH_WIDTH, 0f), Triple(theme.ground, PATH_WIDTH - 4f, -PATH_DEPTH))) {
             shapes.color = c
-            for ((a, b) in pts.zipWithNext()) shapes.rectLine(a.x, a.y, b.x, b.y, w)
-            pts.forEach { shapes.rect(it.x - w / 2, it.y - w / 2, w, w) }
+            for ((a, b) in pts.zipWithNext()) shapes.rectLine(a.x, a.y + dy, b.x, b.y + dy, w)
+            pts.forEach { shapes.rect(it.x - w / 2, it.y + dy - w / 2, w, w) }
         }
         val start = pts.first()
         val end = pts.last()
-        shapes.color = theme.edge
-        shapes.circle(start.x, start.y, 20f, 24)
-        shapes.circle(end.x, end.y, 20f, 24)
+        for (pt in listOf(start, end)) {
+            shapes.color = tmp2.set(theme.edge).mul(0.6f, 0.6f, 0.6f, 1f)
+            shapes.ellipse(pt.x - 21f, pt.y - 19f, 42f, 30f)
+            shapes.color = theme.edge
+            shapes.ellipse(pt.x - 21f, pt.y - 13f, 42f, 30f)
+        }
         shapes.color = Color(0.3f, 0.75f, 0.35f, 1f)
-        shapes.circle(start.x, start.y, 15f, 24)
+        shapes.ellipse(start.x - 15f, start.y - 9f, 30f, 22f)
         shapes.color = Skin.HEART
         shapes.heart(end.x, end.y + 1f, 11f)
     }
@@ -290,11 +298,13 @@ class MatchRenderer(
         for (t in match.traps) {
             val p = match.path.positionAt(t.distance)
             shapes.color = Skin.theme(match.map).edge
-            shapes.circle(p.x, p.y, 13f, 16)
+            shapes.ellipse(p.x - 13f, p.y - 14f, 26f, 20f)
+            shapes.color = tmp2.set(Skin.color(DieType.TRAP)).mul(0.6f, 0.6f, 0.6f, 1f)
+            shapes.ellipse(p.x - 11f, p.y - 11f, 22f, 16f)
             shapes.color = Skin.color(DieType.TRAP)
-            shapes.circle(p.x, p.y, 11f, 16)
+            shapes.ellipse(p.x - 11f, p.y - 7f, 22f, 16f)
             shapes.color = Color(0.95f, 0.3f, 0.2f, 1f)
-            shapes.circle(p.x, p.y, 4f, 10)
+            shapes.ellipse(p.x - 4f, p.y - 2f, 8f, 6f)
         }
     }
 
@@ -303,7 +313,10 @@ class MatchRenderer(
         val snap = drag.snapTarget()
         val pulse = 0.55f + 0.45f * sin(clock * 9f)
         shapes.color = Skin.SHADOW
-        shapes.roundedRect(BOARD.x + 3f, BOARD.y - 8f, BOARD.width, BOARD.height, 26f)
+        shapes.roundedRect(BOARD.x + 3f, BOARD.y - BOARD_DEPTH - 10f, BOARD.width, BOARD.height, 26f)
+        // Front face of the slab, then its top.
+        shapes.color = tmp2.set(Cosmetics.frameColor).mul(0.6f, 0.6f, 0.6f, 1f)
+        shapes.roundedRect(BOARD.x, BOARD.y - BOARD_DEPTH, BOARD.width, BOARD.height, 26f)
         shapes.color = Cosmetics.frameColor
         shapes.roundedRect(BOARD.x, BOARD.y, BOARD.width, BOARD.height, 26f)
         shapes.color = Skin.BOARD
@@ -315,8 +328,13 @@ class MatchRenderer(
                 shapes.color = if (cell == snap) tmp2.set(Skin.GOLD) else tmp2.set(1f, 1f, 1f, pulse)
                 shapes.roundedRect(c.x - half - 4, c.y - half - 4, Layout.CELL + 8, Layout.CELL + 8, 20f)
             }
+            shapes.color = cellSide
+            shapes.roundedRect(c.x - half, c.y - half - CELL_DEPTH, Layout.CELL, Layout.CELL, 16f)
             shapes.color = Skin.CELL
             shapes.roundedRect(c.x - half, c.y - half, Layout.CELL, Layout.CELL, 16f)
+            // A lit top edge separates the pedestal's top from the face below it.
+            shapes.color = cellRim
+            shapes.rect(c.x - half + 14f, c.y + half - 4f, Layout.CELL - 28f, 3f)
             val flash = effects.cellFlash(cell)
             if (flash > 0f) {
                 shapes.color = tmp2.set(1f, 1f, 1f, 0.85f * flash)
@@ -381,6 +399,7 @@ class MatchRenderer(
             val ghost = e.kind == EnemyKind.GHOST
             val outline = if (e.kind == EnemyKind.BOSS_ARMORED) 7f else 3f
             shapes.color = tmp2.set(body).mul(0.4f, 0.4f, 0.45f, 1f).also { if (ghost) it.a = 0.45f }
+            if (!ghost) shapes.polygon(p.x, p.y - ENEMY_DEPTH, r + outline, sides, heading)
             shapes.polygon(p.x, p.y, r + outline, sides, heading)
             shapes.color = tmp2.set(body).also { if (ghost) it.a = 0.55f }
             shapes.polygon(p.x, p.y, r, sides, heading)
@@ -536,6 +555,11 @@ class MatchRenderer(
         /** Last seconds of the countdown: the bar reddens and the ticks play. */
         private const val URGENT = 3f
         const val PATH_WIDTH = 40f
+        /** 3/4 view: how far the path floor sits below its rim, and the front faces of the board, cells and enemies. */
+        private const val PATH_DEPTH = 13f
+        private const val BOARD_DEPTH = 36f
+        private const val CELL_DEPTH = 20f
+        private const val ENEMY_DEPTH = 10f
         const val DIE = Layout.CELL - 8f
         /** Frame size of the fire kitten; the cat itself fills about two thirds of it. */
         private const val CAT = Layout.CELL * 1.5f
