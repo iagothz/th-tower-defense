@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/iagothz/th-tower-defense/actions/workflows/ci.yml/badge.svg)](https://github.com/iagothz/th-tower-defense/actions/workflows/ci.yml)
 
-Tower defense de merge no estilo Random Dice, para jogar offline no Android. Feito em Kotlin + libGDX.
+Tower defense de merge com dados, para jogar offline no Android. Feito em Kotlin + libGDX.
 
 ## Como jogar
 

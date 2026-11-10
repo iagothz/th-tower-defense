@@ -10,3 +10,6 @@ android/libs/
 # Release signing: keep the keystore and its passwords out of git (see README).
 android/keystore/
 android/keystore.properties
+
+# Internal notes, never published
+/.internal/

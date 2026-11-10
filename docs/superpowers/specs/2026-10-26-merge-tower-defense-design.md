@@ -4,7 +4,7 @@ Data: 2026-10-26
 
 ## Objetivo
 
-Um tower defense de merge no estilo Random Dice (111%), para jogar **offline no Android**, por diversão. Single-player; o único recurso online é o salvamento em nuvem opcional (ver abaixo).
+Um tower defense de merge com dados, para jogar **offline no Android**, por diversão. Single-player; o único recurso online é o salvamento em nuvem opcional (ver abaixo).
 
 **Considero pronto quando:** você instala o APK, monta um deck de 5 dados, joga uma partida inteira de ondas infinitas com compra, merge e power-ups, perde e vê o recorde salvo.
 

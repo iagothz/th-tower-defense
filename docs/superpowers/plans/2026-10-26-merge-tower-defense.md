@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Tower defense de merge estilo Random Dice, offline, que gera um APK Android jogável (deck de 5, merge, power-ups, ondas infinitas, recorde).
+**Goal:** Tower defense de merge com dados, offline, que gera um APK Android jogável (deck de 5, merge, power-ups, ondas infinitas, recorde).
 
 **Architecture:** Projeto Gradle multi-módulo libGDX (`core`, `lwjgl3`, `android`). Toda a regra fica em `core/.../logic` como Kotlin puro, sem import de `com.badlogic`, testada com JUnit 5 e RNG semeado. `core/.../ui` lê o estado de `Match` e desenha com `ShapeRenderer`/`BitmapFont` num viewport virtual 720×1280.
 
