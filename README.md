@@ -150,7 +150,8 @@ Para a nuvem funcionar, o jogo precisa de um projeto do Play Games Services no P
 ## Estrutura
 
 - `core/.../logic`: regras puras (sem libGDX), cobertas por testes JUnit. Os números de balanceamento ficam em `Balance.kt`.
-- `core/.../ui`: telas, renderização e input.
+- `core/.../app`: casos de uso entre as regras e as telas: montar a partida (`MatchLauncher`), fechar e registrar o resultado (`MatchBooking`), estatísticas e missões da partida.
+- `core/.../ui`: telas, renderização e input. Chama `app`; não grava resultados no save direto.
 - `assets/`: arquivos usados pelo PC e pelo Android.
   - `fonts/`: Roboto Medium, licença Apache 2.0 (ver `LICENSE-Roboto.txt`).
   - `sounds/`: efeitos sintetizados. Para regenerar, rode `python tools/gen_sounds.py`.
@@ -159,3 +160,10 @@ Para a nuvem funcionar, o jogo precisa de um projeto do Play Games Services no P
 - `android/`: launcher Android.
 - `core/.../log`: logging (`Log`, formato e destinos: Logcat, console e arquivo com rotação).
 - `config/detekt/`: regras e baseline do detekt.
+
+## Documentação
+
+- [CHANGELOG.md](CHANGELOG.md): mudanças por versão.
+- [docs/adr/](docs/adr/README.md): decisões de arquitetura (stack, camadas, save, arte, chave de release).
+- [docs/plano-adequacao.md](docs/plano-adequacao.md): adequação ao padrão do time, fase a fase.
+- `docs/superpowers/`: especificações e planos de cada recurso grande (jogo, save na nuvem, padrão visual).

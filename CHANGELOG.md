@@ -17,10 +17,13 @@ A versão fica em `gradle.properties` (`appVersion` e `appVersionCode`); o APK e
 - Voltar do Android navega entre telas e só sai do jogo no Início, inclusive pelo gesto do Android 16.
 - Logging estruturado (Logcat no Android; console e arquivo com rotação no PC).
 - ktlint e detekt no build e no CI.
+- Decisões de arquitetura registradas em `docs/adr/`.
 
 ### Alterado
 - Cartões de missão com ícone, barra com contagem e selo de XP.
 - O Play Games só inicializa com a nuvem ligada.
+- Montagem e fechamento da partida saíram das telas para a camada de aplicação, com testes.
+- Comentários que só repetiam o código foram removidos.
 
 ### Removido
 - Desfazer merge, junto com a conquista correspondente.

@@ -80,9 +80,10 @@ SQL e queries parametrizadas, usuários de banco, plano de deploy e rollback de 
   que explica por que uma asserção vale.
 - Aceite: o diff só remove comentários (conferido por script); lint, testes e build passam.
 
-### Fase 6: documentação (pequena)
+### Fase 6: documentação (pequena) — concluída
 
-- ADRs curtos em `docs/adr/`: libGDX com Kotlin; save em texto; arte renderizada no Blender; chave de release fora do git.
+- ADRs curtos em `docs/adr/`: libGDX com Kotlin; camadas logic/app/ui; save em texto; arte renderizada no Blender;
+  chave de release fora do git.
 - README atualizado com lint e CHANGELOG.
 
 ## Riscos
