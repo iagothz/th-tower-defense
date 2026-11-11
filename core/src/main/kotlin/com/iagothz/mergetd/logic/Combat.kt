@@ -6,25 +6,13 @@ import kotlin.random.Random
  * One die attack. [to] lists every position hit in order (chains have several), for drawing;
  * [damage] is the direct damage each enemy took from this shot, splash and chain included.
  */
-data class ShotEvent(
-    val from: Vec2,
-    val to: List<Vec2>,
-    val type: DieType,
-    val damage: Map<Enemy, Float> = emptyMap(),
-    val crit: Boolean = false,
-)
+data class ShotEvent(val from: Vec2, val to: List<Vec2>, val type: DieType, val damage: Map<Enemy, Float> = emptyMap(), val crit: Boolean = false)
 
 /**
  * What the rest of the board adds to every attack: crit chance and multiplier, the number of COMBO dice,
  * the active synergies, and the strongest base damage on the board (what a 7-pip Mirror copies).
  */
-data class AttackBonus(
-    val critChance: Float = 0f,
-    val comboCount: Int = 1,
-    val critMult: Float = Balance.CRIT_MULT,
-    val synergies: Set<Synergy> = emptySet(),
-    val strongestDamage: Float = 0f,
-) {
+data class AttackBonus(val critChance: Float = 0f, val comboCount: Int = 1, val critMult: Float = Balance.CRIT_MULT, val synergies: Set<Synergy> = emptySet(), val strongestDamage: Float = 0f) {
     companion object {
         val NONE = AttackBonus()
     }
@@ -40,8 +28,7 @@ object Combat {
     }
 
     /** Damage before target or board modifiers; [power] is the die's multiplier (power-ups times its level, see [Match.powerMult]). */
-    fun baseDamage(t: DieType, pips: Int, power: Float): Float =
-        Balance.stats(t).baseDamage * pips * power
+    fun baseDamage(t: DieType, pips: Int, power: Float): Float = Balance.stats(t).baseDamage * pips * power
 
     fun hitDamage(t: DieType, pips: Int, power: Float, target: Enemy): Float {
         val base = baseDamage(t, pips, power)
@@ -58,15 +45,7 @@ object Combat {
      * Applies damage and the die's effect. Does not remove dead enemies or pay rewards.
      * TRAP dice don't come through here: [Match] plants their traps.
      */
-    fun attack(
-        die: Die,
-        origin: Vec2,
-        power: Float,
-        enemies: List<Enemy>,
-        path: EnemyPath,
-        bonus: AttackBonus = AttackBonus.NONE,
-        rng: Random = Random.Default,
-    ): ShotEvent? {
+    fun attack(die: Die, origin: Vec2, power: Float, enemies: List<Enemy>, path: EnemyPath, bonus: AttackBonus = AttackBonus.NONE, rng: Random = Random.Default): ShotEvent? {
         val target = selectTarget(die.type, enemies) ?: return null
         val maxed = die.maxed
         val syn = bonus.synergies
@@ -159,16 +138,7 @@ object Combat {
         return ShotEvent(origin, hits, die.type, dealt, crit)
     }
 
-    private fun chain(
-        first: Enemy,
-        damage: Float,
-        enemies: List<Enemy>,
-        path: EnemyPath,
-        hits: MutableList<Vec2>,
-        jumps: Int,
-        shock: Boolean,
-        deal: (Enemy, Float) -> Unit,
-    ) {
+    private fun chain(first: Enemy, damage: Float, enemies: List<Enemy>, path: EnemyPath, hits: MutableList<Vec2>, jumps: Int, shock: Boolean, deal: (Enemy, Float) -> Unit) {
         val struck = mutableSetOf(first)
         var last = path.positionAt(first.distance)
         var jumpDamage = damage

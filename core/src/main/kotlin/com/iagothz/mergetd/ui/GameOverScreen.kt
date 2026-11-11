@@ -37,6 +37,7 @@ class GameOverScreen(
     private var copied = 0f
     private val tap = Tap<Button>()
     private val panel = Rectangle(70f, 300f, 580f, 480f)
+
     /** The chest's cards, most first, as (die, count); at most [CHEST_SHOWN] kinds fit the strip. */
     private val chest: List<Pair<DieType, Int>> = reward?.cards?.entries?.sortedWith(compareByDescending<Map.Entry<DieType, Int>> { it.value }.thenBy { it.key })
         ?.take(CHEST_SHOWN)?.map { it.key to it.value } ?: emptyList()
@@ -44,6 +45,7 @@ class GameOverScreen(
     private val rng = Random(System.nanoTime())
     private val confetti = if (isRecord) List(CONFETTI) { newConfetto(rng.nextFloat() * Layout.WORLD_H) } else emptyList()
     private var time = 0f
+
     /** The number rows count up one after another instead of just being there. */
     private val counters = listOf(wave, stats.kills, stats.bosses, stats.merges, stats.bought).map { Counter(0) to it }
 
@@ -52,12 +54,25 @@ class GameOverScreen(
     }
 
     private fun newConfetto(y: Float) = Confetto(
-        rng.nextFloat() * Layout.WORLD_W, y, 90f + rng.nextFloat() * 120f, rng.nextFloat() * 6.28f,
-        Skin.color(DieType.entries.random(rng)), 8f + rng.nextFloat() * 6f, 12f + rng.nextFloat() * 8f,
+        rng.nextFloat() * Layout.WORLD_W,
+        y,
+        90f + rng.nextFloat() * 120f,
+        rng.nextFloat() * 6.28f,
+        Skin.color(DieType.entries.random(rng)),
+        8f + rng.nextFloat() * 6f,
+        12f + rng.nextFloat() * 8f,
     )
 
     private val rows: List<Pair<String, String>> = listOf(
-        S[if (challengeDay != null) "Desafio do dia" else if (week != null) "Desafio semanal" else "Mapa"] to
+        S[
+            if (challengeDay != null) {
+                "Desafio do dia"
+            } else if (week != null) {
+                "Desafio semanal"
+            } else {
+                "Mapa"
+            },
+        ] to
             (if (challengeDay != null) DailyChallenge.of(challengeDay).dateLabel else "${S[map.title]} · ${S[mode.title]}"),
         S["Onda alcançada"] to "$wave",
         S["Inimigos derrotados"] to "${stats.kills}",
@@ -185,7 +200,13 @@ class GameOverScreen(
     /** 0 before the card's turn, overshooting to 1 as it pops. */
     private fun cardScale(i: Int): Float {
         val t = ((time - CHEST_FROM - i * CHEST_STAGGER) / CHEST_POP).coerceIn(0f, 1f)
-        return if (t <= 0f) 0f else if (t >= 1f) 1f else t * (1.25f - 0.25f * t)
+        return if (t <= 0f) {
+            0f
+        } else if (t >= 1f) {
+            1f
+        } else {
+            t * (1.25f - 0.25f * t)
+        }
     }
 
     private fun buttonAt(p: Vec2) = listOf(menu, share).firstOrNull { it.contains(p.x, p.y) }

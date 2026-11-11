@@ -4,12 +4,7 @@ package com.iagothz.mergetd.ui
 enum class ScreenKind { HOME, TAB, SUBSCREEN, MATCH, GAME_OVER, BLOCKING }
 
 /** The screen's state as far as the back key cares: a window over it, the pause, a pending confirmation. */
-data class BackState(
-    val kind: ScreenKind,
-    val overlayOpen: Boolean = false,
-    val paused: Boolean = false,
-    val confirming: Boolean = false,
-)
+data class BackState(val kind: ScreenKind, val overlayOpen: Boolean = false, val paused: Boolean = false, val confirming: Boolean = false)
 
 enum class BackAction { CLOSE_OVERLAY, OPEN_PAUSE, RESUME, CANCEL_CONFIRM, TO_PARENT, TO_HOME, EXIT, NOTHING }
 

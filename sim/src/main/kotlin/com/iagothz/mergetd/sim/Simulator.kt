@@ -3,9 +3,9 @@ package com.iagothz.mergetd.sim
 import com.iagothz.mergetd.logic.Balance
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.EnemyKind
+import com.iagothz.mergetd.logic.GameEvent
 import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.GameMode
-import com.iagothz.mergetd.logic.GameEvent
 import com.iagothz.mergetd.logic.Match
 import kotlin.random.Random
 
@@ -14,6 +14,7 @@ data class GameResult(val wave: Int, val killedBy: EnemyKind?, val deck: List<Di
 
 object Simulator {
     const val MAX_WAVE = 100
+
     /** Game-time limit, so a stalemate (enemies held in place forever) can't hang a report. */
     const val MAX_SECONDS = 4 * 3600f
     private const val ACT_EVERY = 0.5f

@@ -8,6 +8,7 @@ import kotlin.test.assertTrue
 class GameMapTest {
     /** Boss radius plus crown, for the screen edges and the HUD. */
     private val margin = 44f
+
     /** Boss radius plus outline, for the board, which enemies pass beside. */
     private val side = 32f
 

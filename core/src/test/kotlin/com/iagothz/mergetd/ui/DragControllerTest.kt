@@ -1,6 +1,5 @@
 package com.iagothz.mergetd.ui
 
-import kotlin.test.assertNotNull
 import com.iagothz.mergetd.logic.Cell
 import com.iagothz.mergetd.logic.DeckCodec
 import com.iagothz.mergetd.logic.Die
@@ -12,6 +11,7 @@ import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue

@@ -11,12 +11,7 @@ import kotlin.math.abs
  * a die from a slot dropped outside the slots leaves it, and slot onto slot swaps them. A tap, on a tile or a slot,
  * only picks the die to show, so reading what a die does never touches the deck.
  */
-class DeckEditor(
-    val deck: MutableList<DieType>,
-    private val tiles: List<Pair<DieType, Rectangle>>,
-    private val slots: List<Rectangle>,
-    private val isOpen: (DieType) -> Boolean,
-) {
+class DeckEditor(val deck: MutableList<DieType>, private val tiles: List<Pair<DieType, Rectangle>>, private val slots: List<Rectangle>, private val isOpen: (DieType) -> Boolean) {
     /** What a release reports: the die to show (if the touch was on one) and whether the deck changed. */
     data class Release(val shown: DieType?, val changed: Boolean)
 
@@ -61,10 +56,21 @@ class DeckEditor(
         val from = slot ?: deck.indexOf(die).takeIf { it >= 0 }
         val changed = when {
             // Dropped away from the slots: out of the deck, unless it was lifted from the grid.
-            target == null -> if (from != null && tile == null) { deck.removeAt(from); true } else false
+            target == null -> if (from != null && tile == null) {
+                deck.removeAt(from)
+                true
+            } else {
+                false
+            }
             from != null -> target != from && swap(from, target)
-            target < deck.size -> { deck[target] = die; true }
-            deck.size < DeckCodec.SIZE -> { deck += die; true }
+            target < deck.size -> {
+                deck[target] = die
+                true
+            }
+            deck.size < DeckCodec.SIZE -> {
+                deck += die
+                true
+            }
             else -> false
         }
         return Release(die, changed)

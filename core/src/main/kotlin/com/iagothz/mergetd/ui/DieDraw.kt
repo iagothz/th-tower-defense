@@ -32,17 +32,7 @@ private val PIPS = listOf(
  * [brightness] below 1 dims it (silenced dice, drag ghosts); [alpha] fades it (menu decoration).
  * [scaleX]/[scaleY] squash and stretch the body; the face keeps its proportions.
  */
-fun ShapeRenderer.die(
-    type: DieType,
-    pips: Int,
-    cx: Float,
-    cy: Float,
-    size: Float,
-    brightness: Float = 1f,
-    alpha: Float = 1f,
-    scaleX: Float = 1f,
-    scaleY: Float = 1f,
-) {
+fun ShapeRenderer.die(type: DieType, pips: Int, cx: Float, cy: Float, size: Float, brightness: Float = 1f, alpha: Float = 1f, scaleX: Float = 1f, scaleY: Float = 1f) {
     val w = size * scaleX
     val h = size * scaleY
     val hw = w / 2

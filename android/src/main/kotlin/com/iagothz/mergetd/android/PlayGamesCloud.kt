@@ -88,12 +88,10 @@ class PlayGamesCloud(private val activity: Activity) : CloudSave {
         }
     }
 
-    private fun open(client: SnapshotsClient): Task<SnapshotsClient.DataOrConflict<Snapshot>> =
-        client.open(SNAPSHOT, true, SnapshotsClient.RESOLUTION_POLICY_MOST_RECENTLY_MODIFIED)
+    private fun open(client: SnapshotsClient): Task<SnapshotsClient.DataOrConflict<Snapshot>> = client.open(SNAPSHOT, true, SnapshotsClient.RESOLUTION_POLICY_MOST_RECENTLY_MODIFIED)
 
     /** The opened snapshot, or null when the call failed or Google still reports a conflict after its policy. */
-    private fun Task<SnapshotsClient.DataOrConflict<Snapshot>>.snapshot(): Snapshot? =
-        if (isSuccessful) result.data else null
+    private fun Task<SnapshotsClient.DataOrConflict<Snapshot>>.snapshot(): Snapshot? = if (isSuccessful) result.data else null
 
     private fun failure(e: Exception?): CloudResult.Failed {
         val code = (e as? ApiException)?.statusCode

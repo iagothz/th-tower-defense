@@ -10,8 +10,8 @@ import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.Enemy
 import com.iagothz.mergetd.logic.EnemyKind
 import com.iagothz.mergetd.logic.EnemyPath
-import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.GameEvent
+import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.Layout
 import com.iagothz.mergetd.logic.Vec2
 import kotlin.math.PI
@@ -47,15 +47,7 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
     }
 
     /** Sparks fly straight; embers ([ttl] longer than [PARTICLE_TIME]) drift up and are drawn smaller. */
-    class Particle(
-        var x: Float,
-        var y: Float,
-        val vx: Float,
-        val vy: Float,
-        val color: Color,
-        var age: Float = 0f,
-        val ttl: Float = PARTICLE_TIME,
-    ) {
+    class Particle(var x: Float, var y: Float, val vx: Float, val vy: Float, val color: Color, var age: Float = 0f, val ttl: Float = PARTICLE_TIME) {
         val life: Float get() = 1f - (age / ttl).coerceIn(0f, 1f)
         val ember: Boolean get() = ttl > PARTICLE_TIME
     }
@@ -110,12 +102,15 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
     private var clock = 0f
     private val pulses = mutableMapOf<String, Float>()
     private val glows = mutableMapOf<DieType, Float>()
+
     /** Set by the screen each frame: one life left, so the edges breathe red. */
     var lastLife = false
+
     /** Accessibility: no shake, no vignette, no slow motion. Particles and pops stay. */
     var reduceMotion = false
     var banner: String? = null
         private set
+
     /** Second line under the banner: what the boss does. */
     var bannerNote: String? = null
         private set
@@ -513,6 +508,7 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
         const val SLIDE_TIME = 0.14f
         const val DROP_TIME = 0.3f
         const val DROP_HEIGHT = 90f
+
         /** Fraction of DROP_TIME spent falling; the rest is one small hop. */
         private const val LAND_AT = 0.6f
         private const val HOP = 0.16f
@@ -548,8 +544,10 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
         const val BOSS_BANNER_TIME = 2.6f
         const val DYING_TIME = 0.3f
         const val BANNER_Y = 1010f
+
         /** Dice whose hits throw the enemy back a step. */
         val HEAVY = setOf(DieType.IRON, DieType.SNIPER, DieType.GRAVITY)
+
         /** Dice whose hits throw sparks off the enemy. */
         val SPARKS = setOf(DieType.IRON, DieType.SNIPER)
         private val SPARK = Color(1f, 0.95f, 0.8f, 1f)

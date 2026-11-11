@@ -15,6 +15,7 @@ object Balance {
 
     /** Cost to go from level i+1 to level i+2. */
     val POWER_COSTS = intArrayOf(100, 200, 400, 700)
+
     /** Damage multiplier for power levels 1..5. */
     val POWER_MULT = floatArrayOf(1.0f, 1.3f, 1.6f, 2.0f, 2.5f)
 
@@ -22,6 +23,7 @@ object Balance {
     const val MAX_FRAME = 0.25f
 
     const val BASE_HP = 100f
+
     /** Path units per second at speedMult 1. */
     const val BASE_SPEED = 120f
     const val HP_GROWTH = 1.09f
@@ -34,37 +36,48 @@ object Balance {
     const val POISON_MAX_STACKS = 5
     const val BOSS_ABILITY_INTERVAL = 6f
     const val SILENCE_DURATION = 5f
+
     /** Fraction of max HP healed per second by the regenerating boss. */
     const val REGEN_PER_SEC = 0.02f
+
     /** Waves 5, 15, 25... are special (never boss waves). */
     const val SPECIAL_EVERY = 5
     const val HORDE_SIZE = 40
     const val HORDE_HP = 0.5f
     const val HEALER_FROM_WAVE = 8
     const val GHOST_FROM_WAVE = 12
+
     /** HEALER: fraction of max HP restored per second to enemies within RADIUS path units. */
     const val HEALER_RADIUS = 90f
     const val HEALER_PER_SEC = 0.02f
+
     /** Elite: a big soldier that heals its escort, leading every third ordinary wave from here. */
     const val ELITE_FROM_WAVE = 6
     const val ELITE_EVERY = 3
     const val ELITE_HEAL_PER_SEC = 0.015f
+
     /** Treasure: fast, harmless, rich; at the back of every fourth wave from here. */
     const val TREASURE_FROM_WAVE = 6
     const val TREASURE_EVERY = 4
+
     /** Mutators. */
     const val SWIFT_SPEED = 1.3f
     const val TOUGH_HP = 1.5f
     const val POOR_REWARD = 0.5f
+
     /** Extra enemies per wave as a fraction of the wave (2/5 ≈ 40%). */
     const val SWARM_EXTRA_NUM = 2
     const val SWARM_EXTRA_DEN = 5
+
     /** BOSS_ARMORED ignores this fraction of a plain soldier's HP (of its wave) on every hit. */
     const val ARMOR_FRACTION = 0.15f
+
     /** BOSS_THIEF takes this fraction of the player's SP every ability tick. */
     const val THIEF_FRACTION = 0.15f
+
     /** BOSS_SPLITTER leaves two tanks with this fraction of its max HP each. */
     const val SPLITTER_FRACTION = 0.25f
+
     /** BOSS_COMMANDER: enemies within RADIUS path units move HASTE times faster. */
     const val COMMANDER_RADIUS = 150f
     const val COMMANDER_HASTE = 1.4f
@@ -72,10 +85,12 @@ object Balance {
     const val ATTACK_SPEED_PER_PIP = 0.15f
     const val FIRE_SPLASH_RADIUS = 70f
     const val FIRE_SPLASH_FRACTION = 0.5f
+
     /** Ice slow = BASE + PER_PIP × pips: 20% at 1 pip, 50% at 7. */
     const val ICE_SLOW_BASE = 0.15f
     const val ICE_SLOW_PER_PIP = 0.05f
     const val ICE_SLOW_MAX = 0.5f
+
     /** Poison damage per second per pip, before the power multiplier. */
     const val POISON_DPS = 8f
     const val CHAIN_JUMPS = 2
@@ -87,46 +102,57 @@ object Balance {
 
     const val MINE_INTERVAL = 5f
     const val MINE_SP_PER_PIP = 10
+
     /** Seconds per pip at power level 1; each level divides it by the power multiplier (45 → 34,6 → 28,1 → 22,5 → 18). */
     const val GROWTH_INTERVAL = 45f
 
     /** LIGHT: attack-speed bonus per pip for each orthogonal neighbour. */
     const val LIGHT_SPEED_PER_PIP = 0.15f
+
     /** CRIT: crit chance per pip, shared by every die on the board. */
     const val CRIT_CHANCE_PER_PIP = 0.03f
     const val CRIT_MAX = 0.6f
     const val CRIT_MULT = 3f
     const val CRIT_MULT_MAX = 4f
+
     /** COMBO: damage bonus for each other COMBO die on the board. */
     const val COMBO_BONUS = 0.3f
+
     /** CURSE: extra damage taken = BASE + PER_PIP × pips (18% at 1 pip, 36% at 7). */
     const val CURSE_BASE = 0.15f
     const val CURSE_PER_PIP = 0.03f
     const val CURSE_DURATION = 3f
     const val HUNTER_BONUS_PER_STACK = 0.05f
     const val HUNTER_BONUS_PER_STACK_MAX = 0.06f
+
     /** Stack ceiling per pip; a 7-pip Hunter has none. */
     const val HUNTER_STACKS_PER_PIP = 10
 
     fun hunterCap(pips: Int): Int = if (pips >= MAX_PIPS) Int.MAX_VALUE else HUNTER_STACKS_PER_PIP * pips
+
     /** GRAVITY: path units pushed back = BASE + PER_PIP × pips, × BOSS_FACTOR for bosses. */
     const val GRAVITY_PUSH_BASE = 40f
     const val GRAVITY_PUSH_PER_PIP = 10f
     const val GRAVITY_BOSS_FACTOR = 0.25f
+
     /** Total push one enemy can take (× BOSS_FACTOR for bosses), so Gravity can't hold anyone forever. */
     const val GRAVITY_MAX_PUSH = 300f
+
     /** TIME: stun seconds = BASE + PER_PIP × pips, × BOSS_FACTOR for bosses. */
     const val TIME_STUN_BASE = 0.3f
     const val TIME_STUN_PER_PIP = 0.1f
     const val TIME_BOSS_FACTOR = 0.5f
+
     /** After a stun ends the enemy can't be stunned again for this long. */
     const val STUN_IMMUNITY = 1f
+
     /** TRAP: planted this far ahead of the leading enemy; goes off when an enemy is within TRIGGER of it. */
     const val TRAP_AHEAD = 150f
     const val TRAP_TRIGGER = 16f
     const val TRAP_RADIUS = 60f
     const val TRAP_MAX_PER_DIE = 3
     const val TRAP_MAX_PER_DIE_MAX = 6
+
     /** REAPER: kills a non-boss left under BASE + PER_PIP × pips of its max HP. */
     const val REAPER_BASE = 0.05f
     const val REAPER_PER_PIP = 0.02f

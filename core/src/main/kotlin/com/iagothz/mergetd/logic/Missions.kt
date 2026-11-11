@@ -8,14 +8,7 @@ enum class MissionKind { KILLS_WITH, REACH_WAVE, MERGES, MAX_PIPS, BOSSES, PLAY_
  * One of the day's three goals. [target] is the count to reach; counters add up across the day's matches,
  * wave goals take the best wave reached on the right map or mode.
  */
-data class Mission(
-    val kind: MissionKind,
-    val target: Int,
-    val xp: Int,
-    val type: DieType? = null,
-    val map: GameMap? = null,
-    val mode: GameMode? = null,
-) {
+data class Mission(val kind: MissionKind, val target: Int, val xp: Int, val type: DieType? = null, val map: GameMap? = null, val mode: GameMode? = null) {
     /** Portuguese sentence with a %d for the target (except the fixed 7-pip one) and, when it applies, a %s for the die, map or mode. */
     val template: String
         get() = when (kind) {

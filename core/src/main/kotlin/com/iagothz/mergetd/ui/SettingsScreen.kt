@@ -26,6 +26,7 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
     private val achievements = Button(Rectangle(264f, 124f, 192f, 80f), S["Conquistas"], style = ButtonStyle.SECONDARY)
     private val history = Button(Rectangle(468f, 124f, 192f, 80f), S["Histórico"], style = ButtonStyle.SECONDARY)
     private val links = listOf(stats, achievements, history)
+
     /** The cloud row's button; its text follows the controller's state and it is drawn only when there is one. */
     private val cloudButton = Button(Rectangle(468f, 352f, 192f, 56f), "", style = ButtonStyle.SECONDARY)
     private val tap = Tap<Any>()
@@ -68,8 +69,11 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
             if (cloudLabel() != null) cloudButton.drawText(game.batch, game.smallFont)
         }
         game.tinyFont.color = Skin.MUTED
-        val privacy = if (cloud == CloudController.Status.Unavailable) "Privacidade: este jogo funciona sem internet, não coleta nem envia nenhum dado."
-        else "Privacidade: este jogo funciona sem internet e não coleta nada. Com a nuvem ligada, seu progresso fica na sua conta do Google Play Games."
+        val privacy = if (cloud == CloudController.Status.Unavailable) {
+            "Privacidade: este jogo funciona sem internet, não coleta nem envia nenhum dado."
+        } else {
+            "Privacidade: este jogo funciona sem internet e não coleta nada. Com a nuvem ligada, seu progresso fica na sua conta do Google Play Games."
+        }
         game.tinyFont.draw(game.batch, S[privacy], 60f, 330f, 600f, Align.left, true)
         game.tinyFont.color = Color.WHITE
         links.forEach { it.drawText(game.batch, game.smallFont) }
@@ -104,7 +108,8 @@ class SettingsScreen(game: MergeTdGame) : BaseScreen(game) {
 
     private fun cloudLabel(): String? = CloudText.button(game.cloud.status)?.let { S[it] }
 
-    private fun buttonAt(p: Vec2): Any? = toggles.firstOrNull { it.contains(p.x, p.y) } ?: (links + languages.map { it.second } + listOfNotNull(cloudButton.takeIf { cloudLabel() != null })).firstOrNull { it.contains(p.x, p.y) }
+    private fun buttonAt(p: Vec2): Any? =
+        toggles.firstOrNull { it.contains(p.x, p.y) } ?: (links + languages.map { it.second } + listOfNotNull(cloudButton.takeIf { cloudLabel() != null })).firstOrNull { it.contains(p.x, p.y) }
 
     override fun onTouchDown(p: Vec2) {
         dragging = sliderAt(p)?.also { setSlider(it, p) }

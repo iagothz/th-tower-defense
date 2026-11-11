@@ -25,7 +25,13 @@ class Toggle(val rect: Rectangle, val label: String, on: Boolean, private val in
 
     fun update(dt: Float) {
         val target = if (on) 1f else 0f
-        knob = if (instant()) target else if (knob < target) minOf(target, knob + dt / SLIDE) else maxOf(target, knob - dt / SLIDE)
+        knob = if (instant()) {
+            target
+        } else if (knob < target) {
+            minOf(target, knob + dt / SLIDE)
+        } else {
+            maxOf(target, knob - dt / SLIDE)
+        }
     }
 
     fun contains(x: Float, y: Float): Boolean = rect.contains(x, y)

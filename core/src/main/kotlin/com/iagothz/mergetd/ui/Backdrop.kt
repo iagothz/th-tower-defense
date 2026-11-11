@@ -41,6 +41,7 @@ class Backdrop {
 
     private companion object {
         const val STARS = 90
+
         /** Stars reach this far outside the 720×1280 world, for taller or wider screens. */
         const val MARGIN = 240f
     }

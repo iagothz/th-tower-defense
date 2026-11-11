@@ -1,10 +1,10 @@
 package com.iagothz.mergetd.ui
 
 import com.badlogic.gdx.graphics.Color
-import com.iagothz.mergetd.logic.Difficulty
 import com.iagothz.mergetd.logic.DieType
-import com.iagothz.mergetd.logic.GameMap
+import com.iagothz.mergetd.logic.Difficulty
 import com.iagothz.mergetd.logic.EnemyKind
+import com.iagothz.mergetd.logic.GameMap
 
 /** Ground and sky colours of one map. */
 class MapTheme(val ground: Color, val edge: Color, val skyTop: Color, val skyBottom: Color)
@@ -13,8 +13,10 @@ class MapTheme(val ground: Color, val edge: Color, val skyTop: Color, val skyBot
 object Skin {
     val BACKGROUND = Color(0.08f, 0.09f, 0.12f, 1f)
     val PANEL = Color(0.16f, 0.17f, 0.22f, 1f)
+
     /** Empty board cell; a touch lighter than the panel it sits on. */
     val CELL = Color(0.20f, 0.21f, 0.27f, 1f)
+
     /** Frame around the grid and its rim. */
     val BOARD = Color(0.12f, 0.13f, 0.18f, 1f)
     val BOARD_RIM = Color(0.26f, 0.28f, 0.36f, 1f)
@@ -22,6 +24,7 @@ object Skin {
     // --- Interface palette: every screen takes its non-identity colours from here. ---
     /** Secondary text: labels, notes, hints. */
     val MUTED = Color(0.65f, 0.67f, 0.75f, 1f)
+
     /** A die the account level hasn't reached: tile, glyph and padlock. */
     val LOCKED = Color(0.22f, 0.23f, 0.29f, 1f)
     val LOCKED_INK = Color(0.32f, 0.33f, 0.40f, 1f)
@@ -29,18 +32,19 @@ object Skin {
     val STAR_OFF = Color(0.26f, 0.27f, 0.34f, 1f)
     val ROW_DONE = Color(0.20f, 0.22f, 0.30f, 1f)
     val ROW_SELECTED = Color(0.22f, 0.24f, 0.33f, 1f)
+
     /** The veil behind windows and the pause. */
     val DIM = Color(0f, 0f, 0f, 0.72f)
     val PRIMARY = Color(0.25f, 0.45f, 0.85f, 1f)
     val DANGER = Color(0.70f, 0.25f, 0.25f, 1f)
     val SELECTED = Color(0.55f, 0.30f, 0.75f, 1f)
     val REWARD = Color(0.72f, 0.52f, 0.12f, 1f)
+
     /** Dark text for light fills. */
     val INK_DARK = Color(0.15f, 0.15f, 0.20f, 1f)
 
     /** Brightness of [c] from its encoded channels, each clamped to 0..1 (sky tints go above 1). */
-    fun luminance(c: Color): Float =
-        0.2126f * c.r.coerceIn(0f, 1f) + 0.7152f * c.g.coerceIn(0f, 1f) + 0.0722f * c.b.coerceIn(0f, 1f)
+    fun luminance(c: Color): Float = 0.2126f * c.r.coerceIn(0f, 1f) + 0.7152f * c.g.coerceIn(0f, 1f) + 0.0722f * c.b.coerceIn(0f, 1f)
 
     /** Text colour that reads on [background]: dark ink on light fills, white on the rest. */
     fun inkOn(background: Color): Color = if (luminance(background) > 0.55f) INK_DARK else Color.WHITE

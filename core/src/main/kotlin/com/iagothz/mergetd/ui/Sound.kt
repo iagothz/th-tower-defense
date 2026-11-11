@@ -4,10 +4,10 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.audio.Music
 import com.badlogic.gdx.audio.Sound
-import kotlin.math.abs
 import com.iagothz.mergetd.logic.Balance
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.GameEvent
+import kotlin.math.abs
 import kotlin.math.ceil
 
 /** Decides which sounds a frame's events play: each at most once per frame, hits rate-limited. */
@@ -48,6 +48,7 @@ class SoundPlanner {
         const val HIT_GAP = 0.05f
         val TICKS = (1..3).map { "tick_$it" }.toSet()
         val FAMILIES = setOf("fire", "ice", "zap", "wind", "heavy", "magic")
+
         /** One merge sound per result size, a semitone pair higher each pip, and a fanfare at 7. */
         val MERGES = (2..6).map { "merge_$it" }.toSet() + "max"
 
@@ -95,8 +96,7 @@ class Sfx(private val save: SaveData, private val rng: kotlin.random.Random = ko
     }
 
     /** Hits and kills land a little differently every time, so a volley doesn't sound like a machine. */
-    private fun pitchFor(name: String): Float =
-        if (name.startsWith("hit") || name == "kill") 1f - PITCH_SPREAD + rng.nextFloat() * 2 * PITCH_SPREAD else 1f
+    private fun pitchFor(name: String): Float = if (name.startsWith("hit") || name == "kill") 1f - PITCH_SPREAD + rng.nextFloat() * 2 * PITCH_SPREAD else 1f
 
     fun click() = play(setOf("buy"))
 
@@ -139,6 +139,7 @@ class Sfx(private val save: SaveData, private val rng: kotlin.random.Random = ko
         const val VOLUME = 0.6f
         const val DUCK = 0.2f
         const val DUCK_RECOVERY = 1.2f
+
         /** Seconds the drum layer may drift from the base before it is snapped back. */
         const val SYNC_SLACK = 0.08f
         const val PITCH_SPREAD = 0.1f

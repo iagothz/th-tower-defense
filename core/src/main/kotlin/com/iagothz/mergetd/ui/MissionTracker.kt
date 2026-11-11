@@ -24,14 +24,7 @@ fun Mission.text(): String {
 }
 
 /** What a finished match paid: XP, the level it left the account at, the chest of cards and any die the level-up opened. */
-data class MatchReward(
-    val xp: Int,
-    val level: Int,
-    val leveledUp: Boolean,
-    val missions: List<Mission>,
-    val cards: Map<DieType, Int> = emptyMap(),
-    val newDice: List<DieType> = emptyList(),
-)
+data class MatchReward(val xp: Int, val level: Int, val leveledUp: Boolean, val missions: List<Mission>, val cards: Map<DieType, Int> = emptyMap(), val newDice: List<DieType> = emptyList())
 
 /** Watches one match for the day's missions; [progress] is what the match contributed, applied to the save at the end. */
 class MissionTracker(private val missions: List<Mission>, private val match: Match) {

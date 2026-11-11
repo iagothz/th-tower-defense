@@ -32,7 +32,10 @@ class MatchCodeTest {
         val setup = MatchSetup(GameMap.SERPENT, GameMode.NORMAL, 777, deck)
         val a = setup.newMatch()
         val b = setup.newMatch()
-        repeat(4) { a.buyDie(); b.buyDie() }
+        repeat(4) {
+            a.buyDie()
+            b.buyDie()
+        }
         assertEquals(a.board.occupied().map { it.first to it.second.type }, b.board.occupied().map { it.first to it.second.type })
         assertEquals(777, a.seed)
         assertTrue(a.locked)

@@ -95,16 +95,31 @@ data class DieInfo(val summary: String, val stats: List<Stat>, val rows: List<Pa
             DieType.MIRROR -> S["faz merge com qualquer dado de mesmos pips; o resultado é sorteado entre os 5 tipos do deck, como num merge normal"]
             DieType.GROWTH -> S.f("a cada %s s ganha +1 pip e vira um dos 5 tipos do deck, sorteado (pode continuar Crescimento); para em %d pips", num(Balance.GROWTH_INTERVAL), MAX)
             DieType.LIGHT -> S.f("os dados de cima, de baixo e dos lados atacam +%s mais rápido por pip da Luz; várias Luzes somam", pct(Balance.LIGHT_SPEED_PER_PIP))
-            DieType.CRIT -> S.f("cada pip dá +%s de chance de crítico (dano x%s) a todos os dados, até %s somando os Críticos", pct(Balance.CRIT_CHANCE_PER_PIP), num(Balance.CRIT_MULT), pct(Balance.CRIT_MAX))
+            DieType.CRIT -> S.f(
+                "cada pip dá +%s de chance de crítico (dano x%s) a todos os dados, até %s somando os Críticos",
+                pct(Balance.CRIT_CHANCE_PER_PIP),
+                num(Balance.CRIT_MULT),
+                pct(Balance.CRIT_MAX),
+            )
             DieType.COMBO -> S.f("+%s de dano para cada outro Combo no tabuleiro", pct(Balance.COMBO_BONUS))
             DieType.CURSE -> S.f("o alvo recebe %s (1 pip) a %s (%d pips) a mais de dano de tudo, inclusive veneno, por %s s", pct(curse(1)), pct(curse(MAX)), MAX, num(Balance.CURSE_DURATION))
             DieType.HUNTER -> S.f(
                 "+1 stack por abate; cada stack dá +%s de dano; limite de %d stacks por pip (%d com 1 pip, %d com %d) e sem limite com %d pips; merge de Caçadores soma os stacks se o resultado for Caçador",
-                pct(Balance.HUNTER_BONUS_PER_STACK), Balance.HUNTER_STACKS_PER_PIP, Balance.hunterCap(1), Balance.hunterCap(MAX - 1), MAX - 1, MAX,
+                pct(Balance.HUNTER_BONUS_PER_STACK),
+                Balance.HUNTER_STACKS_PER_PIP,
+                Balance.hunterCap(1),
+                Balance.hunterCap(MAX - 1),
+                MAX - 1,
+                MAX,
             )
             DieType.GRAVITY -> S.f("o alvo volta %s (1 pip) a %s (%d pips) no caminho; chefes voltam %s disso", num(push(1)), num(push(MAX)), MAX, pct(Balance.GRAVITY_BOSS_FACTOR))
             DieType.TIME -> S.f("o alvo fica parado de %s s (1 pip) a %s s (%d pips); chefes, %s disso", num(stun(1)), num(stun(MAX)), MAX, pct(Balance.TIME_BOSS_FACTOR))
-            DieType.TRAP -> S.f("a mina fica %s à frente do primeiro inimigo e explode quando alguém pisa, atingindo quem estiver a até %s; máx. %d minas por dado", num(Balance.TRAP_AHEAD), num(Balance.TRAP_RADIUS), Balance.TRAP_MAX_PER_DIE)
+            DieType.TRAP -> S.f(
+                "a mina fica %s à frente do primeiro inimigo e explode quando alguém pisa, atingindo quem estiver a até %s; máx. %d minas por dado",
+                num(Balance.TRAP_AHEAD),
+                num(Balance.TRAP_RADIUS),
+                Balance.TRAP_MAX_PER_DIE,
+            )
             DieType.QUAKE -> S["sem alvo único: cada ataque acerta todos os inimigos na tela"]
             DieType.REAPER -> S.f("inimigos comuns que ficarem abaixo de %s (1 pip) a %s (%d pips) da vida morrem na hora; chefes levam só o dano", pct(reap(1)), pct(reap(MAX)), MAX)
             DieType.NOVA -> S.f("o inimigo morto explode com o dano do dado em quem estiver a até %s; quem morrer na explosão também explode", num(Balance.NOVA_RADIUS))
@@ -164,8 +179,7 @@ data class DieInfo(val summary: String, val stats: List<Stat>, val rows: List<Pa
             }
         }
 
-        private fun iceSlow(pips: Int) =
-            minOf(Balance.ICE_SLOW_MAX, Balance.ICE_SLOW_BASE + Balance.ICE_SLOW_PER_PIP * pips)
+        private fun iceSlow(pips: Int) = minOf(Balance.ICE_SLOW_MAX, Balance.ICE_SLOW_BASE + Balance.ICE_SLOW_PER_PIP * pips)
 
         private fun curse(pips: Int) = Balance.CURSE_BASE + Balance.CURSE_PER_PIP * pips
 

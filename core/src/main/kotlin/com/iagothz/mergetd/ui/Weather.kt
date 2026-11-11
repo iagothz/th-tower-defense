@@ -24,7 +24,10 @@ class Weather(map: GameMap, rng: Random = Random(7)) {
         Particle(
             -MARGIN + rng.nextFloat() * (Layout.WORLD_W + 2 * MARGIN),
             -MARGIN + rng.nextFloat() * (Layout.WORLD_H + 2 * MARGIN),
-            vx, vy, 1.5f + rng.nextFloat() * 2.5f, rng.nextFloat() * 6.28f,
+            vx,
+            vy,
+            1.5f + rng.nextFloat() * 2.5f,
+            rng.nextFloat() * 6.28f,
         )
     }
     private var time = 0f
@@ -39,8 +42,16 @@ class Weather(map: GameMap, rng: Random = Random(7)) {
             // Wrap around the extended sky so the field never thins out.
             val w = Layout.WORLD_W + 2 * MARGIN
             val h = Layout.WORLD_H + 2 * MARGIN
-            if (p.x < -MARGIN) p.x += w else if (p.x > Layout.WORLD_W + MARGIN) p.x -= w
-            if (p.y < -MARGIN) p.y += h else if (p.y > Layout.WORLD_H + MARGIN) p.y -= h
+            if (p.x < -MARGIN) {
+                p.x += w
+            } else if (p.x > Layout.WORLD_W + MARGIN) {
+                p.x -= w
+            }
+            if (p.y < -MARGIN) {
+                p.y += h
+            } else if (p.y > Layout.WORLD_H + MARGIN) {
+                p.y -= h
+            }
         }
     }
 

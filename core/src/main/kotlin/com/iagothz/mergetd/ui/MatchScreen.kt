@@ -3,26 +3,26 @@ package com.iagothz.mergetd.ui
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.Color
-import com.iagothz.mergetd.logic.GameMode
-import kotlin.math.sin
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.utils.Align
 import com.iagothz.mergetd.logic.Balance
+import com.iagothz.mergetd.logic.CardDrop
 import com.iagothz.mergetd.logic.Cell
 import com.iagothz.mergetd.logic.Combat
 import com.iagothz.mergetd.logic.DailyChallenge
 import com.iagothz.mergetd.logic.DailyMissions
-import com.iagothz.mergetd.logic.Progression
-import com.iagothz.mergetd.logic.CardDrop
 import com.iagothz.mergetd.logic.DiceUnlocks
-import com.iagothz.mergetd.logic.MatchCode
 import com.iagothz.mergetd.logic.Die
 import com.iagothz.mergetd.logic.DieType
+import com.iagothz.mergetd.logic.GameMode
 import com.iagothz.mergetd.logic.Layout
 import com.iagothz.mergetd.logic.Match
+import com.iagothz.mergetd.logic.MatchCode
+import com.iagothz.mergetd.logic.Progression
 import com.iagothz.mergetd.logic.Vec2
+import kotlin.math.sin
 
 /**
  * [restored] is a match saved when the app last went to the background; it opens paused.
@@ -47,6 +47,7 @@ class MatchScreen(
     private val hints = Hints(game.save.hints.toMutableSet()) { game.save.hints = it }
     private val missionDay = DailyChallenge.today()
     private val missions = DailyMissions.of(missionDay)
+
     /** The pause menu shows the day's missions with this match's progress so far added in. */
     private val missionsPanel = MissionsPanel(game, Rectangle(24f, 24f, 672f, MissionsPanel.HEIGHT), missionDay, missions)
     private val tracker = MissionTracker(missions, match)
@@ -61,10 +62,12 @@ class MatchScreen(
     private val vignetteColor = Color()
     private val vignetteClear = Color()
     private var clock = 0f
+
     /** Seconds left of the frozen, shaking moment after the last life goes; null while playing. */
     private var ending: Float? = null
     private var paused = restored != null
     private var confirm: Confirm? = null
+
     /** Simulation speed multiplier: the 2x button, or dev keys up to 4x. */
     private var speed = 1
 
@@ -342,8 +345,7 @@ class MatchScreen(
         game.smallFont.color = Color.WHITE
     }
 
-    private fun fmt(f: Float): String =
-        if (f == f.toInt().toFloat()) "${f.toInt()}" else "%.2f".format(f).trimEnd('0').trimEnd('.', ',').replace('.', ',')
+    private fun fmt(f: Float): String = if (f == f.toInt().toFloat()) "${f.toInt()}" else "%.2f".format(f).trimEnd('0').trimEnd('.', ',').replace('.', ',')
 
     private fun refreshButtons() {
         speedButton.text = "${speed}x"
@@ -380,8 +382,12 @@ class MatchScreen(
     private fun pauseButtons(): List<Button> = if (confirm != null) listOf(no, yes) else listOf(resume, restart, quit)
 
     private fun buttonAt(p: Vec2): Button? {
-        val visible = if (paused) pauseButtons() else listOf(speedButton, pauseButton) + powerButtons.map { it.second } +
-            listOfNotNull(skipTutorial.takeIf { tutorial.step != null && tutorial.step != Tutorial.Step.DONE })
+        val visible = if (paused) {
+            pauseButtons()
+        } else {
+            listOf(speedButton, pauseButton) + powerButtons.map { it.second } +
+                listOfNotNull(skipTutorial.takeIf { tutorial.step != null && tutorial.step != Tutorial.Step.DONE })
+        }
         return visible.firstOrNull { it.contains(p.x, p.y) }
     }
 
@@ -512,7 +518,12 @@ class MatchScreen(
         if (match.week == null && match.mutators.isNotEmpty() && match.score > game.save.bestScore) game.save.bestScore = match.score
         game.save.addHistory(
             MatchRecord(
-                DailyChallenge.today(), match.map, match.mode, match.deck, match.wave, stats.killedBy,
+                DailyChallenge.today(),
+                match.map,
+                match.mode,
+                match.deck,
+                match.wave,
+                stats.killedBy,
                 match.setup?.takeIf { match.challengeDay == null }?.let { MatchCode.encode(it) } ?: "",
             ),
         )
@@ -547,16 +558,22 @@ class MatchScreen(
 
     private companion object {
         const val VIGNETTE_DEPTH = 190f
+
         /** How long the last-life moment holds before the game over screen. */
         const val END_TIME = 1.1f
+
         /** Camera lean-in at the peak of the boss-death slow motion. */
         const val ZOOM_IN = 0.05f
+
         /** Price on an empty cell while SP is short. */
         val PRICE_OFF = Color(0.42f, 0.44f, 0.52f, 1f)
+
         /** Die info card, in the sky above the board. */
         val INFO = Rectangle(24f, 840f, 672f, 270f)
+
         /** One-time hint strip, just above the board. */
         val HINT = Rectangle(40f, 834f, 640f, 64f)
+
         /** Tutorial balloon, same place; the two never show together for long. */
         val TUTORIAL = Rectangle(24f, 1000f, 672f, 150f)
         val POWER_ROW = Rectangle(26f, 50f, 668f, 120f)
@@ -564,9 +581,11 @@ class MatchScreen(
     }
 
     /** The defeat animation can't be interrupted; otherwise back pauses, resumes or drops the confirmation. */
-    override fun backState() =
-        if (ending != null) BackState(ScreenKind.BLOCKING)
-        else BackState(ScreenKind.MATCH, paused = paused, confirming = confirm != null)
+    override fun backState() = if (ending != null) {
+        BackState(ScreenKind.BLOCKING)
+    } else {
+        BackState(ScreenKind.MATCH, paused = paused, confirming = confirm != null)
+    }
 
     override fun perform(a: BackAction) {
         when (a) {

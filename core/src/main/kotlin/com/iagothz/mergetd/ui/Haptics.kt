@@ -17,7 +17,6 @@ object Haptics {
     )
 
     /** The strongest pulse among [names], or null when nothing in the frame is worth a buzz. */
-    fun pulse(names: Set<String>): Pulse? =
-        names.mapNotNull { BY_SOUND[it] ?: MERGE.takeIf { _ -> it in SoundPlanner.MERGES } }
-            .maxByOrNull { it.amplitude * 1000 + it.millis }
+    fun pulse(names: Set<String>): Pulse? = names.mapNotNull { BY_SOUND[it] ?: MERGE.takeIf { _ -> it in SoundPlanner.MERGES } }
+        .maxByOrNull { it.amplitude * 1000 + it.millis }
 }

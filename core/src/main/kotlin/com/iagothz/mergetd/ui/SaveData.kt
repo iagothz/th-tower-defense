@@ -16,15 +16,7 @@ import com.iagothz.mergetd.logic.Progression
 import kotlin.random.Random
 
 /** One finished match, as the history screen shows it. */
-data class MatchRecord(
-    val day: Int,
-    val map: GameMap,
-    val mode: GameMode,
-    val deck: List<DieType>,
-    val wave: Int,
-    val killedBy: EnemyKind?,
-    val code: String,
-)
+data class MatchRecord(val day: Int, val map: GameMap, val mode: GameMode, val deck: List<DieType>, val wave: Int, val killedBy: EnemyKind?, val code: String)
 
 /** Lifetime counters shown on the stats screen. */
 class Totals(val games: Int, val kills: Int, val bosses: Int, val merges: Int, val waves: Int)
@@ -32,6 +24,7 @@ class Totals(val games: Int, val kills: Int, val bosses: Int, val merges: Int, v
 class SaveData(private val prefs: Preferences) {
     companion object {
         const val HISTORY_SIZE = 20
+
         /** Most cards the one-time chest for matches played before cards existed can hold. */
         const val RETRO_CAP = 60
     }
@@ -152,9 +145,8 @@ class SaveData(private val prefs: Preferences) {
 
     fun hasCosmetic(c: Cosmetic): Boolean = c.unlockedByDefault || Achievement.entries.any { it.unlocks == c && hasAchievement(it) }
 
-    fun equipped(slot: Cosmetic.Slot): Cosmetic =
-        prefs.getString("cosmetic.${slot.name.lowercase()}", null)?.let { Cosmetic.byId(it) }?.takeIf { hasCosmetic(it) }
-            ?: Cosmetic.default(slot)
+    fun equipped(slot: Cosmetic.Slot): Cosmetic = prefs.getString("cosmetic.${slot.name.lowercase()}", null)?.let { Cosmetic.byId(it) }?.takeIf { hasCosmetic(it) }
+        ?: Cosmetic.default(slot)
 
     fun equip(c: Cosmetic) {
         if (!hasCosmetic(c)) return

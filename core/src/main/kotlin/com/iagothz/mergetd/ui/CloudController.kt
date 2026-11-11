@@ -47,11 +47,14 @@ class CloudController(private val save: SaveData, private val cloud: CloudSave, 
     private var opening = false
     private var pushAfterOpen = false
     private var uploading = false
+
     /** The highest version asked for while an upload was in flight; sent once it finishes. */
     private var queued: Int? = null
     private var pending: (() -> Unit)? = null
+
     /** The cloud version this session last saw (0 for an empty cloud); null until a download or upload succeeds. */
     private var knownCloudVersion: Int? = null
+
     /** Seconds spent in [Status.Working]; past [TIMEOUT] the call is given up on. */
     private var working = 0f
 
@@ -59,9 +62,11 @@ class CloudController(private val save: SaveData, private val cloud: CloudSave, 
 
     /** Called every frame: runs what waited for the match to end, and times out a call that never answers. */
     fun tick(delta: Float) {
-        if (!inMatch) pending?.let {
-            pending = null
-            it()
+        if (!inMatch) {
+            pending?.let {
+                pending = null
+                it()
+            }
         }
         if (status != Status.Working) {
             working = 0f
@@ -121,7 +126,11 @@ class CloudController(private val save: SaveData, private val cloud: CloudSave, 
         queued = null
         pending = null
         conflict = null
-        if (on) open() else if (cloud.available) status = Status.Off
+        if (on) {
+            open()
+        } else if (cloud.available) {
+            status = Status.Off
+        }
     }
 
     /**

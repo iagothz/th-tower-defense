@@ -57,6 +57,5 @@ object WaveSpawner {
     fun preview(n: Int, bosses: List<EnemyKind> = DEFAULT_BOSS_ORDER, mode: GameMode = GameMode.NORMAL, swarm: Boolean = false): Map<EnemyKind, Int> =
         composition(n, bosses, mode, swarm).groupingBy { it }.eachCount()
 
-    fun enemyHp(n: Int, kind: EnemyKind): Float =
-        Balance.BASE_HP * Balance.HP_GROWTH.pow(n - 1) * kind.hpMult
+    fun enemyHp(n: Int, kind: EnemyKind): Float = Balance.BASE_HP * Balance.HP_GROWTH.pow(n - 1) * kind.hpMult
 }

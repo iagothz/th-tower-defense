@@ -26,6 +26,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         t to Rectangle(GRID_X + (i % COLS) * STEP_X, GRID_TOP - TILE - (i / COLS) * STEP_Y, TILE, TILE)
     }
     private val enemies = Button(Rectangle(24f, 1190f, 190f, 56f), S["Inimigos"], style = ButtonStyle.SECONDARY)
+
     /** Three preset slots (tap loads, hold saves) and a random deck button. */
     private val presets = List(PRESETS) { Button(Rectangle(506f + it * 66f, 1190f, 60f, 56f), "${it + 1}", style = ButtonStyle.SECONDARY) }
     private val random = Button(Rectangle(440f, 1190f, 60f, 56f), "?", style = ButtonStyle.SECONDARY)
@@ -245,6 +246,7 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         val PRESET_FULL = Color(0.30f, 0.38f, 0.60f, 1f)
         val LEVEL_BADGE = Color(0.25f, 0.70f, 0.35f, 1f)
         val BADGE_INK = Skin.INK_DARK
+
         /** Four dice to a row, spread across the width; seven rows fit between the deck slots and the bottom bar. */
         const val COLS = 4
         const val TILE = 92f
@@ -253,8 +255,10 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         const val GRID_X = 62f
         const val GRID_TOP = 1080f
         const val SYNERGY_Y = 150f
+
         /** The dragged die floats this much above the finger so it isn't hidden under it. */
         const val DRAG_LIFT = 40f
+
         /** The toast sits in the gap between the title and the deck slots. */
         const val TOAST_Y = 1188f
     }

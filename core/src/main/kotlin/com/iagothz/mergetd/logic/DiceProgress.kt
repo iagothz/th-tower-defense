@@ -37,6 +37,7 @@ object DiceUnlocks {
 object DieLevels {
     const val MAX = 5
     const val MULT_PER_LEVEL = 0.1f
+
     /** Cards to go from level i+1 to level i+2. */
     val CARDS_TO_NEXT = intArrayOf(5, 10, 20, 40)
 

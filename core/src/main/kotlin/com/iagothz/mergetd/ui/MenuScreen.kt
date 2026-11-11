@@ -7,8 +7,8 @@ import com.badlogic.gdx.math.Rectangle
 import com.iagothz.mergetd.logic.DailyChallenge
 import com.iagothz.mergetd.logic.DailyMissions
 import com.iagothz.mergetd.logic.DieType
-import com.iagothz.mergetd.logic.Progression
 import com.iagothz.mergetd.logic.Layout
+import com.iagothz.mergetd.logic.Progression
 import com.iagothz.mergetd.logic.Vec2
 import kotlin.math.sin
 import kotlin.random.Random
@@ -29,6 +29,7 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
     private val progress = game.save.missionProgress(day, missions)
     private val missionsPanel = MissionsPanel(game, Rectangle(24f, 150f, 672f, MissionsPanel.HEIGHT), day, missions)
     private var time = 0f
+
     /** The cloud's one-line message, taken from the controller when the tab opens and shown for a few seconds. */
     private val notice = game.cloud.notice.also { game.cloud.notice = null }
     private var noticeLeft = NOTICE_TIME
@@ -125,6 +126,7 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
 
     private companion object {
         const val NOTICE_TIME = 3f
+
         /** Flag pole and text start, from the pill's left edge; right padding after the text. */
         const val RECORD_FLAG_X = 36f
         const val RECORD_TEXT_X = 72f

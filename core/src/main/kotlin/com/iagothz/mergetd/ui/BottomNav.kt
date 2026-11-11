@@ -71,7 +71,13 @@ class BottomNav(val active: Tab) {
                 shapes.color = ACTIVE_PILL
                 shapes.roundedRect(cx - 34f, cy - 24f, 68f, 48f, 22f)
             }
-            val ink = if (t == active) Skin.GOLD else if (t == pressed) Color.WHITE else INK
+            val ink = if (t == active) {
+                Skin.GOLD
+            } else if (t == pressed) {
+                Color.WHITE
+            } else {
+                INK
+            }
             icon(shapes, t, cx, cy, ink)
             if (t in badges) {
                 shapes.color = Skin.GOLD
@@ -128,11 +134,13 @@ class BottomNav(val active: Tab) {
         const val HEIGHT = 112f
         const val ICON_Y = 72f
         const val LABEL_Y = 26f
+
         /** Room under the labels for the system's gesture handle. */
         const val GESTURE_PAD = 12f
         val BAR = Color(0.09f, 0.10f, 0.14f, 0.97f)
         val LINE = Color(1f, 1f, 1f, 0.08f)
         val INK = Color(0.62f, 0.64f, 0.72f, 1f)
+
         /** Opaque: the bar is drawn after the screen, where blending isn't guaranteed. */
         val ACTIVE_PILL = Color(0.26f, 0.24f, 0.18f, 1f)
     }

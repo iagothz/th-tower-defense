@@ -10,8 +10,7 @@ class CombatTest {
     private val path = Layout.PATH
     private val origin = Layout.cellCenter(Cell(1, 2))
 
-    private fun enemy(distance: Float, hp: Float = 1000f, kind: EnemyKind = EnemyKind.NORMAL) =
-        Enemy(kind, hp).also { it.distance = distance }
+    private fun enemy(distance: Float, hp: Float = 1000f, kind: EnemyKind = EnemyKind.NORMAL) = Enemy(kind, hp).also { it.distance = distance }
 
     @Test
     fun intervalScalesWithPips() {

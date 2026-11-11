@@ -1,14 +1,14 @@
 package com.iagothz.mergetd.ui
 
-import com.iagothz.mergetd.logic.Mutator
-import com.iagothz.mergetd.logic.MissionKind
-import com.iagothz.mergetd.logic.MissionProgress
-import com.iagothz.mergetd.logic.Mission
 import com.badlogic.gdx.Preferences
 import com.iagothz.mergetd.logic.DieType
-import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.EnemyKind
+import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.GameMode
+import com.iagothz.mergetd.logic.Mission
+import com.iagothz.mergetd.logic.MissionKind
+import com.iagothz.mergetd.logic.MissionProgress
+import com.iagothz.mergetd.logic.Mutator
 import java.lang.reflect.Proxy
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -18,23 +18,29 @@ import kotlin.test.assertTrue
 
 class SaveDataTest {
     companion object {
-    /** In-memory Preferences covering the calls SaveData makes. */
-    fun memoryPrefs(): Preferences {
-        val values = mutableMapOf<String, Any?>()
-        return Proxy.newProxyInstance(Preferences::class.java.classLoader, arrayOf(Preferences::class.java)) { proxy, method, args ->
-            when (method.name) {
-                "getInteger" -> values[args[0] as String] ?: args.getOrNull(1) ?: 0
-                "getString" -> values[args[0] as String] ?: args.getOrNull(1)
-                "getBoolean" -> values[args[0] as String] ?: args.getOrNull(1) ?: false
-                "getFloat" -> values[args[0] as String] ?: args.getOrNull(1) ?: 0f
-                "putInteger", "putString", "putBoolean", "putFloat" -> { values[args[0] as String] = args[1]; proxy }
-                "remove" -> { values.remove(args[0] as String); null }
-                "get" -> values.toMap()
-                "flush" -> null
-                else -> throw UnsupportedOperationException(method.name)
-            }
-        } as Preferences
-    }
+        /** In-memory Preferences covering the calls SaveData makes. */
+        fun memoryPrefs(): Preferences {
+            val values = mutableMapOf<String, Any?>()
+            return Proxy.newProxyInstance(Preferences::class.java.classLoader, arrayOf(Preferences::class.java)) { proxy, method, args ->
+                when (method.name) {
+                    "getInteger" -> values[args[0] as String] ?: args.getOrNull(1) ?: 0
+                    "getString" -> values[args[0] as String] ?: args.getOrNull(1)
+                    "getBoolean" -> values[args[0] as String] ?: args.getOrNull(1) ?: false
+                    "getFloat" -> values[args[0] as String] ?: args.getOrNull(1) ?: 0f
+                    "putInteger", "putString", "putBoolean", "putFloat" -> {
+                        values[args[0] as String] = args[1]
+                        proxy
+                    }
+                    "remove" -> {
+                        values.remove(args[0] as String)
+                        null
+                    }
+                    "get" -> values.toMap()
+                    "flush" -> null
+                    else -> throw UnsupportedOperationException(method.name)
+                }
+            } as Preferences
+        }
     }
 
     @Test

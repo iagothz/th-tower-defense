@@ -10,12 +10,12 @@ import com.iagothz.mergetd.logic.Cell
 import com.iagothz.mergetd.logic.Die
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.Enemy
-import com.iagothz.mergetd.logic.GameMode
-import com.iagothz.mergetd.logic.Synergy
 import com.iagothz.mergetd.logic.EnemyKind
+import com.iagothz.mergetd.logic.GameMode
 import com.iagothz.mergetd.logic.Layout
 import com.iagothz.mergetd.logic.Match
 import com.iagothz.mergetd.logic.ShotEvent
+import com.iagothz.mergetd.logic.Synergy
 import com.iagothz.mergetd.logic.Vec2
 import com.iagothz.mergetd.logic.WaveSpawner
 import kotlin.math.atan2
@@ -34,6 +34,7 @@ class MatchRenderer(
     /** [cat]: thrown by a fire kitten, which draws its own fireball instead of a beam. */
     private class Trace(val shot: ShotEvent, val ttl: Float, val seed: Int, val cat: Boolean = false) {
         var left = ttl
+
         /** 1 when fired, 0 when gone. */
         val life: Float get() = (left / ttl).coerceIn(0f, 1f)
     }
@@ -47,6 +48,7 @@ class MatchRenderer(
     private var seedCounter = 0
     private var clock = 0f
     private var lastDelta = 0f
+
     /** Boss HP bar: fills up from empty when a boss appears, then tracks its HP. */
     private var bossSeen: Enemy? = null
     private var bossShown = 0f
@@ -61,11 +63,13 @@ class MatchRenderer(
         traces.forEach { it.left -= delta }
         traces.removeAll { it.left <= 0f }
         cats.update(delta)
-        if (newShots) for (shot in match.lastShots) {
-            val cell = Layout.cellAt(shot.from)
-            val cat = cell != null && match.board[cell]?.let(::isCat) == true
-            if (cat && cell != null) cats.shot(cell, chest(Layout.cellCenter(cell)), shot.to.first())
-            traces += Trace(shot, traceTtl(shot.type), seedCounter++, cat)
+        if (newShots) {
+            for (shot in match.lastShots) {
+                val cell = Layout.cellAt(shot.from)
+                val cat = cell != null && match.board[cell]?.let(::isCat) == true
+                if (cat && cell != null) cats.shot(cell, chest(Layout.cellCenter(cell)), shot.to.first())
+                traces += Trace(shot, traceTtl(shot.type), seedCounter++, cat)
+            }
         }
         val catCells = match.board.occupied().filter { isCat(it.second) }
         catCells.forEach { sprites.prepareCat(it.second.pips) }
@@ -555,20 +559,24 @@ class MatchRenderer(
     companion object {
         private const val SHOT_TTL = 0.1f
         private const val DRAG_SCALE = 1.12f
+
         /** Last seconds of the countdown: the bar reddens and the ticks play. */
         private const val URGENT = 3f
         const val PATH_WIDTH = 40f
+
         /** 3/4 view: how far the path floor sits below its rim, and the front faces of the board, cells and enemies. */
         private const val PATH_DEPTH = 13f
         private const val BOARD_DEPTH = 36f
         private const val CELL_DEPTH = 20f
         private const val ENEMY_DEPTH = 10f
         const val DIE = Layout.CELL - 8f
+
         /** A bare (pip-1) kitten stands about one cell tall; hats and staffs rise above. */
         private const val CAT_BARE = Layout.CELL * 1.04f
         private const val CAT_BASE_W = Layout.CELL * 0.74f
         private const val CAT_BASE_H = Layout.CELL * 0.26f
         private const val BALL = 66f
+
         /** The burst's ring roughly matches the fire splash. */
         private const val BOOM = Balance.FIRE_SPLASH_RADIUS * 2.3f
         private const val BOARD_PAD = 18f

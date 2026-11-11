@@ -12,11 +12,9 @@ class NewDiceTest {
     private val path = Layout.PATH
     private val origin = Layout.cellCenter(Cell(1, 2))
 
-    private fun enemy(distance: Float, hp: Float = 1000f, kind: EnemyKind = EnemyKind.NORMAL) =
-        Enemy(kind, hp).also { it.distance = distance }
+    private fun enemy(distance: Float, hp: Float = 1000f, kind: EnemyKind = EnemyKind.NORMAL) = Enemy(kind, hp).also { it.distance = distance }
 
-    private fun attack(die: Die, vararg enemies: Enemy, bonus: AttackBonus = AttackBonus.NONE, rng: Random = Random(1)) =
-        Combat.attack(die, origin, 1f, enemies.toList(), path, bonus, rng)
+    private fun attack(die: Die, vararg enemies: Enemy, bonus: AttackBonus = AttackBonus.NONE, rng: Random = Random(1)) = Combat.attack(die, origin, 1f, enemies.toList(), path, bonus, rng)
 
     private fun match() = Match(DeckCodec.DEFAULT, Random(7))
 
@@ -43,7 +41,10 @@ class NewDiceTest {
 
     @Test
     fun curseAmplifiesPoisonAndExpires() {
-        val e = enemy(300f).apply { curse = 0.5f; curseTime = 1f }
+        val e = enemy(300f).apply {
+            curse = 0.5f
+            curseTime = 1f
+        }
         e.addPoison(10f)
         e.tickEffects(0.5f)
         assertEquals(1000f - 7.5f, e.hp, 1e-3f)

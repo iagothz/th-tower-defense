@@ -65,6 +65,7 @@ class Hints(private val shown: MutableSet<String>, private val onSeen: (Set<Stri
 
     companion object {
         const val SHOW_SECONDS = 5f
+
         /** Buys without a hold before the hold hint. */
         const val HOLD_AFTER = 3
         val TEXTS = linkedMapOf(

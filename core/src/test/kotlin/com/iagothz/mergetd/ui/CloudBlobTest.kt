@@ -64,7 +64,10 @@ class CloudBlobTest {
         save.deck = listOf(DieType.FIRE, DieType.ICE, DieType.POISON, DieType.ELECTRIC, DieType.WIND)
         val blob = save.export()
         assertFalse("soundVolume" in blob)
-        val other = SaveData(SaveDataTest.memoryPrefs()).apply { soundVolume = 0.9f; xp = 1 }
+        val other = SaveData(SaveDataTest.memoryPrefs()).apply {
+            soundVolume = 0.9f
+            xp = 1
+        }
         assertTrue(other.import(blob))
         assertEquals(300, other.xp)
         assertEquals(0.9f, other.soundVolume)
@@ -73,7 +76,10 @@ class CloudBlobTest {
 
     @Test
     fun importReplacesTheWholeSyncedSetAndRejectsBadBlobs() {
-        val save = SaveData(SaveDataTest.memoryPrefs()).apply { xp = 50; recordWave(GameMap.DEFAULT, 12) }
+        val save = SaveData(SaveDataTest.memoryPrefs()).apply {
+            xp = 50
+            recordWave(GameMap.DEFAULT, 12)
+        }
         assertTrue(save.import("i:xp=9"))
         assertEquals(9, save.xp)
         assertEquals(0, save.bestWave(GameMap.DEFAULT))

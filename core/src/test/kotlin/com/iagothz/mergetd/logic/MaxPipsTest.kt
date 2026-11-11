@@ -12,8 +12,7 @@ class MaxPipsTest {
 
     private fun enemy(distance: Float, hp: Float = 100_000f, kind: EnemyKind = EnemyKind.NORMAL) = Enemy(kind, hp).also { it.distance = distance }
 
-    private fun attack(die: Die, vararg enemies: Enemy, bonus: AttackBonus = AttackBonus.NONE, rng: Random = Random(1)) =
-        Combat.attack(die, origin, 1f, enemies.toList(), path, bonus, rng)
+    private fun attack(die: Die, vararg enemies: Enemy, bonus: AttackBonus = AttackBonus.NONE, rng: Random = Random(1)) = Combat.attack(die, origin, 1f, enemies.toList(), path, bonus, rng)
 
     private fun match() = Match(DeckCodec.DEFAULT, Random(7))
 

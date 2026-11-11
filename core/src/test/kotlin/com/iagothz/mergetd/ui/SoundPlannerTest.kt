@@ -1,6 +1,5 @@
 package com.iagothz.mergetd.ui
 
-import kotlin.test.assertNull
 import com.iagothz.mergetd.logic.Cell
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.Enemy
@@ -9,6 +8,7 @@ import com.iagothz.mergetd.logic.GameEvent
 import com.iagothz.mergetd.logic.Vec2
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SoundPlannerTest {

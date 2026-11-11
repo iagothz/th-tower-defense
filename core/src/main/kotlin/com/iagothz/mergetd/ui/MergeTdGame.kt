@@ -9,12 +9,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.iagothz.mergetd.logic.DailyChallenge
-import com.iagothz.mergetd.logic.WeeklyChallenge
 import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.GameMode
 import com.iagothz.mergetd.logic.Match
-import java.util.Locale
 import com.iagothz.mergetd.logic.MatchSetup
+import com.iagothz.mergetd.logic.WeeklyChallenge
+import java.util.Locale
 
 /** [devMode] enables desktop-only cheat keys and disables record saving. */
 /**
@@ -34,6 +34,7 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
     lateinit var cloud: CloudController
     val backdrop = Backdrop()
     val fader = Fader()
+
     /** Seconds since launch, for ambient animation. */
     var clock = 0f
         private set
@@ -148,9 +149,17 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
     }
 
     fun showGameOver(
-        map: GameMap, wave: Int, isRecord: Boolean, stats: MatchStats, challengeDay: Int? = null,
-        mode: GameMode = GameMode.NORMAL, unlocked: Set<Achievement> = emptySet(), code: String? = null, reward: MatchReward? = null,
-        score: Int? = null, week: Int? = null,
+        map: GameMap,
+        wave: Int,
+        isRecord: Boolean,
+        stats: MatchStats,
+        challengeDay: Int? = null,
+        mode: GameMode = GameMode.NORMAL,
+        unlocked: Set<Achievement> = emptySet(),
+        code: String? = null,
+        reward: MatchReward? = null,
+        score: Int? = null,
+        week: Int? = null,
     ) = switchTo(GameOverScreen(this, map, wave, isRecord, stats, challengeDay, mode, unlocked, code, reward, score, week))
 
     /** Hands [text] to the share sheet; returns false when it was only copied to the clipboard. */

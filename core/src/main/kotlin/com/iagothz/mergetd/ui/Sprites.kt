@@ -19,7 +19,7 @@ class Sprites : Disposable {
         }
         textures += t
         val w = t.width / cols
-        val h = t.height / rows  // frames need not be square
+        val h = t.height / rows // frames need not be square
         return List(rows) { r -> List(cols) { c -> TextureRegion(t, c * w, r * h, w, h) } }
     }
 
@@ -30,6 +30,7 @@ class Sprites : Disposable {
      * SpriteBatch pass: creating a texture binds it, which a batch in progress would not notice.
      */
     private val cats = HashMap<Int, CatSheets>()
+
     /** Frame size and foot of each kitten level (each is cropped around the cat on its own). */
     val catMetrics: CatMetrics = CatMetrics.parse(Gdx.files.internal("sprites/fire_cats.properties").readString("UTF-8"))
     private val fireball = sheet("fireball", FIREBALL_FRAMES, 1)[0]
@@ -59,6 +60,7 @@ class Sprites : Disposable {
         const val CAT_PIPS = 7
         private const val FIREBALL_FRAMES = 6
         private const val FIREBALL_FPS = 14f
+
         /** The fireball's bright core in its frame (from the left, from the bottom); the tail trails to the left. */
         const val BALL_CORE_X = 0.746f
         const val BALL_CORE_Y = 1f - 0.498f

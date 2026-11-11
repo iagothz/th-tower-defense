@@ -15,8 +15,14 @@ class FireCatsTest {
     fun facesTheEightDirectionsOfTheShot() {
         // y points up in the world; sheet rows run S, SE, E, NE, N, NW, W, SW.
         val cases = listOf(
-            Vec2(0f, -1f) to "S", Vec2(1f, -1f) to "SE", Vec2(1f, 0f) to "E", Vec2(1f, 1f) to "NE",
-            Vec2(0f, 1f) to "N", Vec2(-1f, 1f) to "NW", Vec2(-1f, 0f) to "W", Vec2(-1f, -1f) to "SW",
+            Vec2(0f, -1f) to "S",
+            Vec2(1f, -1f) to "SE",
+            Vec2(1f, 0f) to "E",
+            Vec2(1f, 1f) to "NE",
+            Vec2(0f, 1f) to "N",
+            Vec2(-1f, 1f) to "NW",
+            Vec2(-1f, 0f) to "W",
+            Vec2(-1f, -1f) to "SW",
         )
         for ((d, name) in cases) assertEquals(FireCats.ROWS.indexOf(name), FireCats.rowFor(d.x, d.y), name)
     }
@@ -54,7 +60,10 @@ class FireCatsTest {
     @Test
     fun idleLoopsThroughItsFrames() {
         val seen = mutableSetOf<Int>()
-        repeat(200) { seen += cats.frame(cell).index; cats.update(0.02f) }
+        repeat(200) {
+            seen += cats.frame(cell).index
+            cats.update(0.02f)
+        }
         assertEquals((0 until FireCats.IDLE_FRAMES).toSet(), seen)
     }
 

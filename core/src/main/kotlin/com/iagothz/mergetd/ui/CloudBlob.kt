@@ -47,7 +47,11 @@ object CloudBlob {
             val value: Any = when (line[0]) {
                 'i' -> raw.toIntOrNull() ?: return null
                 's' -> raw
-                'b' -> when (raw) { "true" -> true; "false" -> false; else -> return null }
+                'b' -> when (raw) {
+                    "true" -> true
+                    "false" -> false
+                    else -> return null
+                }
                 'f' -> raw.toFloatOrNull() ?: return null
                 else -> return null
             }

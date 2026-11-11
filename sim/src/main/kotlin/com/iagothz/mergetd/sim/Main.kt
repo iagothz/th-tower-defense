@@ -33,17 +33,19 @@ fun main(args: Array<String>) {
     }
 
     val csv = StringBuilder("bot,map,seed,deck,wave,killed_by\n")
-    for (map in maps) for (name in bots) {
-        val bot = BOTS.getValue(name)
-        val started = System.nanoTime()
-        val results = LongStream.range(seed, seed + games).parallel().mapToObj { s ->
-            val deck = if (randomDecks) DieType.entries.shuffled(Random(s)).take(DeckCodec.SIZE) else DeckCodec.DEFAULT
-            Simulator.play(deck, bot, s, map, mode, dieLevels = dieLevels)
-        }.collect(Collectors.toList())
-        val secs = (System.nanoTime() - started) / 1e9
-        printReport(name, map, results, randomDecks, secs, levels)
-        results.forEach { r ->
-            csv.append("$name,${map.id},${r.seed},${DeckCodec.encode(r.deck).replace(',', ' ')},${r.wave},${r.killedBy ?: ""}\n")
+    for (map in maps) {
+        for (name in bots) {
+            val bot = BOTS.getValue(name)
+            val started = System.nanoTime()
+            val results = LongStream.range(seed, seed + games).parallel().mapToObj { s ->
+                val deck = if (randomDecks) DieType.entries.shuffled(Random(s)).take(DeckCodec.SIZE) else DeckCodec.DEFAULT
+                Simulator.play(deck, bot, s, map, mode, dieLevels = dieLevels)
+            }.collect(Collectors.toList())
+            val secs = (System.nanoTime() - started) / 1e9
+            printReport(name, map, results, randomDecks, secs, levels)
+            results.forEach { r ->
+                csv.append("$name,${map.id},${r.seed},${DeckCodec.encode(r.deck).replace(',', ' ')},${r.wave},${r.killedBy ?: ""}\n")
+            }
         }
     }
     val out = File("sim/build/sim-results.csv")
@@ -61,9 +63,11 @@ private fun printReport(bot: String, map: GameMap, results: List<GameResult>, ra
         "Onda final: p10 ${Stats.percentile(waves, 10)} | mediana ${Stats.percentile(waves, 50)} | " +
             "p90 ${Stats.percentile(waves, 90)} | maior ${waves.max()}",
     )
-    println("Partidas encerradas na onda <= " + listOf(1, 3, 5, 10, 15, 20, 30).joinToString("  ") { w ->
-        "$w: ${pct(Stats.deathRateBy(waves, w))}"
-    })
+    println(
+        "Partidas encerradas na onda <= " + listOf(1, 3, 5, 10, 15, 20, 30).joinToString("  ") { w ->
+            "$w: ${pct(Stats.deathRateBy(waves, w))}"
+        },
+    )
     val killers = results.mapNotNull { it.killedBy }.groupingBy { it }.eachCount().entries.sortedByDescending { it.value }
     println("Inimigo que encerrou: " + killers.joinToString(" | ") { "${it.key} ${pct(it.value.toDouble() / results.size)}" })
     if (randomDecks) {

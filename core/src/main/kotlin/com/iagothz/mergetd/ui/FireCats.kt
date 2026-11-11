@@ -19,6 +19,7 @@ class FireCats {
             val f = (t / FLIGHT).coerceIn(0f, 1f)
             return Vec2(from.x + (to.x - from.x) * f, from.y + (to.y - from.y) * f)
         }
+
         /** Degrees, counter-clockwise from +x. */
         val angle: Float get() = (atan2(to.y - from.y, to.x - from.x) * 180.0 / PI).toFloat()
     }
@@ -30,6 +31,7 @@ class FireCats {
 
     private class State(val phase: Float) {
         var row = ROWS.indexOf("S")
+
         /** Seconds into the attack, or negative when idle. */
         var attack = -1f
     }
@@ -41,9 +43,11 @@ class FireCats {
 
     fun update(delta: Float) {
         clock += delta
-        for (s in states.values) if (s.attack >= 0f) {
-            s.attack += delta
-            if (s.attack * ATTACK_FPS >= ATTACK_FRAMES - ATTACK_START) s.attack = -1f
+        for (s in states.values) {
+            if (s.attack >= 0f) {
+                s.attack += delta
+                if (s.attack * ATTACK_FPS >= ATTACK_FRAMES - ATTACK_START) s.attack = -1f
+            }
         }
         for (b in balls) b.t += delta
         balls.removeAll { b -> b.done.also { if (it) booms += Boom(b.to) } }
@@ -85,8 +89,10 @@ class FireCats {
         const val IDLE_FPS = 8f
         const val ATTACK_FRAMES = 8
         const val ATTACK_FPS = 16f
+
         /** The shot is instant in the game, so the attack starts at the throw instead of the wind-up. */
         const val ATTACK_START = 3
+
         /** Seconds a fireball takes to reach its target; short, since the damage already landed. */
         const val FLIGHT = 0.16f
         const val BOOM_FRAMES = 8

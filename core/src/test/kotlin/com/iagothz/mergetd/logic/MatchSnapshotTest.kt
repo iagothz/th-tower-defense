@@ -15,7 +15,10 @@ class MatchSnapshotTest {
         m.sp = 2000
         repeat(6) { m.buyDie() }
         m.powerUp(DieType.ICE)
-        m.board[Cell(2, 4)] = Die(DieType.POISON, 3).apply { disabledFor = 2.5f; timer = 1.25f }
+        m.board[Cell(2, 4)] = Die(DieType.POISON, 3).apply {
+            disabledFor = 2.5f
+            timer = 1.25f
+        }
         m.board[Cell(0, 0)] = Die(DieType.ICE, 2)
         m.board[Cell(0, 1)] = Die(DieType.POISON, 1)
         m.debugStartWave(3)
@@ -71,7 +74,14 @@ class MatchSnapshotTest {
         val m = Match(listOf(DieType.TRAP, DieType.HUNTER, DieType.CURSE, DieType.TIME, DieType.FIRE), Random(2))
         m.board[Cell(1, 2)] = Die(DieType.TRAP, 2)
         m.board[Cell(0, 0)] = Die(DieType.HUNTER, 3).apply { stacks = 17 }
-        m.debugAddEnemy(Enemy(EnemyKind.TANK, 500f).apply { distance = 300f; curse = 0.2f; curseTime = 1.5f; stunTime = 99f })
+        m.debugAddEnemy(
+            Enemy(EnemyKind.TANK, 500f).apply {
+                distance = 300f
+                curse = 0.2f
+                curseTime = 1.5f
+                stunTime = 99f
+            },
+        )
         m.update(Balance.STEP)
         assertEquals(1, m.traps.size)
         val restored = assertNotNull(Match.restore(m.snapshot()))
@@ -98,7 +108,13 @@ class MatchSnapshotTest {
     @Test
     fun roundTripKeepsTheBossOrderAndStolenSp() {
         val m = Match(DeckCodec.DEFAULT, Random(5))
-        m.debugAddEnemy(Enemy(EnemyKind.BOSS_THIEF, 500f).also { it.distance = 100f; it.stolen = 70; it.armor = 3f })
+        m.debugAddEnemy(
+            Enemy(EnemyKind.BOSS_THIEF, 500f).also {
+                it.distance = 100f
+                it.stolen = 70
+                it.armor = 3f
+            },
+        )
         val restored = assertNotNull(Match.restore(m.snapshot()))
         assertEquals(m.bossOrder, restored.bossOrder)
         assertEquals(70, restored.enemies.single().stolen)

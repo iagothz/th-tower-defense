@@ -44,12 +44,14 @@ class Match(
         private set
 
     private val enemyList = mutableListOf<Enemy>()
+
     /** Which boss comes on waves 10, 20, 30...: shuffled once per match, kept in the save. */
     var bossOrder: List<EnemyKind> = WaveSpawner.DEFAULT_BOSS_ORDER.shuffled(rng)
         private set
     val enemies: List<Enemy> get() = enemyList
 
     private val shots = mutableListOf<ShotEvent>()
+
     /** Shots fired during the last [update] call. */
     val lastShots: List<ShotEvent> get() = shots
 
@@ -63,6 +65,7 @@ class Match(
     private val powerLevels = mutableMapOf<DieType, Int>()
 
     private var inWave = false
+
     /** Pause between waves; Rápido cuts it. */
     val waveDelay: Float get() = Balance.WAVE_DELAY * (if (mode == GameMode.RUSH) Balance.RUSH_DELAY else 1f)
     private var countdown = waveDelay
@@ -72,6 +75,7 @@ class Match(
 
     val isGameOver: Boolean get() = lives <= 0
     val buyCost: Int get() = Balance.BUY_BASE + Balance.BUY_STEP * purchases
+
     /** Seconds until the next wave starts; 0 while a wave is running. */
     val waveCountdown: Float get() = if (inWave || sandbox) 0f else countdown
 
@@ -565,12 +569,11 @@ class Match(
         }
 
         /** Rebuilds a match from [snapshot] text; null if the text is damaged or from another version. */
-        fun restore(text: String, rng: Random = Random.Default): Match? =
-            try {
-                parse(text, rng)
-            } catch (e: RuntimeException) {
-                null
-            }
+        fun restore(text: String, rng: Random = Random.Default): Match? = try {
+            parse(text, rng)
+        } catch (e: RuntimeException) {
+            null
+        }
 
         private fun parse(text: String, rng: Random): Match {
             val entries = text.lines().filter { it.isNotBlank() }.map {

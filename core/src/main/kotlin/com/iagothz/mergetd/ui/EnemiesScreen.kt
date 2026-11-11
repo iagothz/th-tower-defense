@@ -62,8 +62,7 @@ class EnemiesScreen(game: MergeTdGame) : BaseScreen(game) {
     }
 
     /** "vida ×3 · velocidade ×0,6 · 20 SP · tira 1" */
-    private fun stats(k: EnemyKind): String =
-        S.f("vida ×%s · vel. ×%s · %d SP · tira %d", DieInfo.num(k.hpMult), DieInfo.num(k.speedMult), k.reward, k.lifeDamage)
+    private fun stats(k: EnemyKind): String = S.f("vida ×%s · vel. ×%s · %d SP · tira %d", DieInfo.num(k.hpMult), DieInfo.num(k.speedMult), k.reward, k.lifeDamage)
 
     private fun description(k: EnemyKind): String = if (k.isBoss) Skin.bossAbility(k) else S[DESCRIPTIONS.getValue(k)]
 

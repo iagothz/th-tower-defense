@@ -21,6 +21,7 @@ import com.iagothz.mergetd.logic.Vec2
 abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
     protected val viewport = ExtendViewport(Layout.WORLD_W, Layout.WORLD_H)
     private val tmp = Vector2()
+
     /** Ignores releases of touches that began on a previous screen. */
     private val gesture = Tap<Unit>()
 
@@ -28,6 +29,7 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
     open val tab: Tab? get() = null
 
     private val nav: BottomNav? by lazy { tab?.let { BottomNav(it).apply { if (game.save.canLevelUpAny()) badges = setOf(Tab.DECK) } } }
+
     /** True while the current touch began on the bar, so the screen never sees it. */
     private var onBar = false
 
@@ -56,7 +58,9 @@ abstract class BaseScreen(protected val game: MergeTdGame) : ScreenAdapter() {
                     val hit = bar.tabAt(p.x, p.y)
                     bar.pressed = null
                     if (hit != null && hit == bar.pressedWas) game.showTab(hit)
-                } else if (!onBar) onTouchUp(p)
+                } else if (!onBar) {
+                    onTouchUp(p)
+                }
                 onBar = false
             }
             return true

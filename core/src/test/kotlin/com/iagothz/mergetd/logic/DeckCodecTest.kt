@@ -1,9 +1,9 @@
 package com.iagothz.mergetd.logic
 
-import kotlin.test.assertTrue
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class DeckCodecTest {
     @Test

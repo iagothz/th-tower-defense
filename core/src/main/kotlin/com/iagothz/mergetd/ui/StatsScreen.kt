@@ -48,9 +48,12 @@ class StatsScreen(game: MergeTdGame) : BaseScreen(game) {
         header.drawText(game.batch, game)
         header(totalsPanel, S["Total"])
         val t = listOf(
-            S["Partidas"] to "${totals.games}", S["Ondas somadas"] to "${totals.waves}",
-            S["Abates"] to "${totals.kills}", S["Chefes"] to "${totals.bosses}",
-            S["Merges"] to "${totals.merges}", S["Média de ondas"] to if (totals.games == 0) "–" else "%.1f".format(totals.waves.toFloat() / totals.games).replace('.', ','),
+            S["Partidas"] to "${totals.games}",
+            S["Ondas somadas"] to "${totals.waves}",
+            S["Abates"] to "${totals.kills}",
+            S["Chefes"] to "${totals.bosses}",
+            S["Merges"] to "${totals.merges}",
+            S["Média de ondas"] to if (totals.games == 0) "–" else "%.1f".format(totals.waves.toFloat() / totals.games).replace('.', ','),
         )
         for ((i, kv) in t.withIndex()) {
             val x = totalsPanel.x + 24f + (i % 2) * 336f

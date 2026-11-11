@@ -15,8 +15,7 @@ class DeckEditorTest {
     private val deck = listOf(DieType.FIRE, DieType.ICE, DieType.POISON, DieType.ELECTRIC, DieType.MINE)
     private val nowhere = Vec2(360f, 400f)
 
-    private fun editor(deck: List<DieType> = this.deck, locked: Set<DieType> = emptySet()) =
-        DeckEditor(deck.toMutableList(), tiles, slots) { it !in locked }
+    private fun editor(deck: List<DieType> = this.deck, locked: Set<DieType> = emptySet()) = DeckEditor(deck.toMutableList(), tiles, slots) { it !in locked }
 
     private fun centre(r: Rectangle) = Vec2(r.x + r.width / 2, r.y + r.height / 2)
     private fun tile(t: DieType) = centre(tiles.first { it.first == t }.second)

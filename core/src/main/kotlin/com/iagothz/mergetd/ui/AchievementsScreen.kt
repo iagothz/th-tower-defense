@@ -54,8 +54,13 @@ class AchievementsScreen(game: MergeTdGame, val goBack: () -> Unit) : BaseScreen
     }
 
     /** The cosmetic pill's fill: gold when worn, its own colour once earned, grey before. */
-    private fun pillColor(c: Cosmetic, has: Boolean): Color =
-        if (game.save.equipped(c.slot) == c) Skin.GOLD else if (has) c.color else PILL_LOCKED
+    private fun pillColor(c: Cosmetic, has: Boolean): Color = if (game.save.equipped(c.slot) == c) {
+        Skin.GOLD
+    } else if (has) {
+        c.color
+    } else {
+        PILL_LOCKED
+    }
 
     override fun onTouchDown(p: Vec2) = tap.press(header.takeIf { it.backHit(p) })
 

@@ -4,8 +4,7 @@ import kotlin.random.Random
 
 /** Everything that makes two matches play out the same given the same moves. */
 data class MatchSetup(val map: GameMap, val mode: GameMode, val seed: Int, val deck: List<DieType>, val mutators: Set<Mutator> = emptySet()) {
-    fun newMatch(dieLevels: Map<DieType, Int> = emptyMap()): Match =
-        Match(deck, Random(seed), map, mode = mode, seed = seed, locked = true, mutators = mutators, dieLevels = dieLevels)
+    fun newMatch(dieLevels: Map<DieType, Int> = emptyMap()): Match = Match(deck, Random(seed), map, mode = mode, seed = seed, locked = true, mutators = mutators, dieLevels = dieLevels)
 }
 
 /**
@@ -79,6 +78,5 @@ object MatchCode {
     }
 
     /** Weighted sum of the letters, so swapped or mistyped letters change it. */
-    private fun check(letters: CharArray): Int =
-        letters.withIndex().sumOf { (i, c) -> (i + 1) * ALPHABET.indexOf(c) } % ALPHABET.length
+    private fun check(letters: CharArray): Int = letters.withIndex().sumOf { (i, c) -> (i + 1) * ALPHABET.indexOf(c) } % ALPHABET.length
 }

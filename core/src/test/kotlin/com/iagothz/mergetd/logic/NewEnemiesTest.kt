@@ -75,7 +75,10 @@ class NewEnemiesTest {
     fun armoredBossShrugsOffSmallHitsButNotPoison() {
         val m = match()
         m.debugStartWave(10)
-        val boss = Enemy(EnemyKind.BOSS_ARMORED, 10_000f).also { it.distance = 500f; it.armor = 15f }
+        val boss = Enemy(EnemyKind.BOSS_ARMORED, 10_000f).also {
+            it.distance = 500f
+            it.armor = 15f
+        }
         m.debugAddEnemy(boss)
         assertEquals(0f, boss.takeDamage(10f, null))
         assertEquals(35f, boss.takeDamage(50f, null))

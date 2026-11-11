@@ -3,7 +3,6 @@ package com.iagothz.mergetd.ui
 import com.iagothz.mergetd.ui.CloudController.Status
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 

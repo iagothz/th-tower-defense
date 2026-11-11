@@ -19,13 +19,7 @@ enum class ButtonStyle(val fill: Color) {
 }
 
 /** [color], when set, overrides the style's fill (power-ups wear their die's colour). */
-class Button(
-    val rect: Rectangle,
-    var text: String,
-    var enabled: Boolean = true,
-    var style: ButtonStyle = ButtonStyle.PRIMARY,
-    var color: Color? = null,
-) {
+class Button(val rect: Rectangle, var text: String, var enabled: Boolean = true, var style: ButtonStyle = ButtonStyle.PRIMARY, var color: Color? = null) {
     val fill: Color get() = color ?: style.fill
 
     /** Text colour that reads on [fill]. */

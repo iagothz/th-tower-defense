@@ -8,9 +8,9 @@ import com.badlogic.gdx.math.Rectangle
 import com.iagothz.mergetd.logic.Balance
 import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.GameMode
-import com.iagothz.mergetd.logic.Mutator
 import com.iagothz.mergetd.logic.Layout
 import com.iagothz.mergetd.logic.MatchCode
+import com.iagothz.mergetd.logic.Mutator
 import com.iagothz.mergetd.logic.Vec2
 
 /** Picks the match: four map cards (miniature, difficulty, record) above a row of modes. */
@@ -133,7 +133,9 @@ class MapScreen(game: MergeTdGame) : BaseScreen(game) {
 
                 override fun canceled() = Unit
             },
-            S["Código da partida"], "", "XXXXX-XXXXX-XXXXX",
+            S["Código da partida"],
+            "",
+            "XXXXX-XXXXX-XXXXX",
         )
     }
 

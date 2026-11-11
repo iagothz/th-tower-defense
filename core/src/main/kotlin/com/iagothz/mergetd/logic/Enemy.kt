@@ -1,32 +1,34 @@
 package com.iagothz.mergetd.logic
 
-enum class EnemyKind(
-    val hpMult: Float,
-    val speedMult: Float,
-    val reward: Int,
-    val lifeDamage: Int,
-    val isBoss: Boolean = false,
-) {
+enum class EnemyKind(val hpMult: Float, val speedMult: Float, val reward: Int, val lifeDamage: Int, val isBoss: Boolean = false) {
     NORMAL(1f, 1f, 10, 1),
     FAST(0.5f, 2f, 10, 1),
     TANK(3f, 0.6f, 20, 1),
+
     /** Heals the enemies around it (Balance.HEALER_*). */
     HEALER(1.2f, 0.9f, 15, 1),
+
     /** Immune to slows, stuns, pushes and traps. */
     GHOST(0.8f, 1.3f, 15, 1),
+
     /** A big soldier that heals the enemies around it; worth three soldiers. */
     ELITE(3f, 0.9f, 30, 1),
+
     /** Runs for the exit, costs no life if it makes it, pays a lot if it doesn't. */
     TREASURE(0.6f, 1.8f, 60, 0),
     BOSS_SILENCER(40f, 0.5f, 100, 2, isBoss = true),
     BOSS_SWAPPER(40f, 0.5f, 100, 2, isBoss = true),
     BOSS_REGEN(40f, 0.5f, 100, 2, isBoss = true),
+
     /** Leaves two tanks behind when it dies. */
     BOSS_SPLITTER(40f, 0.5f, 100, 2, isBoss = true),
+
     /** Shrugs off the first [Enemy.armor] of every hit. */
     BOSS_ARMORED(40f, 0.5f, 100, 2, isBoss = true),
+
     /** Steals SP every ability tick; killing it gives it all back. */
     BOSS_THIEF(40f, 0.5f, 100, 2, isBoss = true),
+
     /** Enemies near it move faster. */
     BOSS_COMMANDER(40f, 0.5f, 100, 2, isBoss = true),
 }
@@ -35,27 +37,35 @@ data class PoisonStack(val dps: Float, var remaining: Float)
 
 class Enemy(val kind: EnemyKind, val maxHp: Float) {
     var hp = maxHp
+
     /** Distance travelled along the path. */
     var distance = 0f
     var slow = 0f
     var slowTime = 0f
     val poison = mutableListOf<PoisonStack>()
     var abilityTimer = 0f
+
     /** Extra fraction of damage taken while cursed. */
     var curse = 0f
     var curseTime = 0f
     var stunTime = 0f
     var stunImmune = 0f
+
     /** Total distance Gravity has pushed this enemy back. */
     var pushed = 0f
+
     /** Flat damage ignored on every direct hit (Blindado); poison ticks bypass it. */
     var armor = 0f
+
     /** SP taken from the player so far (Ladrão), refunded on its death. */
     var stolen = 0
+
     /** Set by the match each step while a Comandante is close. */
     var hasted = false
+
     /** Mode speed factor (Rápido), set at spawn. */
     var speedScale = 1f
+
     /** The die that last hit this enemy, credited with the kill. */
     var lastHit: Die? = null
 

@@ -63,13 +63,28 @@ class ChallengeScreen(game: MergeTdGame) : BaseScreen(game) {
         game.tinyFont.color = Skin.GOLD
         val names = weekly.mutators.joinToString(" · ") { "${S[it.title]} (${S[it.description]})" }
         // Wrapped: two mutators with their descriptions don't fit one line in English.
-        game.tinyFont.draw(game.batch, S.f("Mutadores ×%s: %s", DieInfo.num(Mutator.multiplier(weekly.mutators)), names), weeklyCard.x + 28f, weeklyCard.y + 162f, weeklyCard.width - 56f, Align.left, true)
+        game.tinyFont.draw(
+            game.batch,
+            S.f("Mutadores ×%s: %s", DieInfo.num(Mutator.multiplier(weekly.mutators)), names),
+            weeklyCard.x + 28f,
+            weeklyCard.y + 162f,
+            weeklyCard.width - 56f,
+            Align.left,
+            true,
+        )
         game.tinyFont.color = Color.WHITE
         // Sandbox.
         game.batch.textLeft(game.font, S["Sandbox"], sandboxCard.x + 28f, sandboxCard.y + sandboxCard.height - 40f)
         game.tinyFont.color = Skin.MUTED
-        game.tinyFont.draw(game.batch, S["Monte o tabuleiro como quiser: qualquer dado, qualquer pip, ondas quando pedir. Não conta para recordes."],
-            sandboxCard.x + 28f, sandboxCard.y + sandboxCard.height - 70f, sandboxCard.width - 56f, Align.left, true)
+        game.tinyFont.draw(
+            game.batch,
+            S["Monte o tabuleiro como quiser: qualquer dado, qualquer pip, ondas quando pedir. Não conta para recordes."],
+            sandboxCard.x + 28f,
+            sandboxCard.y + sandboxCard.height - 70f,
+            sandboxCard.width - 56f,
+            Align.left,
+            true,
+        )
         game.tinyFont.color = Color.WHITE
         buttons.forEach { it.drawText(game.batch, game.font) }
         game.batch.end()
