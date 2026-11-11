@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.iagothz.mergetd.BuildInfo
 import com.iagothz.mergetd.log.Log
 import com.iagothz.mergetd.log.LogLevel
 import com.iagothz.mergetd.logic.DailyChallenge
@@ -247,6 +248,6 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
 
     companion object {
         const val LARGE_TEXT = 1.15f
-        const val VERSION = "0.7.0"
+        const val VERSION = BuildInfo.VERSION
     }
 }

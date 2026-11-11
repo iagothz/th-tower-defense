@@ -56,7 +56,7 @@ SQL e queries parametrizadas, usuários de banco, plano de deploy e rollback de 
 - Nunca registrar o conteúdo do save nem dados da conta Play.
 - Aceite: teste prova que um snapshot corrompido gera WARN e devolve `null`; nenhum `catch` ou `runCatching` sem log no código.
 
-### Fase 3: versionamento e configuração (pequena)
+### Fase 3: versionamento e configuração (pequena) — concluída
 
 - `CHANGELOG.md` no formato Keep a Changelog, reconstruído do histórico até a 0.7.0.
 - Versão com fonte única em `gradle.properties`, gerando a constante do jogo no build.

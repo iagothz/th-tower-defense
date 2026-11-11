@@ -6,6 +6,8 @@ plugins {
 }
 
 val gdxVersion: String by project
+val appVersion: String by project
+val appVersionCode: String by project
 val natives: Configuration by configurations.creating
 
 // Release signing comes from android/keystore.properties (not in git); without it, release builds are unsigned.
@@ -22,8 +24,8 @@ android {
         applicationId = "com.iagothz.mergetd"
         minSdk = 24
         targetSdk = 36
-        versionCode = 7
-        versionName = "0.7.0"
+        versionCode = appVersionCode.toInt()
+        versionName = appVersion
     }
 
     sourceSets["main"].apply {

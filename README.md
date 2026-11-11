@@ -49,6 +49,10 @@ Tower defense de merge com dados, para jogar offline no Android. Feito em Kotlin
 ./gradlew :core:test :sim:test
 ```
 
+## Versão
+
+A versão fica só em `gradle.properties`: `appVersion` (semântica, MAJOR.MINOR.PATCH) e `appVersionCode` (inteiro que sobe a cada release). O build gera `BuildInfo.VERSION`, usado na tela inicial e no log, e o Android usa os dois valores no APK. Ao subir a versão, mova as entradas de `[Unreleased]` no `CHANGELOG.md` para a versão nova.
+
 ## Lint e formatação
 
 ```bash
@@ -84,11 +88,10 @@ Para o APK de release assinado, crie uma chave uma única vez e aponte para ela 
 keytool -genkeypair -keystore android/keystore/merge-td.jks -alias mergetd -keyalg RSA -keysize 2048 -validity 10000
 ```
 
-```properties
-storeFile=keystore/merge-td.jks
-storePassword=...
-keyPassword=...
-keyAlias=mergetd
+Copie o modelo e preencha as senhas:
+
+```bash
+cp android/keystore.properties.example android/keystore.properties
 ```
 
 ```bash
