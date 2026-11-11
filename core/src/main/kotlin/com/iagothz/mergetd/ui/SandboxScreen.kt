@@ -98,6 +98,7 @@ class SandboxScreen(game: MergeTdGame) : BaseScreen(game) {
         batch.begin()
         renderer.drawSprites(match, drag, effects)
         batch.end()
+        Gdx.gl.glEnable(GL20.GL_BLEND)
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         renderer.drawOverlayShapes(match, drag, effects)
         for (b in hudButtons) b.drawShape(shapes)

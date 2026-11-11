@@ -162,6 +162,7 @@ class MatchScreen(
         game.batch.begin()
         renderer.drawSprites(match, drag, effects)
         game.batch.end()
+        Gdx.gl.glEnable(GL20.GL_BLEND)
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         renderer.drawOverlayShapes(match, drag, effects)
         drawVignette(effects.vignetteAlpha(), effects.vignetteColor())
@@ -221,6 +222,7 @@ class MatchScreen(
 
         // The balloon goes over the HUD text, so it gets its own pass.
         if (tutorial.step != null) {
+            Gdx.gl.glEnable(GL20.GL_BLEND)
             shapes.begin(ShapeRenderer.ShapeType.Filled)
             drawTutorialShapes()
             shapes.end()
@@ -257,6 +259,7 @@ class MatchScreen(
         val text = hints.text ?: return
         if (paused || ending != null) return
         val shapes = game.shapes
+        Gdx.gl.glEnable(GL20.GL_BLEND)
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         shapes.color = tmpColor.set(0.08f, 0.09f, 0.14f, 0.92f)
         shapes.roundedRect(HINT.x, HINT.y, HINT.width, HINT.height, 14f)
