@@ -56,7 +56,6 @@ fun ShapeRenderer.die(type: DieType, pips: Int, cx: Float, cy: Float, size: Floa
     for ((dx, dy) in PIPS[pips - 1]) pip(cx + dx * step * scaleX, fy + dy * step * scaleY, r)
 }
 
-/** One pip in the equipped shape. */
 private fun ShapeRenderer.pip(x: Float, y: Float, r: Float) {
     when (Cosmetics.pips) {
         Cosmetic.PIPS_SQUARE -> rect(x - r * 0.85f, y - r * 0.85f, r * 1.7f, r * 1.7f)

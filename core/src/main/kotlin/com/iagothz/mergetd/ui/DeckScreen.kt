@@ -79,7 +79,6 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
             if (!isOpen(t)) {
                 shapes.bevelRect(r.x, r.y, r.width, r.height, 18f, Skin.LOCKED)
                 shapes.glyph(t, cx, cy + 2f, 25f * k, Skin.LOCKED_INK, Skin.LOCKED)
-                // A padlock: the shackle's lower half hides behind the body.
                 shapes.color = Skin.LOCK_COLOR
                 shapes.ring(cx, cy + 4f * k, 9f * k, 4f * k, 20)
                 shapes.roundedRect(cx - 13f * k, cy - 16f * k, 26f * k, 20f * k, 5f * k)
@@ -117,7 +116,6 @@ class DeckScreen(game: MergeTdGame) : BaseScreen(game) {
         for ((i, r) in slots.withIndex()) {
             val t = selected.getOrNull(i)?.takeIf { i != editor.fromSlot }
             if (i == target) {
-                // The slot the drag would land in.
                 shapes.color = Skin.GOLD
                 shapes.roundedRect(r.x - 5f, r.y - 5f, r.width + 10f, r.height + 10f, 14f)
             }

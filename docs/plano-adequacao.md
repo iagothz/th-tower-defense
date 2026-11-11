@@ -69,11 +69,16 @@ SQL e queries parametrizadas, usuários de banco, plano de deploy e rollback de 
 - Antes de mover, testes que cobrem o comportamento atual.
 - Aceite: o fechamento da partida tem testes unitários; as telas só desenham e repassam o toque.
 
-### Fase 5: comentários (grande, opcional)
+### Fase 5: comentários (grande, opcional) — concluída
 
 - Código novo já segue a regra.
-- No código existente, proposta: remover os comentários que repetem o óbvio e manter os KDoc que explicam regras de jogo. Alternativa: remover todos.
-- Decisão em aberto: limpeza parcial ou total.
+- Decisão: limpeza parcial.
+- Saem: divisórias e rótulos de seção, KDoc que repete o nome ou a assinatura, comentários que narram o que as
+  linhas seguintes fazem.
+- Ficam: regras de jogo e significado de números, compatibilidade de save e de formato, o porquê de escolhas não
+  óbvias (contornos, ordem, particularidades do libGDX/OpenGL e do Android, limites de layout). Nos testes, só o
+  que explica por que uma asserção vale.
+- Aceite: o diff só remove comentários (conferido por script); lint, testes e build passam.
 
 ### Fase 6: documentação (pequena)
 
@@ -87,4 +92,4 @@ SQL e queries parametrizadas, usuários de banco, plano de deploy e rollback de 
 
 ## Decisões em aberto
 
-- Fase 5: limpeza parcial (recomendada) ou total dos comentários.
+- Nenhuma.

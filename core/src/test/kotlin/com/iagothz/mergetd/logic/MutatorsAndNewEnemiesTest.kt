@@ -18,8 +18,6 @@ class MutatorsAndNewEnemiesTest {
         }
     }
 
-    // --- Elite and Treasure in the waves ---
-
     @Test
     fun elitesLeadEveryThirdWaveFromWaveSix() {
         assertFalse(EnemyKind.ELITE in WaveSpawner.composition(4))
@@ -72,8 +70,6 @@ class MutatorsAndNewEnemiesTest {
         m.update(1f)
         assertTrue(hurt.hp > hurt.maxHp * 0.5f, "${hurt.hp} of ${hurt.maxHp}")
     }
-
-    // --- Mutators ---
 
     @Test
     fun scoreMultipliesTheWaveByEveryMutator() {
@@ -131,8 +127,6 @@ class MutatorsAndNewEnemiesTest {
         assertEquals(setup.mutators, back.mutators)
         assertEquals(setup, back.setup)
     }
-
-    // --- Weekly challenge ---
 
     @Test
     fun weeklyChallengeIsFixedPerWeekWithTwoMutators() {

@@ -60,7 +60,6 @@ object Balance {
     const val TREASURE_FROM_WAVE = 6
     const val TREASURE_EVERY = 4
 
-    /** Mutators. */
     const val SWIFT_SPEED = 1.3f
     const val TOUGH_HP = 1.5f
     const val POOR_REWARD = 0.5f
@@ -175,7 +174,6 @@ object Balance {
     const val MAX_LIVES = 5
     const val BOOST_INTERVAL = 60f
 
-    // --- Synergies (see Synergy) ---
     const val BLAZE_RADIUS = 1.5f
     const val PLAGUE_DPS = 1.5f
     const val DAZZLE_CRIT = 0.10f
@@ -184,7 +182,6 @@ object Balance {
     const val PREDATOR = 1.25f
     const val AMBUSH_TRIGGER = 2f
 
-    // --- Modes (see GameMode) ---
     const val BOSS_RUSH_HP = 0.35f
     const val SURVIVAL_SP = 2
     const val RUSH_HP = 0.6f

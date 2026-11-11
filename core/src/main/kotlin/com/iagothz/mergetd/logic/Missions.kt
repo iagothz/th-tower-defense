@@ -57,7 +57,6 @@ object Progression {
 
     fun xpForMatch(wave: Int, bosses: Int): Int = wave * XP_PER_WAVE + bosses * XP_PER_BOSS
 
-    /** XP needed to go from [level] to the next one. */
     fun costToNext(level: Int): Int = 150 + 50 * (level - 1)
 
     fun level(xp: Int): Int {

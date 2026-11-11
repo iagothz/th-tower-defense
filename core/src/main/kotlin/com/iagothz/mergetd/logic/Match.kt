@@ -131,7 +131,6 @@ class Match(
 
     fun canBuy(): Boolean = !isGameOver && sp >= buyCost && board.emptyCells().isNotEmpty()
 
-    /** Whether a bought die could go on [cell]: the match affords one and the cell is empty. */
     fun canBuyAt(cell: Cell): Boolean = !isGameOver && sp >= buyCost && board[cell] == null
 
     /** Buys a one-pip die of a random deck type on an empty cell picked at random (the bots' way). */
@@ -235,8 +234,6 @@ class Match(
     /** Spawns one [kind] exactly as the current wave would. */
     internal fun debugSpawn(kind: EnemyKind) = spawn(kind)
 
-    // Sandbox: the board is the player's to arrange, and waves come when asked for.
-
     /** Puts a die of [type] with [pips] (clamped to 1..MAX_PIPS) on [cell], replacing whatever was there. Sandbox only. */
     fun place(cell: Cell, type: DieType, pips: Int): Boolean {
         if (!sandbox) return false
@@ -296,7 +293,6 @@ class Match(
         lives++
     }
 
-    /** Loses a life as if a soldier had walked through, for testing the leak feedback. */
     /** Puts one [kind] on the path right now, for tests. */
     internal fun devSpawn(kind: EnemyKind): Enemy {
         spawn(kind)
@@ -518,7 +514,6 @@ class Match(
         }
     }
 
-    /** Area damage around [center], credited to [by]. */
     private fun blast(center: Vec2, radius: Float, damage: Float, by: Die?, type: DieType) {
         events += GameEvent.Blast(center, radius, type)
         for (e in enemyList) {

@@ -19,8 +19,6 @@ class NewEnemiesTest {
         }
     }
 
-    // --- Boss order ---
-
     @Test
     fun bossOrderIsAShuffleOfAllBossesAndWave10UsesIt() {
         val orders = (1..6).map { Match(DeckCodec.DEFAULT, Random(it.toLong())).bossOrder }
@@ -35,8 +33,6 @@ class NewEnemiesTest {
         assertEquals(m.bossOrder[1], m.enemies.single().kind)
     }
 
-    // --- Healer ---
-
     @Test
     fun healerHealsNearbyEnemiesButNotFarOnes() {
         val m = match()
@@ -47,8 +43,6 @@ class NewEnemiesTest {
         assertTrue(near.hp > 120f, "near ${near.hp}")
         assertEquals(100f, far.hp, 0.01f)
     }
-
-    // --- Ghost ---
 
     @Test
     fun ghostIgnoresControlEffectsAndTraps() {
@@ -68,8 +62,6 @@ class NewEnemiesTest {
         assertTrue(m.traps.isNotEmpty(), "the mines must not go off under a ghost")
         assertEquals(1000f, ghost.hp)
     }
-
-    // --- Armored ---
 
     @Test
     fun armoredBossShrugsOffSmallHitsButNotPoison() {
@@ -99,8 +91,6 @@ class NewEnemiesTest {
         assertEquals(0f, m.enemies.first { it.kind == EnemyKind.NORMAL }.armor)
     }
 
-    // --- Thief ---
-
     @Test
     fun thiefStealsSpAndGivesItBackWhenKilled() {
         val m = match()
@@ -116,8 +106,6 @@ class NewEnemiesTest {
         assertEquals(850 + 150 + EnemyKind.BOSS_THIEF.reward, m.sp)
     }
 
-    // --- Splitter ---
-
     @Test
     fun splitterLeavesTwoTanksBehind() {
         val m = match()
@@ -130,8 +118,6 @@ class NewEnemiesTest {
         assertTrue(halves.all { it.kind == EnemyKind.TANK && it.maxHp == 1000f && it.hp == 1000f })
         assertTrue(halves.all { kotlin.math.abs(it.distance - 600f) <= 30f })
     }
-
-    // --- Commander ---
 
     @Test
     fun commanderHastesEnemiesAroundIt() {

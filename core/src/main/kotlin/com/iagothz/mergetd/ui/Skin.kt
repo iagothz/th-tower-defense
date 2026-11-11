@@ -6,7 +6,6 @@ import com.iagothz.mergetd.logic.Difficulty
 import com.iagothz.mergetd.logic.EnemyKind
 import com.iagothz.mergetd.logic.GameMap
 
-/** Ground and sky colours of one map. */
 class MapTheme(val ground: Color, val edge: Color, val skyTop: Color, val skyBottom: Color)
 
 /** All per-type visuals live here so shapes can later be swapped for sprites. */
@@ -40,7 +39,6 @@ object Skin {
     val SELECTED = Color(0.55f, 0.30f, 0.75f, 1f)
     val REWARD = Color(0.72f, 0.52f, 0.12f, 1f)
 
-    /** Dark text for light fills. */
     val INK_DARK = Color(0.15f, 0.15f, 0.20f, 1f)
 
     /** Brightness of [c] from its encoded channels, each clamped to 0..1 (sky tints go above 1). */
@@ -186,12 +184,10 @@ object Skin {
 
     fun label(t: DieType): String = S[labels.getValue(t)]
 
-    /** Unabbreviated name, for places with room for it. */
     fun fullName(t: DieType): String = S[fullNames[t] ?: labels.getValue(t)]
 
     fun enemyName(k: EnemyKind): String = S[enemyNames.getValue(k)]
 
-    /** One line on what a boss does, for its entrance card. */
     fun bossAbility(k: EnemyKind): String = S[bossAbilityPt(k)]
 
     private fun bossAbilityPt(k: EnemyKind): String = when (k) {

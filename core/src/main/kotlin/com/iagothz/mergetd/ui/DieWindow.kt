@@ -150,8 +150,6 @@ class DieWindow(private val game: MergeTdGame, private val accountLevel: Int, pr
         shapes.circle(cx, cy - size * 0.08f, 3f, 12)
     }
 
-    // --- Input: while open, the window takes every touch. ---
-
     private fun targetAt(p: Vec2): Any? {
         val t = shown ?: return null
         return when {

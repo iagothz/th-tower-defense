@@ -109,7 +109,6 @@ class MatchRenderer(
         effects.drawShapes(shapes)
         lifted(match, drag)?.let { (die, p) ->
             if (isCat(die)) return@let
-            // Lifted: bigger, with a shadow further below.
             val s = DIE * DRAG_SCALE
             shapes.color = tmp2.set(0f, 0f, 0f, 0.35f)
             shapes.roundedRect(p.x - s / 2 + 8f, p.y - s / 2 - 16f, s, s, 20f)
@@ -168,7 +167,6 @@ class MatchRenderer(
         popped(effects.pulse("wave")) { batch.textLeft(font, "${match.wave}", WAVE_PILL.x + 58f, HUD_Y) }
         popped(effects.pulse("lives")) { batch.textLeft(font, "${match.lives}", LIVES_PILL.x + 58f, HUD_Y) }
         popped(effects.pulse("sp")) { batch.textLeft(font, "$sp", SP_PILL.x + 58f, HUD_Y) }
-        // Hunter kill stacks, bottom-right of the die.
         for ((cell, die) in match.board.occupied()) {
             if (die.type != DieType.HUNTER || die.stacks == 0) continue
             val c = Layout.cellCenter(cell)
@@ -231,12 +229,10 @@ class MatchRenderer(
             shapes.roundedRect(pill.x, pill.y, pill.width, pill.height, pill.height / 2)
         }
         val iy = HUD_Y
-        // Wave: a flag.
         shapes.color = Color.WHITE
         shapes.rectLine(WAVE_PILL.x + 22f, iy - 14f, WAVE_PILL.x + 22f, iy + 16f, 3f)
         shapes.color = Skin.color(DieType.COMBO)
         shapes.triangle(WAVE_PILL.x + 23f, iy + 16f, WAVE_PILL.x + 23f, iy, WAVE_PILL.x + 45f, iy + 8f)
-        // The heart swells and shudders when a life goes.
         val hurt = effects.pulse("lives")
         shapes.color = Skin.HEART
         shapes.heart(LIVES_PILL.x + 32f + sin(clock * 70f) * 4f * hurt, iy, 11f + 7f * hurt)
@@ -270,7 +266,6 @@ class MatchRenderer(
             shapes.color = Skin.PANEL
             shapes.roundedRect(BOSS_BAR.x, BOSS_BAR.y, BOSS_BAR.width, BOSS_BAR.height, 8f)
             shapes.color = Skin.color(b.kind)
-            // Blinks once it is almost down.
             if (frac < 0.2f) shapes.color = tmp2.set(Skin.color(b.kind)).lerp(Color.WHITE, 0.3f + 0.3f * sin(clock * 14f))
             if (bossShown > 0.01f) shapes.roundedRect(BOSS_BAR.x, BOSS_BAR.y, maxOf(16f, BOSS_BAR.width * bossShown), BOSS_BAR.height, 8f)
         }
@@ -449,7 +444,6 @@ class MatchRenderer(
                 if (t.shot.crit) drawCrit(t.shot.to.first(), life)
                 continue
             }
-            // Muzzle flash on the die.
             shapes.color = tmp2.set(color).lerp(Color.WHITE, 0.5f).also { it.a = life }
             shapes.circle(t.shot.from.x, t.shot.from.y, 6f + 10f * life, 12)
             when (type) {
@@ -542,7 +536,6 @@ class MatchRenderer(
             shapes.color = tmp2.set(color).also { it.a = 0.5f * t.life }
             shapes.rectLine(from.x, from.y, x, y, 2f)
         } else {
-            // Ghosts of where the ball just was.
             for (i in 1..3) {
                 val g = f - i * 0.09f
                 if (g <= 0f) break

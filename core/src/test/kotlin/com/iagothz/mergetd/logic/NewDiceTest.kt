@@ -18,8 +18,6 @@ class NewDiceTest {
 
     private fun match() = Match(DeckCodec.DEFAULT, Random(7))
 
-    // --- Combat ---
-
     @Test
     fun hitsRememberTheDie() {
         val die = Die(DieType.FIRE, 1)
@@ -156,8 +154,6 @@ class NewDiceTest {
         assertEquals(12f * 1.5f, 1000f - h.hp, 1e-3f)
     }
 
-    // --- Board bonuses ---
-
     @Test
     fun lightSpeedsUpOnlyNeighbours() {
         val m = match()
@@ -190,8 +186,6 @@ class NewDiceTest {
         m.board[Cell(1, 1)] = Die(DieType.FIRE, 1)
         assertEquals(2, m.attackBonus().comboCount)
     }
-
-    // --- Kills ---
 
     @Test
     fun vampirePaysExtraSpPerPip() {
@@ -268,8 +262,6 @@ class NewDiceTest {
         repeat(60 * 8) { m.update(Balance.STEP) }
         assertEquals(Balance.TRAP_MAX_PER_DIE, m.traps.size)
     }
-
-    // --- Merge ---
 
     @Test
     fun hunterMergeKeepsStacksWhenResultIsHunter() {

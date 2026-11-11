@@ -65,7 +65,6 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         val shapes = game.shapes
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         for (d in drops) shapes.die(d.type, d.pips, d.x + sin(time * 0.7f + d.sway) * 12f, d.y, d.size, 0.75f, 0.45f)
-        // Account level under the title, as a thin bar.
         val xp = game.save.xp
         val level = Progression.level(xp)
         shapes.color = Color(0.12f, 0.13f, 0.18f, 1f)
@@ -84,7 +83,6 @@ class MenuScreen(game: MergeTdGame) : BaseScreen(game) {
         shapes.rectLine(flagX, 804f, flagX, 834f, 3f)
         shapes.triangle(flagX + 1f, 834f, flagX + 1f, 818f, flagX + 23f, 826f)
         play.drawShape(shapes)
-        // Three little dice sitting on the title line.
         shapes.die(DieType.FIRE, 3, 236f, 1046f, 44f)
         shapes.die(DieType.ELECTRIC, 5, 360f, 1058f, 52f)
         shapes.die(DieType.ICE, 2, 484f, 1046f, 44f)

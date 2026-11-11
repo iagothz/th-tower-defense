@@ -15,10 +15,8 @@ import com.iagothz.mergetd.logic.Mutator
 import com.iagothz.mergetd.logic.Progression
 import kotlin.random.Random
 
-/** One finished match, as the history screen shows it. */
 data class MatchRecord(val day: Int, val map: GameMap, val mode: GameMode, val deck: List<DieType>, val wave: Int, val killedBy: EnemyKind?, val code: String)
 
-/** Lifetime counters shown on the stats screen. */
 class Totals(val games: Int, val kills: Int, val bosses: Int, val merges: Int, val waves: Int)
 
 class SaveData(private val prefs: Preferences) {
@@ -107,8 +105,6 @@ class SaveData(private val prefs: Preferences) {
         .filter { it.key.startsWith(prefix) }
         .mapNotNull { e -> e.value?.toString()?.toIntOrNull()?.let { e.key.removePrefix(prefix) to it } }
 
-    // --- History ---
-
     fun history(): List<MatchRecord> = prefs.getString("history", "").lines().filter { it.isNotBlank() }.mapNotNull { line ->
         val f = line.split("|")
         if (f.size < 7) return@mapNotNull null
@@ -130,8 +126,6 @@ class SaveData(private val prefs: Preferences) {
         prefs.putString("history", lines.joinToString("\n"))
         prefs.flush()
     }
-
-    // --- Achievements and cosmetics ---
 
     fun hasAchievement(a: Achievement): Boolean = prefs.getBoolean("ach.${a.id}", false)
 
@@ -156,8 +150,6 @@ class SaveData(private val prefs: Preferences) {
 
     /** How many maps have a normal-mode record of at least [wave]. */
     fun mapsAt(wave: Int): Int = GameMap.entries.count { bestWave(it) >= wave }
-
-    // --- Progression: XP and the day's missions ---
 
     var xp: Int
         get() = prefs.getInteger("xp", 0)
@@ -196,8 +188,6 @@ class SaveData(private val prefs: Preferences) {
     }
 
     val accountLevel: Int get() = Progression.level(xp)
-
-    // --- Dice: unlocks by account level, levels paid with cards ---
 
     fun isUnlocked(t: DieType): Boolean = DiceUnlocks.isUnlocked(t, accountLevel)
 

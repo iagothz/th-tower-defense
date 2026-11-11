@@ -131,6 +131,5 @@ object Cosmetics {
         pips = save.equipped(Cosmetic.Slot.PIPS)
     }
 
-    /** Board rim colour: the frame cosmetic, or the default rim. */
     val frameColor: Color get() = if (frame == Cosmetic.FRAME_DEFAULT) Skin.BOARD_RIM else frame.color
 }

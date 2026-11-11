@@ -12,7 +12,6 @@ class DragController(private val match: Match) {
     /** The die being dragged; tracked by identity so a Swapper boss moving it mid-drag is followed. */
     private var held: Die? = null
 
-    /** Cell the dragged die currently sits in. */
     val dragging: Cell?
         get() {
             val die = held ?: return null

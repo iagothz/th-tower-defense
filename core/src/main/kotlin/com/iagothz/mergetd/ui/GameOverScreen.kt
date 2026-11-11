@@ -118,7 +118,6 @@ class GameOverScreen(
         shapes.roundedRect(panel.x, panel.y + panel.height - 10f, panel.width, 10f, 5f)
         menu.drawShape(shapes)
         share.drawShape(shapes)
-        // The chest: one die per kind pops in, left to right.
         for ((i, card) in chest.withIndex()) {
             val k = cardScale(i)
             if (k > 0f) shapes.die(card.first, 1, cardX(i), CHEST_Y, cardSize() * k)
@@ -126,7 +125,6 @@ class GameOverScreen(
         shapes.end()
 
         game.batch.begin()
-        // The title slams in: big and settling over the first instants.
         val slam = (1f - (time / SLAM_TIME).coerceIn(0f, 1f))
         game.bigFont.data.setScale(1f + 1.2f * slam * slam)
         game.batch.textShadowed(game.bigFont, S["Fim de jogo"], 360f, 1160f)

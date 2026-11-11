@@ -38,7 +38,6 @@ data class PoisonStack(val dps: Float, var remaining: Float)
 class Enemy(val kind: EnemyKind, val maxHp: Float) {
     var hp = maxHp
 
-    /** Distance travelled along the path. */
     var distance = 0f
     var slow = 0f
     var slowTime = 0f

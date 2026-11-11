@@ -7,7 +7,6 @@ import com.iagothz.mergetd.logic.DailyChallenge
 import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.Vec2
 
-/** Lifetime totals, the record on each map, the best decks and the last daily challenges. */
 class StatsScreen(game: MergeTdGame) : BaseScreen(game) {
     override val tab get() = Tab.SETTINGS
 

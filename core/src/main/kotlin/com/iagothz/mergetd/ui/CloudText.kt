@@ -15,7 +15,6 @@ object CloudText {
         is Status.Error -> "Nuvem: falhou"
     }
 
-    /** The translated, formatted line. */
     fun line(status: Status, today: Int): String {
         val k = key(status, today)
         return if (status is Status.Synced && k.contains("%d")) S.f(k, today - status.day) else S[k]

@@ -91,19 +91,16 @@ fun ShapeRenderer.coin(cx: Float, cy: Float, r: Float) {
     rectLine(cx - r * 0.35f, cy - r * 0.35f, cx + r * 0.2f, cy - r * 0.35f, r * 0.2f)
 }
 
-/** Draws [text] centred on (x, y). */
 fun SpriteBatch.textCentered(font: BitmapFont, text: String, x: Float, y: Float) {
     layout.setText(font, text)
     font.draw(this, text, x - layout.width / 2, y + layout.height / 2)
 }
 
-/** Draws [text] with its left edge at [x], vertically centred on [y]. */
 fun SpriteBatch.textLeft(font: BitmapFont, text: String, x: Float, y: Float) {
     layout.setText(font, text)
     font.draw(this, text, x, y + layout.height / 2)
 }
 
-/** Draws [text] with its right edge at [x], vertically centred on [y]. */
 fun SpriteBatch.textRight(font: BitmapFont, text: String, x: Float, y: Float) {
     layout.setText(font, text)
     font.draw(this, text, x - layout.width, y + layout.height / 2)

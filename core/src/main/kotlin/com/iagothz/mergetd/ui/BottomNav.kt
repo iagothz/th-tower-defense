@@ -29,7 +29,6 @@ class BottomNav(val active: Tab) {
         t to Rectangle(i * Layout.WORLD_W / Tab.entries.size, 0f, Layout.WORLD_W / Tab.entries.size, HEIGHT)
     }
 
-    /** The tab a finger is resting on. */
     var pressed: Tab? = null
         set(value) {
             field = value
@@ -105,12 +104,10 @@ class BottomNav(val active: Tab) {
             }
             Tab.DECK -> shapes.die(DieType.FIRE, 3, cx, cy, 30f, if (ink === Skin.GOLD) 1f else 0.6f)
             Tab.MAPS -> {
-                // A flag on a pole.
                 shapes.rect(cx - 14f, cy - 16f, 4f, 34f)
                 shapes.triangle(cx - 10f, cy + 18f, cx - 10f, cy, cx + 18f, cy + 9f)
             }
             Tab.CHALLENGES -> {
-                // A medal: ribbon tails under a disc.
                 shapes.triangle(cx - 12f, cy + 18f, cx - 2f, cy + 18f, cx - 4f, cy)
                 shapes.triangle(cx + 12f, cy + 18f, cx + 2f, cy + 18f, cx + 4f, cy)
                 shapes.circle(cx, cy - 6f, 12f, 24)
@@ -118,7 +115,6 @@ class BottomNav(val active: Tab) {
                 shapes.circle(cx, cy - 6f, 5f, 12)
             }
             Tab.SETTINGS -> {
-                // A gear: eight teeth around a ring.
                 for (i in 0 until 8) {
                     val a = i * (Math.PI.toFloat() / 4f)
                     shapes.rectLine(cx + cos(a) * 8f, cy + sin(a) * 8f, cx + cos(a) * 18f, cy + sin(a) * 18f, 7f)

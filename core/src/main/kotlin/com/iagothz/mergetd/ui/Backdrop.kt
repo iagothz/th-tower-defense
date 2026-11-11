@@ -6,7 +6,6 @@ import com.iagothz.mergetd.logic.Layout
 import kotlin.math.sin
 import kotlin.random.Random
 
-/** The night-sky background every screen sits on: a vertical gradient and slowly twinkling stars. */
 class Backdrop {
     private class Star(val x: Float, val y: Float, val r: Float, val phase: Float, val speed: Float)
 

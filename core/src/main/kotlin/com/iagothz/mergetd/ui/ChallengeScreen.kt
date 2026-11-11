@@ -46,14 +46,12 @@ class ChallengeScreen(game: MergeTdGame) : BaseScreen(game) {
 
         game.batch.begin()
         header.drawText(game.batch, game)
-        // Daily.
         game.batch.textLeft(game.font, S["Desafio do dia"], dailyCard.x + 28f, dailyCard.y + dailyCard.height - 40f)
         game.smallFont.color = Skin.MUTED
         game.batch.textRight(game.smallFont, daily.dateLabel, dailyCard.x + dailyCard.width - 28f, dailyCard.y + dailyCard.height - 40f)
         game.batch.textLeft(game.smallFont, S[daily.map.title], dailyCard.x + 28f, dailyCard.y + dailyCard.height - 86f)
         game.smallFont.color = Color.WHITE
         game.batch.textRight(game.smallFont, S.f("recorde %d", game.save.dailyBest(daily.day)), dailyCard.x + dailyCard.width - 28f, dailyCard.y + dailyCard.height - 86f)
-        // Weekly.
         game.batch.textLeft(game.font, S["Desafio semanal"], weeklyCard.x + 28f, weeklyCard.y + weeklyCard.height - 40f)
         game.smallFont.color = Skin.MUTED
         game.batch.textRight(game.smallFont, S.f("Semana de %s", weekly.dateLabel), weeklyCard.x + weeklyCard.width - 28f, weeklyCard.y + weeklyCard.height - 40f)
@@ -73,7 +71,6 @@ class ChallengeScreen(game: MergeTdGame) : BaseScreen(game) {
             true,
         )
         game.tinyFont.color = Color.WHITE
-        // Sandbox.
         game.batch.textLeft(game.font, S["Sandbox"], sandboxCard.x + 28f, sandboxCard.y + sandboxCard.height - 40f)
         game.tinyFont.color = Skin.MUTED
         game.tinyFont.draw(

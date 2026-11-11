@@ -35,7 +35,6 @@ class MissionsPanel(private val game: MergeTdGame, val rect: Rectangle, private 
             shapes.color = if (done) CARD_DONE else Skin.CELL
             shapes.roundedRect(c.x, c.y, c.width, c.height, 16f)
             icon(shapes, m, c.x + ICON_X + ICON / 2, c.y + c.height / 2, done)
-            // Progress bar with room for the count inside it.
             val bx = c.x + TEXT_X
             val bw = c.width - TEXT_X - PILL_W - 28f
             shapes.color = BAR_BACK
@@ -45,7 +44,6 @@ class MissionsPanel(private val game: MergeTdGame, val rect: Rectangle, private 
                 shapes.color = if (done) Skin.GOLD else accent(m)
                 shapes.roundedRect(bx, c.y + BAR_Y, maxOf(BAR_H, bw * f), BAR_H, BAR_H / 2)
             }
-            // Reward pill.
             val px = c.x + c.width - PILL_W - 14f
             shapes.color = if (done) Skin.GOLD else PILL
             shapes.roundedRect(px, c.y + BAR_Y - 3f, PILL_W, BAR_H + 6f, (BAR_H + 6f) / 2)
@@ -97,7 +95,6 @@ class MissionsPanel(private val game: MergeTdGame, val rect: Rectangle, private 
             }
             MissionKind.BOSSES -> {
                 shapes.bevelRect(cx - h, cy - h, ICON, ICON, 14f, TILE_BOSS)
-                // Crown: band and three points.
                 shapes.color = Skin.GOLD
                 shapes.rect(cx - 20f, cy - 14f, 40f, 10f)
                 shapes.triangle(cx - 20f, cy - 4f, cx - 20f, cy + 18f, cx - 6f, cy - 4f)
@@ -115,7 +112,6 @@ class MissionsPanel(private val game: MergeTdGame, val rect: Rectangle, private 
             }
         }
         if (done) {
-            // Check badge on the icon's top-right corner.
             val bx = cx + h - 4f
             val by = cy + h - 4f
             shapes.color = Skin.SHADOW

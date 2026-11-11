@@ -3,7 +3,6 @@ package com.iagothz.mergetd.ui
 /** English for the dice texts in [DieInfo], keyed by the Portuguese format strings. */
 object DieTextsEn {
     val TABLE: Map<String, String> = mapOf(
-        // Summaries
         "Explode no alvo e atinge os inimigos em volta." to "Explodes on the target and hits the enemies around it.",
         "Deixa o alvo mais lento." to "Slows the target.",
         "Envenena o alvo, causando dano contínuo." to "Poisons the target for damage over time.",
@@ -29,7 +28,6 @@ object DieTextsEn {
         "Ganha SP extra ao matar." to "Earns extra SP on kills.",
         "Vira uma cópia de outro dado." to "Becomes a copy of another die.",
         "Coringa garantido: o resultado mantém o tipo do outro dado." to "Guaranteed wildcard: the result keeps the other die's type.",
-        // Effects
         "%s do dano nos inimigos a até %s de distância do alvo" to "%s of the damage to enemies within %s of the target",
         "lentidão de %s (1 pip) a %s (%d pips) por %s s; não acumula, vale a mais forte" to "slow of %s (1 pip) to %s (%d pips) for %s s; doesn't stack, the strongest wins",
         "%s de dano/s por pip durante %s s; acumula até %d vezes no mesmo inimigo" to "%s damage/s per pip for %s s; stacks up to %d times on one enemy",
@@ -66,7 +64,6 @@ object DieTextsEn {
             "dropped on a die of the same pips (or the other way round), it becomes a copy of it, type and pips, and the original stays; Hunter stacks aren't copied; between two wildcards the dragged die's effect wins; two Cloners merge normally",
         "o resultado é o tipo do outro dado com +1 pip; dois Reforços viram um Reforço; levado a um Clonador, sobe o Clonador" to
             "the result is the other die's type with +1 pip; two Boosts make a Boost; taken to a Cloner, it grows the Cloner",
-        // 7 pips
         "explosão com raio ×%s e dano cheio nos vizinhos" to "blast radius ×%s with full damage on the neighbours",
         "além da lentidão, congela o alvo por %s s" to "besides the slow, freezes the target for %s s",
         "o veneno dura o dobro (%s s)" to "poison lasts twice as long (%s s)",

@@ -22,10 +22,8 @@ enum class ButtonStyle(val fill: Color) {
 class Button(val rect: Rectangle, var text: String, var enabled: Boolean = true, var style: ButtonStyle = ButtonStyle.PRIMARY, var color: Color? = null) {
     val fill: Color get() = color ?: style.fill
 
-    /** Text colour that reads on [fill]. */
     val ink: Color get() = Skin.inkOn(fill)
 
-    /** True while a finger is down on this button; it sinks and darkens. */
     var pressed = false
 
     /** Drawn size relative to [rect], about its centre; a pulse or a pop, never the hit area. */

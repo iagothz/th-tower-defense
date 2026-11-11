@@ -255,7 +255,6 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
         squashes.replaceAll { _, t -> t + dt }
         squashes.values.removeAll { it >= SQUASH_TIME }
         drops.replaceAll { _, t -> t + dt }
-        // Touching down starts the squash.
         for ((cell, t) in drops) if (t >= DROP_TIME) squashes[cell] = 0f
         drops.values.removeAll { it >= DROP_TIME }
         cellFlashes.replaceAll { _, t -> t + dt }
@@ -352,7 +351,6 @@ class Effects(private val rng: Random = Random.Default, private val path: EnemyP
         return Vec2(-k.dir.x * a, -k.dir.y * a)
     }
 
-    /** Puts [text] on the banner, like a wave start. */
     fun announce(text: String, seconds: Float = BANNER_TIME) = show(text, null, seconds)
 
     private fun show(text: String, note: String?, seconds: Float) {

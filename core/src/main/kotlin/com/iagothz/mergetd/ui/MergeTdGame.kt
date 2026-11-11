@@ -181,7 +181,6 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
         cloud.inMatch = screen is MatchScreen || screen is GameOverScreen
     }
 
-    /** Rasterizes the TTF at [size] world pixels, including Portuguese accented letters. */
     /** Rasterizes the four fonts, 15% bigger with the large-text setting; call again when that setting changes. */
     fun buildFonts() {
         if (::font.isInitialized) listOf(font, bigFont, smallFont, tinyFont).forEach { it.dispose() }
@@ -194,6 +193,7 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
         generator.dispose()
     }
 
+    /** Rasterizes the TTF at [size] world pixels, including Portuguese accented letters. */
     private fun newFont(generator: FreeTypeFontGenerator, size: Int): BitmapFont {
         val params = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
             this.size = size

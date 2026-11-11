@@ -19,7 +19,6 @@ data class AttackBonus(val critChance: Float = 0f, val comboCount: Int = 1, val 
 }
 
 object Combat {
-    /** A die at the pip cap. */
     private val Die.maxed: Boolean get() = pips >= Balance.MAX_PIPS
 
     fun attackInterval(t: DieType, pips: Int): Float {

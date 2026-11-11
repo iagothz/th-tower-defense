@@ -37,12 +37,10 @@ object S {
     fun english(key: String): String = EN[key] ?: ""
 
     private val EN: Map<String, String> = mapOf(
-        // Menu
         "Início" to "Home", "Mapas" to "Maps", "Config" to "Settings",
         "Jogar" to "Play", "Deck" to "Deck", "Partida" to "Match", "Desafio" to "Daily", "Estatísticas" to "Stats",
         "Configurações" to "Settings", "Junte dados iguais, segure as ondas" to "Merge matching dice, hold the waves",
         "%s · %s: recorde %d" to "%s · %s: best %d",
-        // Settings
         "Som" to "Sound", "Música" to "Music", "Vibrar" to "Vibration", "Vibração" to "Vibration", "Idioma" to "Language", "sim" to "on", "não" to "off",
         "Automático" to "Automatic", "Português" to "Portuguese", "English" to "English",
         "Privacidade: este jogo funciona sem internet, não coleta nem envia nenhum dado." to
@@ -56,7 +54,6 @@ object S {
         "Manter este" to "Keep this one", "Manter a nuvem" to "Keep the cloud", "hoje" to "today", "há %d dias" to "%d days ago",
         "Ligar" to "Turn on", "Entrar" to "Sign in", "Desligar" to "Turn off", "Tentar" to "Retry",
         "Voltar" to "Back", "Confirmar" to "Confirm",
-        // Match screen
         "Partida" to "Match", "Modo" to "Mode", "Jogar código" to "Play a code", "Código inválido" to "Invalid code",
         "Código da partida" to "Match code", "recorde %d" to "best %d",
         "Normal" to "Normal", "Boss Rush" to "Boss Rush", "Sobrevivência" to "Survival", "Rápido" to "Rush",
@@ -66,13 +63,11 @@ object S {
         "Ondas emendadas, inimigos mais rápidos e mais frágeis" to "Back-to-back waves, faster and frailer enemies",
         "Ferradura" to "Horseshoe", "Serpente" to "Serpent", "Anel" to "Ring", "Reta" to "Straight",
         "Fácil" to "Easy", "Difícil" to "Hard",
-        // Deck
         "nível %d · %d partidas" to "level %d · %d games", "Progresso da nuvem aplicado" to "Cloud progress applied",
         "arraste %d" to "drag %d",
         "Sinergias do deck: %s" to "Deck synergies: %s",
         "Sinergias do deck: nenhuma ainda (veja os pares na descrição de cada dado)" to
             "Deck synergies: none yet (each die's description lists its pairs)",
-        // HUD and match
         "Continuar" to "Resume", "Reiniciar" to "Restart", "Sair" to "Quit",
         "Sim" to "Yes", "Não" to "No", "Pausa" to "Paused", "Reiniciar a partida?" to "Restart the match?",
         "Sair da partida?" to "Quit the match?", "O progresso desta partida será perdido." to "This match's progress will be lost.",
@@ -85,18 +80,15 @@ object S {
         "curandeiros" to "healers", "fantasmas" to "ghosts",
         "pip" to "pip", "pips" to "pips", " · %d stacks" to " · %d stacks", "%s · %d %s%s" to "%s · %d %s%s",
         "Dano %s  ·  a cada %s s  ·  Nv%d" to "Damage %s  ·  every %s s  ·  Lv%d", "7 pips: %s" to "7 pips: %s",
-        // Tutorial
         "Toque numa célula vazia para comprar um dado ali." to "Tap an empty cell to buy a die there.",
         "Arraste um dado sobre outro do mesmo tipo e com os mesmos pips para juntar os dois." to
             "Drag a die onto another of the same type and pips to merge them.",
         "Gaste SP num power-up para fortalecer todos os dados daquele tipo." to "Spend SP on a power-up to strengthen every die of that type.",
         "Pronto! Segure um dado para ver o que ele faz. Boa sorte." to "Done! Hold a die to see what it does. Good luck.",
-        // Game over
         "Fim de jogo" to "Game over", "Novo recorde!" to "New record!", "Menu" to "Menu", "Mapa" to "Map",
         "Onda alcançada" to "Wave reached", "Inimigos derrotados" to "Enemies defeated", "Chefes derrotados" to "Bosses defeated",
         "Merges" to "Merges", "Dados comprados" to "Dice bought", "Recorde" to "Record", "onda %d" to "wave %d",
         "Conquista: %s" to "Achievement: %s", "Código da partida: %s" to "Match code: %s",
-        // Stats, history, achievements
         "Total" to "Total", "Partidas" to "Matches", "Ondas somadas" to "Waves in total", "Abates" to "Kills", "Chefes" to "Bosses",
         "Média de ondas" to "Average wave", "Recorde por mapa" to "Record per map", "Melhores decks" to "Best decks",
         "Jogue uma partida para aparecer aqui." to "Play a match to show up here.", "Nenhum desafio jogado ainda." to "No challenge played yet.",
@@ -158,13 +150,11 @@ object S {
         "Chegue à onda 15 no Rápido" to "Reach wave 15 in Rush", "Explorador" to "Explorer", "Onda 10 em todos os mapas" to "Wave 10 on every map",
         "Economista" to "Economist", "Acumule 1000 SP numa partida" to "Hold 1000 SP in a match",
         "Veterano" to "Veteran", "Jogue 10 partidas" to "Play 10 matches", "Fundidor" to "Smelter", "Faça 100 merges no total" to "Make 100 merges in total",
-        // Dice names
         "Fogo" to "Fire", "Gelo" to "Ice", "Veneno" to "Poison", "Elétrico" to "Electric", "Vento" to "Wind", "Ferro" to "Iron", "Mina" to "Mine",
         "Sniper" to "Sniper", "Espelho" to "Mirror", "Cresc." to "Growth", "Crescimento" to "Growth", "Luz" to "Light", "Crítico" to "Critical",
         "Combo" to "Combo", "Maldição" to "Curse", "Caçador" to "Hunter", "Gravid." to "Gravity", "Gravidade" to "Gravity", "Tempo" to "Time",
         "Armad." to "Trap", "Armadilha" to "Trap", "Terrem." to "Quake", "Terremoto" to "Earthquake", "Ceifador" to "Reaper", "Nova" to "Nova",
         "Supernova" to "Supernova", "Sorte" to "Luck", "Vampiro" to "Vampire", "Clonador" to "Cloner", "Reforço" to "Boost",
-        // Enemies and bosses
         "Soldado" to "Soldier", "Corredor" to "Runner", "Tanque" to "Tank", "Curandeiro" to "Healer", "Fantasma" to "Ghost",
         "Silenciador" to "Silencer", "Trocador" to "Swapper", "Regenerador" to "Regenerator", "Divisor" to "Splitter",
         "Blindado" to "Armored", "Ladrão" to "Thief", "Comandante" to "Commander",
@@ -173,7 +163,6 @@ object S {
         "Ignora golpes fracos; veneno passa" to "Shrugs off weak hits; poison gets through",
         "Rouba SP a cada 6 s; devolve ao morrer" to "Steals SP every 6 s; gives it back on death",
         "Acelera os inimigos perto dele" to "Hastes the enemies near it",
-        // Synergies
         "Incêndio" to "Blaze", "raio da explosão do Fogo +50%" to "Fire splash radius +50%",
         "Estilhaço" to "Shatter", "Terremoto dá dano ×2 em inimigos lentos" to "Earthquake deals ×2 to slowed enemies",
         "Praga" to "Plague", "veneno +50% de dano por segundo" to "poison +50% damage per second",
@@ -183,7 +172,6 @@ object S {
         "Predador" to "Predator", "Caçador e Vampiro +25% de dano" to "Hunter and Vampire +25% damage",
         "Emboscada" to "Ambush", "raio de disparo das minas ×2" to "mine trigger radius ×2",
         "%s (com %s): %s" to "%s (with %s): %s",
-        // Die info rows and texts
         "Alvo" to "Target", "Dano" to "Damage", "Velocidade" to "Speed", "Efeito" to "Effect", "7 pips" to "7 pips", "Sinergia" to "Synergy", "Power-up" to "Power-up",
         "Toque num dado para ver tudo · arraste para montar o deck" to "Tap a die to see everything · drag to build the deck",
         "1 → %d pips" to "1 → %d pips", "por mina, %s" to "per mine, %s", "não ataca" to "doesn't attack", "entre ataques" to "between attacks",
