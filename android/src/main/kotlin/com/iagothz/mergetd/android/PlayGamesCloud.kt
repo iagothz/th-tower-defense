@@ -10,6 +10,7 @@ import com.google.android.gms.games.SnapshotsClient
 import com.google.android.gms.games.snapshot.Snapshot
 import com.google.android.gms.games.snapshot.SnapshotMetadataChange
 import com.google.android.gms.tasks.Task
+import com.iagothz.mergetd.log.Log
 import com.iagothz.mergetd.ui.CloudBlob
 import com.iagothz.mergetd.ui.CloudResult
 import com.iagothz.mergetd.ui.CloudSave
@@ -28,6 +29,7 @@ class PlayGamesCloud(private val activity: Activity) : CloudSave {
     override fun signIn(done: (Boolean) -> Unit) {
         init()
         PlayGames.getGamesSignInClient(activity).signIn().addOnCompleteListener { t ->
+            if (!t.isSuccessful) Log.warn(MODULE, "Sign-in failed", error = t.exception)
             post { done(t.isSuccessful && t.result.isAuthenticated) }
         }
     }
@@ -49,6 +51,7 @@ class PlayGamesCloud(private val activity: Activity) : CloudSave {
                 return@addOnCompleteListener
             }
             val bytes = runCatching { snapshot.snapshotContents.readFully() }
+                .onFailure { Log.warn(MODULE, "Snapshot read failed", error = it) }
             client.discardAndClose(snapshot)
             post {
                 // A read that fails is not an empty cloud: reporting null would let the local save replace it.
@@ -68,15 +71,21 @@ class PlayGamesCloud(private val activity: Activity) : CloudSave {
             }
             // Conditional write: a version the cloud already has (another device moved on) is refused as "stale",
             // and the controller reads the cloud again instead of overwriting it.
-            val current = runCatching { snapshot.snapshotContents.readFully() }.getOrNull()
+            val current = runCatching { snapshot.snapshotContents.readFully() }
+                .onFailure { Log.warn(MODULE, "Snapshot read before write failed", error = it) }
+                .getOrNull()
                 ?.takeIf { it.isNotEmpty() }?.toString(Charsets.UTF_8)?.let { CloudBlob.version(it) } ?: -1
             if (current >= (CloudBlob.version(blob) ?: 0)) {
+                Log.info(MODULE, "Upload skipped: cloud is newer", mapOf("cloudVersion" to current))
                 client.discardAndClose(snapshot)
                 post { done(CloudResult.Failed("stale")) }
                 return@addOnCompleteListener
             }
-            val written = runCatching { snapshot.snapshotContents.writeBytes(blob.toByteArray(Charsets.UTF_8)) }.getOrDefault(false)
+            val written = runCatching { snapshot.snapshotContents.writeBytes(blob.toByteArray(Charsets.UTF_8)) }
+                .onFailure { Log.error(MODULE, "Snapshot write failed", error = it) }
+                .getOrDefault(false)
             if (!written) {
+                Log.error(MODULE, "Snapshot write refused", mapOf("bytes" to blob.length))
                 client.discardAndClose(snapshot)
                 post { done(CloudResult.Failed("error:write")) }
                 return@addOnCompleteListener
@@ -95,6 +104,7 @@ class PlayGamesCloud(private val activity: Activity) : CloudSave {
 
     private fun failure(e: Exception?): CloudResult.Failed {
         val code = (e as? ApiException)?.statusCode
+        Log.warn(MODULE, "Play Games call failed", mapOf("status" to code), e)
         return when (code) {
             CommonStatusCodes.NETWORK_ERROR, CommonStatusCodes.TIMEOUT -> CloudResult.Failed("offline")
             CommonStatusCodes.SIGN_IN_REQUIRED -> CloudResult.Failed("signed-out")
@@ -107,5 +117,6 @@ class PlayGamesCloud(private val activity: Activity) : CloudSave {
 
     private companion object {
         const val SNAPSHOT = "save"
+        const val MODULE = "cloud"
     }
 }

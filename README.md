@@ -58,6 +58,16 @@ Tower defense de merge com dados, para jogar offline no Android. Feito em Kotlin
 
 O estilo fica em `.editorconfig` (ktlint, estilo IntelliJ, linhas até 200 colunas; as tabelas de texto não têm limite). As regras do detekt ficam em `config/detekt/detekt.yml`; os avisos que já existiam estão congelados em `config/detekt/baseline-*.xml`, então só código novo é cobrado. Para atualizar a baseline depois de corrigir avisos antigos: `./gradlew detektBaseline`.
 
+## Logs
+
+O jogo registra eventos e erros pelo `Log` (`core/.../log`), com nível (DEBUG, INFO, WARN, ERROR), horário UTC, módulo e contexto em `chave=valor`; erros levam o stack trace.
+
+- Android: Logcat, com tag `MergeTD/<módulo>` (`adb logcat -s "MergeTD/*"`).
+- PC: console e `~/.merge-td/logs/merge-td.N.log`, com rotação (5 arquivos de 1 MB).
+- `--dev` no PC liga o nível DEBUG.
+
+O conteúdo do save, da nuvem e dados da conta nunca vão para o log.
+
 ## CI
 
 O GitHub Actions (`.github/workflows/ci.yml`) roda lint, testes e gera o APK de debug a cada push em `main` e em cada pull request; o APK fica nos artefatos da execução.
@@ -144,4 +154,5 @@ Para a nuvem funcionar, o jogo precisa de um projeto do Play Games Services no P
 - `lwjgl3/`: launcher desktop.
 - `sim/`: simulador de balanceamento (bots e relatório).
 - `android/`: launcher Android.
+- `core/.../log`: logging (`Log`, formato e destinos: Logcat, console e arquivo com rotação).
 - `config/detekt/`: regras e baseline do detekt.

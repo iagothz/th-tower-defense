@@ -1,5 +1,9 @@
 package com.iagothz.mergetd.logic
 
+import com.iagothz.mergetd.log.Log
+import com.iagothz.mergetd.log.LogEntry
+import com.iagothz.mergetd.log.LogLevel
+import com.iagothz.mergetd.log.LogSink
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -120,5 +124,22 @@ class MatchSnapshotTest {
         assertEquals(70, restored.enemies.single().stolen)
         assertEquals(3f, restored.enemies.single().armor)
         assertEquals(m.snapshot(), restored.snapshot())
+    }
+
+    @Test
+    fun aDamagedSnapshotIsLoggedAsAWarningWithoutItsContents() {
+        val entries = mutableListOf<LogEntry>()
+        val previous = Log.sink
+        Log.sink = LogSink { entries += it }
+        try {
+            val text = listOf("v=4", "deck=SECRET-DECK", "wave=oops").joinToString(System.lineSeparator())
+            assertNull(Match.restore(text))
+            val warn = entries.single { it.level == LogLevel.WARN }
+            assertEquals("match", warn.module)
+            assertNotNull(warn.error)
+            assertTrue(entries.none { "SECRET-DECK" in it.message || it.context.values.any { v -> "SECRET-DECK" in v.toString() } })
+        } finally {
+            Log.sink = previous
+        }
     }
 }

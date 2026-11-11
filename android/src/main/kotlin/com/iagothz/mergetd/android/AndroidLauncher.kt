@@ -8,10 +8,13 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.backends.android.AndroidApplication
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration
 import com.google.android.gms.games.PlayGamesSdk
+import com.iagothz.mergetd.log.GdxLogSink
+import com.iagothz.mergetd.log.Log
 import com.iagothz.mergetd.ui.MergeTdGame
 
 class AndroidLauncher : AndroidApplication() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.sink = GdxLogSink
         super.onCreate(savedInstanceState)
         // Opened from the installer's "Open" button, the launcher icon would start a second copy of the game
         // on top of the running one; send the user back to the running one instead.
@@ -54,7 +57,7 @@ class AndroidLauncher : AndroidApplication() {
         try {
             super.onDestroy()
         } catch (e: NullPointerException) {
-            // Finished in onCreate before initialize(): libGDX has no keyboard-height provider to close.
+            Log.warn("android", "onDestroy before libGDX was initialized", error = e)
         }
     }
 }

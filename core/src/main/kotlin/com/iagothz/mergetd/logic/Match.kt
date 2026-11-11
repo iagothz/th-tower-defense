@@ -1,5 +1,6 @@
 package com.iagothz.mergetd.logic
 
+import com.iagothz.mergetd.log.Log
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.random.Random
@@ -572,6 +573,7 @@ class Match(
         fun restore(text: String, rng: Random = Random.Default): Match? = try {
             parse(text, rng)
         } catch (e: RuntimeException) {
+            Log.warn("match", "Saved match rejected", mapOf("chars" to text.length), e)
             null
         }
 

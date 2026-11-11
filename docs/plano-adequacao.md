@@ -35,12 +35,12 @@ SQL e queries parametrizadas, usuários de banco, plano de deploy e rollback de 
 
 ## Fases
 
-### Fase 0: pendências (pequena)
+### Fase 0: pendências (pequena) — concluída
 
 - Commitar a correção da tela vermelha (blending religado após o passe de sprites).
 - Novos trabalhos em branches `feature/`, `fix/` ou `chore/`.
 
-### Fase 1: linter e formatador (pequena, alto retorno)
+### Fase 1: linter e formatador (pequena, alto retorno) — concluída
 
 - Plugin `ktlint-gradle` e `detekt` com versões fixadas, mais `.editorconfig`.
 - Um commit só de formatação, para isolar o diff.
@@ -48,7 +48,7 @@ SQL e queries parametrizadas, usuários de banco, plano de deploy e rollback de 
 - `ktlintCheck` e `detekt` no CI.
 - Aceite: `./gradlew ktlintCheck detekt test` passa no PC e no CI.
 
-### Fase 2: erros e logging (média)
+### Fase 2: erros e logging (média) — concluída
 
 - `Log` em `core` com níveis DEBUG/INFO/WARN/ERROR, timestamp, módulo e contexto, sobre `Gdx.app.log`/`Gdx.app.error` (vai ao Logcat no Android).
 - No PC (`lwjgl3`), saída também em arquivo com rotação.

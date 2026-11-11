@@ -8,6 +8,8 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.iagothz.mergetd.log.Log
+import com.iagothz.mergetd.log.LogLevel
 import com.iagothz.mergetd.logic.DailyChallenge
 import com.iagothz.mergetd.logic.GameMap
 import com.iagothz.mergetd.logic.GameMode
@@ -41,6 +43,11 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
     private var next: Screen? = null
 
     override fun create() {
+        if (devMode) {
+            Log.minLevel = LogLevel.DEBUG
+            Gdx.app.logLevel = com.badlogic.gdx.Application.LOG_DEBUG
+        }
+        Log.info("app", "Started", mapOf("version" to VERSION, "dev" to devMode))
         // Back navigates inside the game (see BaseScreen.onBack) instead of closing it.
         Gdx.input.setCatchKey(com.badlogic.gdx.Input.Keys.BACK, true)
         shapes = ShapeRenderer()
