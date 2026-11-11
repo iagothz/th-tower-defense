@@ -56,7 +56,7 @@ class Sprites : Disposable {
 
     companion object {
         /** Fire dice up to this many pips have kitten art (one pair of sheets per level). */
-        const val CAT_PIPS = 5
+        const val CAT_PIPS = 7
         private const val FIREBALL_FRAMES = 6
         private const val FIREBALL_FPS = 14f
         /** The fireball's bright core in its frame (from the left, from the bottom); the tail trails to the left. */
