@@ -68,5 +68,23 @@ class SandboxTest {
         assertNull(m.board[Cell(0, 0)])
         m.sendWave(9)
         assertEquals(0, m.wave)
+        m.board[Cell(0, 0)] = Die(DieType.ICE, 1)
+        assertFalse(m.moveDie(Cell(0, 0), Cell(0, 1)))
+        assertNull(m.board[Cell(0, 1)])
+    }
+
+    @Test
+    fun movingADieTakesAnEmptyCellOrSwapsWithAnother() {
+        val m = sandbox()
+        m.place(Cell(0, 0), DieType.ICE, 2)
+        m.place(Cell(2, 4), DieType.FIRE, 5)
+        assertTrue(m.moveDie(Cell(0, 0), Cell(1, 1)))
+        assertNull(m.board[Cell(0, 0)])
+        assertEquals(DieType.ICE, m.board[Cell(1, 1)]?.type)
+        assertTrue(m.moveDie(Cell(1, 1), Cell(2, 4)))
+        assertEquals(DieType.FIRE, m.board[Cell(1, 1)]?.type)
+        assertEquals(DieType.ICE, m.board[Cell(2, 4)]?.type)
+        assertFalse(m.moveDie(Cell(0, 0), Cell(1, 1)))
+        assertFalse(m.moveDie(Cell(1, 1), Cell(1, 1)))
     }
 }
