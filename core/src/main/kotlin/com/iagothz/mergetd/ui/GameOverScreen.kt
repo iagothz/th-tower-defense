@@ -4,6 +4,8 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.utils.Align
+import com.iagothz.mergetd.app.MatchReward
+import com.iagothz.mergetd.app.MatchStats
 import com.iagothz.mergetd.logic.DailyChallenge
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.GameMap

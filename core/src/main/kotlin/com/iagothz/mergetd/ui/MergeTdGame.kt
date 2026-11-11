@@ -9,14 +9,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.iagothz.mergetd.BuildInfo
+import com.iagothz.mergetd.app.MatchLauncher
+import com.iagothz.mergetd.app.MatchOutcome
 import com.iagothz.mergetd.log.Log
 import com.iagothz.mergetd.log.LogLevel
-import com.iagothz.mergetd.logic.DailyChallenge
-import com.iagothz.mergetd.logic.GameMap
-import com.iagothz.mergetd.logic.GameMode
-import com.iagothz.mergetd.logic.Match
 import com.iagothz.mergetd.logic.MatchSetup
-import com.iagothz.mergetd.logic.WeeklyChallenge
 import java.util.Locale
 
 /** [devMode] enables desktop-only cheat keys and disables record saving. */
@@ -33,6 +30,7 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
     lateinit var smallFont: BitmapFont
     lateinit var tinyFont: BitmapFont
     lateinit var save: SaveData
+    private lateinit var launcher: MatchLauncher
     lateinit var sfx: Sfx
     lateinit var cloud: CloudController
     val backdrop = Backdrop()
@@ -55,6 +53,7 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
         batch = SpriteBatch()
         sprites = Sprites()
         save = SaveData(Gdx.app.getPreferences("merge-td"))
+        launcher = MatchLauncher(save)
         buildFonts()
         sfx = Sfx(save)
         Cosmetics.load(save)
@@ -121,16 +120,9 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
     fun showSettings() = switchTo(SettingsScreen(this))
 
     /** Today's challenge: fixed map, deck and seed; its record is per day. */
-    fun startDaily() {
-        save.clearMatch()
-        val c = DailyChallenge.of(DailyChallenge.today())
-        switchTo(MatchScreen(this, previousBest = save.dailyBest(c.day), fresh = c.newMatch(save.dieLevels())))
-    }
+    fun startDaily() = switchTo(MatchScreen(this, launcher.daily()))
 
-    fun startMatch() {
-        save.clearMatch()
-        switchTo(MatchScreen(this))
-    }
+    fun startMatch() = switchTo(MatchScreen(this, launcher.newMatch()))
 
     fun showChallenges() = switchTo(ChallengeScreen(this))
 
@@ -138,37 +130,18 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
     fun startSandbox() = switchTo(SandboxScreen(this))
 
     /** This week's fixed run with its two mutators, booked against the week's score. */
-    fun startWeekly() {
-        save.clearMatch()
-        val w = WeeklyChallenge.of(WeeklyChallenge.thisWeek())
-        switchTo(MatchScreen(this, previousBest = save.weeklyBest(w.week), fresh = w.newMatch(save.dieLevels())))
-    }
+    fun startWeekly() = switchTo(MatchScreen(this, launcher.weekly()))
 
     /** Reopens the match Android closed while the app was in the background; false if there is none. */
     private fun resumeSavedMatch(): Boolean {
-        val (text, previousBest) = save.savedMatch ?: return false
-        val match = Match.restore(text)
-        if (match == null) {
-            save.clearMatch()
-            return false
-        }
-        switchTo(MatchScreen(this, match, previousBest))
+        val session = launcher.resume() ?: return false
+        switchTo(MatchScreen(this, session))
         return true
     }
 
-    fun showGameOver(
-        map: GameMap,
-        wave: Int,
-        isRecord: Boolean,
-        stats: MatchStats,
-        challengeDay: Int? = null,
-        mode: GameMode = GameMode.NORMAL,
-        unlocked: Set<Achievement> = emptySet(),
-        code: String? = null,
-        reward: MatchReward? = null,
-        score: Int? = null,
-        week: Int? = null,
-    ) = switchTo(GameOverScreen(this, map, wave, isRecord, stats, challengeDay, mode, unlocked, code, reward, score, week))
+    fun showGameOver(o: MatchOutcome) = switchTo(
+        GameOverScreen(this, o.map, o.wave, o.isRecord, o.stats, o.challengeDay, o.mode, o.unlocked, o.code, o.reward, o.score, o.week),
+    )
 
     /** Hands [text] to the share sheet; returns false when it was only copied to the clipboard. */
     fun share(text: String): Boolean {
@@ -185,10 +158,7 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
     fun showHistory(back: () -> Unit) = switchTo(HistoryScreen(this, back))
 
     /** Replays a shared match: its map, mode, deck and seed, booked for the totals only. */
-    fun startFromCode(setup: MatchSetup) {
-        save.clearMatch()
-        switchTo(MatchScreen(this, previousBest = save.bestWave(setup.map, setup.mode), fresh = setup.newMatch(save.dieLevels())))
-    }
+    fun startFromCode(setup: MatchSetup) = switchTo(MatchScreen(this, launcher.fromCode(setup)))
 
     /** [back] leads to the screen it was opened from: Config or Estatísticas. */
     fun showAchievements(back: () -> Unit) = switchTo(AchievementsScreen(this, back))

@@ -211,7 +211,7 @@ class SandboxScreen(game: MergeTdGame) : BaseScreen(game) {
             when {
                 merged && die != null && result != null && result != from -> effects.slide(from, result, die.type, die.pips)
                 // In the sandbox a die dropped on an empty cell moves there, and one dropped on another die swaps with it.
-                !merged && to != null && to != from -> match.board.swap(from, to)
+                !merged && to != null && match.moveDie(from, to) -> Unit
                 else -> game.sfx.play(setOf("drop"))
             }
             return

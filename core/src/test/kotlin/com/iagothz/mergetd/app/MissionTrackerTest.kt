@@ -1,4 +1,4 @@
-package com.iagothz.mergetd.ui
+package com.iagothz.mergetd.app
 
 import com.iagothz.mergetd.logic.Cell
 import com.iagothz.mergetd.logic.DeckCodec

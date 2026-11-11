@@ -63,7 +63,7 @@ SQL e queries parametrizadas, usuários de banco, plano de deploy e rollback de 
 - `android/keystore.properties.example` sem valores, explicado no README.
 - Aceite: mudar a versão num lugar só altera o APK e o texto da tela inicial.
 
-### Fase 4: camada de aplicação (média/grande, com plano próprio antes)
+### Fase 4: camada de aplicação (média/grande, com plano próprio antes) — concluída
 
 - Mover para serviços testáveis num pacote `app/`, entre `logic/` e `ui/`: o fechamento da partida (`book()`), a escolha da partida a iniciar e as regras do sandbox.
 - Antes de mover, testes que cobrem o comportamento atual.

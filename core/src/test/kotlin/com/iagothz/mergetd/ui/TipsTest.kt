@@ -1,5 +1,6 @@
 package com.iagothz.mergetd.ui
 
+import com.iagothz.mergetd.app.MatchStats
 import com.iagothz.mergetd.logic.EnemyKind
 import com.iagothz.mergetd.logic.GameEvent
 import kotlin.test.Test

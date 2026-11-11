@@ -252,6 +252,12 @@ class Match(
         return true
     }
 
+    fun moveDie(from: Cell, to: Cell): Boolean {
+        if (!sandbox || from == to || board[from] == null) return false
+        board.swap(from, to)
+        return true
+    }
+
     /** Empties the board. Sandbox only. */
     fun clearBoard() {
         if (!sandbox) return

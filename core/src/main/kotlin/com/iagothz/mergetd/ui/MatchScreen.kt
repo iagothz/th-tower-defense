@@ -7,37 +7,30 @@ import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.utils.Align
+import com.iagothz.mergetd.app.MatchBooking
+import com.iagothz.mergetd.app.MatchSession
+import com.iagothz.mergetd.app.MatchStats
+import com.iagothz.mergetd.app.MissionRun
+import com.iagothz.mergetd.app.MissionTracker
+import com.iagothz.mergetd.app.SessionKind
 import com.iagothz.mergetd.logic.Balance
-import com.iagothz.mergetd.logic.CardDrop
 import com.iagothz.mergetd.logic.Cell
 import com.iagothz.mergetd.logic.Combat
 import com.iagothz.mergetd.logic.DailyChallenge
 import com.iagothz.mergetd.logic.DailyMissions
-import com.iagothz.mergetd.logic.DiceUnlocks
 import com.iagothz.mergetd.logic.Die
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.GameMode
 import com.iagothz.mergetd.logic.Layout
-import com.iagothz.mergetd.logic.Match
-import com.iagothz.mergetd.logic.MatchCode
-import com.iagothz.mergetd.logic.Progression
 import com.iagothz.mergetd.logic.Vec2
 import kotlin.math.sin
 
-/**
- * [restored] is a match saved when the app last went to the background; it opens paused.
- * [previousBest] is the record from before that match began, so "Novo recorde!" still shows after a restore.
- */
-class MatchScreen(
-    game: MergeTdGame,
-    restored: Match? = null,
-    private val previousBest: Int = game.save.bestWave(game.save.map, game.save.mode),
-    /** A fresh daily challenge: starts running, no tutorial, booked against the day's record. */
-    fresh: Match? = null,
-) : BaseScreen(game) {
+class MatchScreen(game: MergeTdGame, private val session: MatchSession) : BaseScreen(game) {
     private enum class Confirm(val question: String) { RESTART("Reiniciar a partida?"), QUIT("Sair da partida?") }
 
-    private val match = restored ?: fresh ?: Match.seeded(game.save.playableDeck(), game.save.map, game.save.mode, game.save.mutators, game.save.dieLevels())
+    private val match = session.match
+    private val previousBest = session.previousBest
+    private val booking = MatchBooking(game.save, game.devMode)
     private val drag = DragController(match)
     private val hold = LongPress()
     private val renderer = MatchRenderer(game.shapes, game.batch, game.sprites, game.font, game.smallFont, game.tinyFont)
@@ -51,11 +44,11 @@ class MatchScreen(
     /** The pause menu shows the day's missions with this match's progress so far added in. */
     private val missionsPanel = MissionsPanel(game, Rectangle(24f, 24f, 672f, MissionsPanel.HEIGHT), missionDay, missions)
     private val tracker = MissionTracker(missions, match)
-    private val tutorial = Tutorial(active = restored == null && fresh == null && !game.save.tutorialDone)
+    private val tutorial = Tutorial(active = session.kind == SessionKind.NEW && !game.save.tutorialDone)
 
     init {
         effects.reduceMotion = game.save.reduceMotion
-        if (fresh != null) effects.announce(S["Desafio do dia: deck e mapa do dia"], 2.5f)
+        if (session.kind == SessionKind.CHALLENGE) effects.announce(S["Desafio do dia: deck e mapa do dia"], 2.5f)
     }
     private val sounds = SoundPlanner()
     private val spCounter = Counter(match.sp)
@@ -65,7 +58,7 @@ class MatchScreen(
 
     /** Seconds left of the frozen, shaking moment after the last life goes; null while playing. */
     private var ending: Float? = null
-    private var paused = restored != null
+    private var paused = session.kind == SessionKind.RESUMED
     private var confirm: Confirm? = null
 
     /** Simulation speed multiplier: the 2x button, or dev keys up to 4x. */
@@ -91,15 +84,7 @@ class MatchScreen(
     override fun pause() {
         paused = true
         onTouchCancelled()
-        if (game.devMode || match.isGameOver) return
-        val day = match.challengeDay
-        val week = match.week
-        when {
-            day != null -> game.save.recordDaily(day, match.wave)
-            week != null -> game.save.recordWeekly(week, match.score)
-            else -> game.save.recordWave(match.map, match.wave, match.mode)
-        }
-        game.save.saveMatch(match.snapshot(), previousBest)
+        booking.suspend(match, previousBest)
     }
 
     override fun draw(delta: Float) {
@@ -502,58 +487,19 @@ class MatchScreen(
     /** Leaves the match on purpose: the wave reached still counts for the record. */
     private fun abandon(restartAfter: Boolean) {
         if (restartAfter) {
-            book()
+            booking.book(match, stats, missionRun())
             if (match.challengeDay != null) game.startDaily() else game.startMatch()
         } else {
             finish()
         }
     }
 
-    /** Clears the saved match and, outside dev mode, books the result (totals, the relevant record, achievements, XP, missions). */
-    private fun book(): Pair<Set<Achievement>, MatchReward?> {
-        game.save.clearMatch()
-        if (game.devMode) return emptySet<Achievement>() to null
-        game.save.recordMatch(match.map, match.deck, match.wave, stats.kills, stats.bosses, stats.merges, match.challengeDay, match.mode, match.locked)
-        match.week?.let { game.save.recordWeekly(it, match.score) }
-        if (match.week == null && match.mutators.isNotEmpty() && match.score > game.save.bestScore) game.save.bestScore = match.score
-        game.save.addHistory(
-            MatchRecord(
-                DailyChallenge.today(),
-                match.map,
-                match.mode,
-                match.deck,
-                match.wave,
-                stats.killedBy,
-                match.setup?.takeIf { match.challengeDay == null }?.let { MatchCode.encode(it) } ?: "",
-            ),
-        )
-        val t = game.save.totals
-        val progress = AchievementProgress(
-            wave = match.wave, mode = match.mode, kills = t.kills, bosses = t.bosses, merges = t.merges, games = t.games,
-            maxPips = stats.maxPips, synergy = stats.synergyUsed, hunterStacks = stats.hunterStacks,
-            daily = match.challengeDay != null, rich = stats.rich, mapsAtTen = game.save.mapsAt(10),
-        )
-        val fresh = game.save.unlock(Achievements.earned(progress))
-        val levelBefore = Progression.level(game.save.xp)
-        val matchXp = Progression.xpForMatch(match.wave, stats.bosses)
-        game.save.xp += matchXp
-        val done = game.save.applyMissions(missionDay, missions, tracker.progress())
-        val level = Progression.level(game.save.xp)
-        val newDice = (levelBefore + 1..level).mapNotNull { DiceUnlocks.openedAt(it) }
-        val chest = CardDrop.draw(game.save.cardCandidates(), CardDrop.count(match.wave, stats.bosses), kotlin.random.Random(System.nanoTime()))
-        game.save.addCards(chest)
-        return fresh to MatchReward(matchXp + done.sumOf { it.xp }, level, level > levelBefore, done, chest, newDice)
-    }
+    private fun missionRun() = MissionRun(missionDay, missions, tracker.progress())
 
     private fun finish() {
-        val (fresh, reward) = book()
+        val outcome = booking.finish(match, stats, missionRun(), previousBest)
         if (!game.devMode) game.cloud.push()
-        val isRecord = !game.devMode && (if (match.week != null) match.score > previousBest else match.wave > previousBest)
-        game.showGameOver(
-            match.map, match.wave, isRecord, stats, match.challengeDay, match.mode, fresh,
-            match.setup?.takeIf { match.challengeDay == null && match.week == null }?.let { MatchCode.encode(it) }, reward,
-            match.score.takeIf { match.mutators.isNotEmpty() }, match.week,
-        )
+        game.showGameOver(outcome)
     }
 
     private companion object {
