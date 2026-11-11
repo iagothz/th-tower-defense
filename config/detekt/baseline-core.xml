@@ -1,0 +1,279 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComplexCondition:Match.kt$Match$d.type != DieType.LIGHT || d.disabled || (diagonal &amp;&amp; d.pips &lt; Balance.MAX_PIPS)</ID>
+    <ID>ComplexCondition:MatchScreen.kt$MatchScreen$merged &amp;&amp; die != null &amp;&amp; result != null &amp;&amp; result != from</ID>
+    <ID>CyclomaticComplexMethod:Achievements.kt$Achievements$fun earned(p: AchievementProgress): List&lt;Achievement&gt;</ID>
+    <ID>CyclomaticComplexMethod:Balance.kt$Balance$fun stats(t: DieType): DieStats</ID>
+    <ID>CyclomaticComplexMethod:CloudBlob.kt$CloudBlob$fun decode(blob: String): Map&lt;String, Any?&gt;?</ID>
+    <ID>CyclomaticComplexMethod:Combat.kt$Combat$fun attack(die: Die, origin: Vec2, power: Float, enemies: List&lt;Enemy&gt;, path: EnemyPath, bonus: AttackBonus = AttackBonus.NONE, rng: Random = Random.Default): ShotEvent?</ID>
+    <ID>CyclomaticComplexMethod:DeckScreen.kt$DeckScreen$override fun draw(delta: Float)</ID>
+    <ID>CyclomaticComplexMethod:DieInfo.kt$DieInfo.Companion$fun maxed(t: DieType): String</ID>
+    <ID>CyclomaticComplexMethod:DieInfo.kt$DieInfo.Companion$private fun effect(t: DieType)</ID>
+    <ID>CyclomaticComplexMethod:DieInfo.kt$DieInfo.Companion$private fun summary(t: DieType)</ID>
+    <ID>CyclomaticComplexMethod:Effects.kt$Effects$fun consume(events: List&lt;GameEvent&gt;)</ID>
+    <ID>CyclomaticComplexMethod:GameOverScreen.kt$GameOverScreen$override fun draw(delta: Float)</ID>
+    <ID>CyclomaticComplexMethod:Hints.kt$Hints$fun update(dt: Float, events: List&lt;GameEvent&gt;, match: Match)</ID>
+    <ID>CyclomaticComplexMethod:Match.kt$Match$private fun auras(dt: Float)</ID>
+    <ID>CyclomaticComplexMethod:Match.kt$Match$private fun removeDead()</ID>
+    <ID>CyclomaticComplexMethod:Match.kt$Match$private fun updateDice(dt: Float)</ID>
+    <ID>CyclomaticComplexMethod:Match.kt$Match.Companion$private fun parse(text: String, rng: Random): Match</ID>
+    <ID>CyclomaticComplexMethod:MatchRenderer.kt$MatchRenderer$private fun drawBoard(match: Match, drag: DragController, effects: Effects)</ID>
+    <ID>CyclomaticComplexMethod:MatchRenderer.kt$MatchRenderer$private fun drawEnemies(match: Match, effects: Effects)</ID>
+    <ID>CyclomaticComplexMethod:MatchScreen.kt$MatchScreen$override fun draw(delta: Float)</ID>
+    <ID>CyclomaticComplexMethod:MatchScreen.kt$MatchScreen$override fun onTouchUp(p: Vec2)</ID>
+    <ID>CyclomaticComplexMethod:SandboxScreen.kt$SandboxScreen$override fun draw(delta: Float)</ID>
+    <ID>CyclomaticComplexMethod:SandboxScreen.kt$SandboxScreen$override fun onTouchUp(p: Vec2)</ID>
+    <ID>CyclomaticComplexMethod:SaveDataTest.kt$SaveDataTest.Companion$fun memoryPrefs(): Preferences</ID>
+    <ID>CyclomaticComplexMethod:SettingsScreen.kt$SettingsScreen$override fun onTouchUp(p: Vec2)</ID>
+    <ID>CyclomaticComplexMethod:Sound.kt$SoundPlanner$fun plan(events: List&lt;GameEvent&gt;, now: Float): Set&lt;String&gt;</ID>
+    <ID>CyclomaticComplexMethod:Tips.kt$Tips$private fun forKillerPt(k: EnemyKind?): String</ID>
+    <ID>LongMethod:Combat.kt$Combat$fun attack(die: Die, origin: Vec2, power: Float, enemies: List&lt;Enemy&gt;, path: EnemyPath, bonus: AttackBonus = AttackBonus.NONE, rng: Random = Random.Default): ShotEvent?</ID>
+    <ID>LongMethod:DeckScreen.kt$DeckScreen$override fun draw(delta: Float)</ID>
+    <ID>LongMethod:DieWindow.kt$DieWindow$fun draw(worldWidth: Float, worldHeight: Float)</ID>
+    <ID>LongMethod:Effects.kt$Effects$fun consume(events: List&lt;GameEvent&gt;)</ID>
+    <ID>LongMethod:GameOverScreen.kt$GameOverScreen$override fun draw(delta: Float)</ID>
+    <ID>LongMethod:MapScreen.kt$MapScreen$override fun draw(delta: Float)</ID>
+    <ID>LongMethod:Match.kt$Match.Companion$private fun parse(text: String, rng: Random): Match</ID>
+    <ID>LongMethod:MatchScreen.kt$MatchScreen$override fun draw(delta: Float)</ID>
+    <ID>LongMethod:StatsScreen.kt$StatsScreen$override fun draw(delta: Float)</ID>
+    <ID>LongParameterList:AchievementsTest.kt$AchievementsTest$( wave: Int = 0, mode: GameMode = GameMode.NORMAL, kills: Int = 0, bosses: Int = 0, merges: Int = 0, games: Int = 1, maxPips: Int = 1, synergy: Boolean = false, hunterStacks: Int = 0, daily: Boolean = false, rich: Boolean = false, mapsAtTen: Int = 0, )</ID>
+    <ID>LongParameterList:Combat.kt$Combat$(die: Die, origin: Vec2, power: Float, enemies: List&lt;Enemy&gt;, path: EnemyPath, bonus: AttackBonus = AttackBonus.NONE, rng: Random = Random.Default)</ID>
+    <ID>LongParameterList:Combat.kt$Combat$(first: Enemy, damage: Float, enemies: List&lt;Enemy&gt;, path: EnemyPath, hits: MutableList&lt;Vec2&gt;, jumps: Int, shock: Boolean, deal: (Enemy, Float) -&gt; Unit)</ID>
+    <ID>LongParameterList:DieDraw.kt$(type: DieType, pips: Int, cx: Float, cy: Float, size: Float, brightness: Float = 1f, alpha: Float = 1f, scaleX: Float = 1f, scaleY: Float = 1f)</ID>
+    <ID>LongParameterList:DieGlyph.kt$(type: DieType, cx: Float, cy: Float, s: Float, ink: Color, background: Color)</ID>
+    <ID>LongParameterList:DieGlyph.kt$DieGlyph$(x1: Float, y1: Float, x2: Float, y2: Float, w: Float, cut: Boolean = false)</ID>
+    <ID>LongParameterList:DieGlyph.kt$DieGlyph$(x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float, cut: Boolean = false)</ID>
+    <ID>LongParameterList:DieGlyph.kt$GlyphShape.Tri$(val x1: Float, val y1: Float, val x2: Float, val y2: Float, val x3: Float, val y3: Float, cut: Boolean = false)</ID>
+    <ID>LongParameterList:Draw.kt$(x: Float, y: Float, w: Float, h: Float, r: Float, base: Color, lip: Float = 5f)</ID>
+    <ID>LongParameterList:Effects.kt$Effects.FloatingText$( var text: String, val x: Float, var y: Float, var age: Float = 0f, var crit: Boolean = false, val reward: Boolean = false, val bad: Boolean = false, /** The enemy a damage number belongs to, so later hits stack into it. */ val enemy: Enemy? = null, )</ID>
+    <ID>LongParameterList:Effects.kt$Effects.Particle$(var x: Float, var y: Float, val vx: Float, val vy: Float, val color: Color, var age: Float = 0f, val ttl: Float = PARTICLE_TIME)</ID>
+    <ID>LongParameterList:GameOverScreen.kt$GameOverScreen$( game: MergeTdGame, private val map: GameMap, private val wave: Int, private val isRecord: Boolean, private val stats: MatchStats, private val challengeDay: Int? = null, private val mode: GameMode = GameMode.NORMAL, private val unlocked: Set&lt;Achievement&gt; = emptySet(), private val code: String? = null, private val reward: MatchReward? = null, /** Mutator score, shown when any mutator was on. */ private val score: Int? = null, /** The weekly challenge this was, booked by score. */ private val week: Int? = null, )</ID>
+    <ID>LongParameterList:GameOverScreen.kt$GameOverScreen.Confetto$(var x: Float, var y: Float, val speed: Float, val sway: Float, val color: Color, val w: Float, val h: Float)</ID>
+    <ID>LongParameterList:Match.kt$Match$( val deck: List&lt;DieType&gt;, private val rng: Random = Random.Default, val map: GameMap = GameMap.DEFAULT, val challengeDay: Int? = null, val mode: GameMode = GameMode.NORMAL, /** The RNG seed this match started from, when known; what a match code reproduces. */ val seed: Int? = null, /** Started from a code: map and deck were dictated, so it books no map or deck record. */ val locked: Boolean = false, /** Handicaps chosen before the match; they scale the score. */ val mutators: Set&lt;Mutator&gt; = emptySet(), /** The weekly challenge this match is, if any (weeks since 1970); booked against that week's score. */ val week: Int? = null, /** Permanent levels from the account (see [DieLevels]); absent means 1. */ val dieLevels: Map&lt;DieType, Int&gt; = emptyMap(), /** A free-play board for trying things out: waves start only on request and leaks cost no life. Never saved or booked. */ val sandbox: Boolean = false, )</ID>
+    <ID>LongParameterList:Match.kt$Match.Companion$(deck: List&lt;DieType&gt;, map: GameMap, mode: GameMode, mutators: Set&lt;Mutator&gt; = emptySet(), dieLevels: Map&lt;DieType, Int&gt; = emptyMap(), rng: Random = Random.Default)</ID>
+    <ID>LongParameterList:MatchRenderer.kt$MatchRenderer$(cell: Cell, pips: Int, x: Float, y: Float, scale: Float, brightness: Float, scaleX: Float = 1f, scaleY: Float = 1f)</ID>
+    <ID>LongParameterList:MenuScreen.kt$MenuScreen.Drop$(var type: DieType, var pips: Int, var x: Float, var y: Float, var size: Float, var speed: Float, val sway: Float)</ID>
+    <ID>LongParameterList:MergeTdGame.kt$MergeTdGame$( map: GameMap, wave: Int, isRecord: Boolean, stats: MatchStats, challengeDay: Int? = null, mode: GameMode = GameMode.NORMAL, unlocked: Set&lt;Achievement&gt; = emptySet(), code: String? = null, reward: MatchReward? = null, score: Int? = null, week: Int? = null, )</ID>
+    <ID>LongParameterList:SaveData.kt$SaveData$(map: GameMap, deck: List&lt;DieType&gt;, wave: Int, kills: Int, bosses: Int, merges: Int, daily: Int? = null, mode: GameMode = GameMode.NORMAL, locked: Boolean = false)</ID>
+    <ID>LoopWithTooManyJumpStatements:Effects.kt$Effects$for</ID>
+    <ID>LoopWithTooManyJumpStatements:Match.kt$Match$for</ID>
+    <ID>LoopWithTooManyJumpStatements:MatchRenderer.kt$MatchRenderer$for</ID>
+    <ID>LoopWithTooManyJumpStatements:MatchScreen.kt$MatchScreen$for</ID>
+    <ID>LoopWithTooManyJumpStatements:SandboxScreen.kt$SandboxScreen$for</ID>
+    <ID>MagicNumber:Balance.kt$Balance$0.35f</ID>
+    <ID>MagicNumber:Balance.kt$Balance$1.2f</ID>
+    <ID>MagicNumber:Balance.kt$Balance$1.3f</ID>
+    <ID>MagicNumber:Balance.kt$Balance$1.5f</ID>
+    <ID>MagicNumber:Balance.kt$Balance$1.6f</ID>
+    <ID>MagicNumber:Balance.kt$Balance$100</ID>
+    <ID>MagicNumber:Balance.kt$Balance$10f</ID>
+    <ID>MagicNumber:Balance.kt$Balance$12f</ID>
+    <ID>MagicNumber:Balance.kt$Balance$14f</ID>
+    <ID>MagicNumber:Balance.kt$Balance$15f</ID>
+    <ID>MagicNumber:Balance.kt$Balance$16f</ID>
+    <ID>MagicNumber:Balance.kt$Balance$18f</ID>
+    <ID>MagicNumber:Balance.kt$Balance$2.5f</ID>
+    <ID>MagicNumber:Balance.kt$Balance$200</ID>
+    <ID>MagicNumber:Balance.kt$Balance$20f</ID>
+    <ID>MagicNumber:Balance.kt$Balance$36f</ID>
+    <ID>MagicNumber:Balance.kt$Balance$400</ID>
+    <ID>MagicNumber:Balance.kt$Balance$5f</ID>
+    <ID>MagicNumber:Balance.kt$Balance$60f</ID>
+    <ID>MagicNumber:Balance.kt$Balance$6f</ID>
+    <ID>MagicNumber:Balance.kt$Balance$700</ID>
+    <ID>MagicNumber:Balance.kt$Balance$8f</ID>
+    <ID>MagicNumber:DailyChallenge.kt$DailyChallenge$1_000_003L</ID>
+    <ID>MagicNumber:DailyChallenge.kt$DailyChallenge.Companion$10</ID>
+    <ID>MagicNumber:DailyChallenge.kt$DailyChallenge.Companion$100</ID>
+    <ID>MagicNumber:DailyChallenge.kt$DailyChallenge.Companion$1460</ID>
+    <ID>MagicNumber:DailyChallenge.kt$DailyChallenge.Companion$146_096</ID>
+    <ID>MagicNumber:DailyChallenge.kt$DailyChallenge.Companion$146_097</ID>
+    <ID>MagicNumber:DailyChallenge.kt$DailyChallenge.Companion$153</ID>
+    <ID>MagicNumber:DailyChallenge.kt$DailyChallenge.Companion$17</ID>
+    <ID>MagicNumber:DailyChallenge.kt$DailyChallenge.Companion$3</ID>
+    <ID>MagicNumber:DailyChallenge.kt$DailyChallenge.Companion$365</ID>
+    <ID>MagicNumber:DailyChallenge.kt$DailyChallenge.Companion$36_524</ID>
+    <ID>MagicNumber:DailyChallenge.kt$DailyChallenge.Companion$4</ID>
+    <ID>MagicNumber:DailyChallenge.kt$DailyChallenge.Companion$400</ID>
+    <ID>MagicNumber:DailyChallenge.kt$DailyChallenge.Companion$5</ID>
+    <ID>MagicNumber:DailyChallenge.kt$DailyChallenge.Companion$719_468</ID>
+    <ID>MagicNumber:DailyChallenge.kt$DailyChallenge.Companion$7919L</ID>
+    <ID>MagicNumber:DailyChallenge.kt$DailyChallenge.Companion$86_400_000L</ID>
+    <ID>MagicNumber:DailyChallenge.kt$DailyChallenge.Companion$9</ID>
+    <ID>MagicNumber:DiceProgress.kt$DieLevels$10</ID>
+    <ID>MagicNumber:DiceProgress.kt$DieLevels$20</ID>
+    <ID>MagicNumber:DiceProgress.kt$DieLevels$40</ID>
+    <ID>MagicNumber:DiceProgress.kt$DieLevels$5</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_ARMORED$0.5f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_ARMORED$100</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_ARMORED$40f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_COMMANDER$0.5f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_COMMANDER$100</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_COMMANDER$40f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_REGEN$0.5f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_REGEN$100</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_REGEN$40f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_SILENCER$0.5f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_SILENCER$100</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_SILENCER$40f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_SPLITTER$0.5f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_SPLITTER$100</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_SPLITTER$40f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_SWAPPER$0.5f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_SWAPPER$100</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_SWAPPER$40f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_THIEF$0.5f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_THIEF$100</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.BOSS_THIEF$40f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.ELITE$0.9f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.ELITE$30</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.ELITE$3f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.FAST$0.5f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.FAST$10</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.GHOST$0.8f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.GHOST$1.3f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.GHOST$15</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.HEALER$0.9f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.HEALER$1.2f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.HEALER$15</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.NORMAL$10</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.TANK$0.6f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.TANK$20</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.TANK$3f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.TREASURE$0.6f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.TREASURE$1.8f</ID>
+    <ID>MagicNumber:Enemy.kt$EnemyKind.TREASURE$60</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.HORSESHOE$180f</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.HORSESHOE$44f</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.HORSESHOE$676f</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.HORSESHOE$856f</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.RING$1020f</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.RING$245f</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.RING$360f</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.RING$44f</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.RING$676f</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.RING$880f</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.SERPENT$1020f</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.SERPENT$180f</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.SERPENT$44f</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.SERPENT$676f</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.SERPENT$880f</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.STRAIGHT$180f</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.STRAIGHT$44f</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.STRAIGHT$676f</ID>
+    <ID>MagicNumber:GameMap.kt$GameMap.STRAIGHT$880f</ID>
+    <ID>MagicNumber:Match.kt$Match$20f</ID>
+    <ID>MagicNumber:Match.kt$Match.Companion$10</ID>
+    <ID>MagicNumber:Match.kt$Match.Companion$11</ID>
+    <ID>MagicNumber:Match.kt$Match.Companion$12</ID>
+    <ID>MagicNumber:Match.kt$Match.Companion$13</ID>
+    <ID>MagicNumber:Match.kt$Match.Companion$14</ID>
+    <ID>MagicNumber:Match.kt$Match.Companion$3</ID>
+    <ID>MagicNumber:Match.kt$Match.Companion$4</ID>
+    <ID>MagicNumber:Match.kt$Match.Companion$5</ID>
+    <ID>MagicNumber:Match.kt$Match.Companion$6</ID>
+    <ID>MagicNumber:Match.kt$Match.Companion$7</ID>
+    <ID>MagicNumber:Match.kt$Match.Companion$8</ID>
+    <ID>MagicNumber:Match.kt$Match.Companion$9</ID>
+    <ID>MagicNumber:MatchCode.kt$MatchCode$0x3</ID>
+    <ID>MagicNumber:MatchCode.kt$MatchCode$0xFFFF_FFFFL</ID>
+    <ID>MagicNumber:MatchCode.kt$MatchCode$32</ID>
+    <ID>MagicNumber:MatchCode.kt$MatchCode$5</ID>
+    <ID>MagicNumber:Missions.kt$DailyMissions$10</ID>
+    <ID>MagicNumber:Missions.kt$DailyMissions$13</ID>
+    <ID>MagicNumber:Missions.kt$DailyMissions$20</ID>
+    <ID>MagicNumber:Missions.kt$DailyMissions$3</ID>
+    <ID>MagicNumber:Missions.kt$DailyMissions$30</ID>
+    <ID>MagicNumber:Missions.kt$DailyMissions$4</ID>
+    <ID>MagicNumber:Missions.kt$DailyMissions$5</ID>
+    <ID>MagicNumber:Missions.kt$DailyMissions$50</ID>
+    <ID>MagicNumber:Missions.kt$DailyMissions$60</ID>
+    <ID>MagicNumber:Missions.kt$DailyMissions$70</ID>
+    <ID>MagicNumber:Missions.kt$DailyMissions$7919L</ID>
+    <ID>MagicNumber:Missions.kt$DailyMissions$8</ID>
+    <ID>MagicNumber:Missions.kt$DailyMissions$80</ID>
+    <ID>MagicNumber:Missions.kt$DailyMissions$90</ID>
+    <ID>MagicNumber:Missions.kt$Progression$12</ID>
+    <ID>MagicNumber:Missions.kt$Progression$150</ID>
+    <ID>MagicNumber:Missions.kt$Progression$16</ID>
+    <ID>MagicNumber:Missions.kt$Progression$20</ID>
+    <ID>MagicNumber:Missions.kt$Progression$3</ID>
+    <ID>MagicNumber:Missions.kt$Progression$5</ID>
+    <ID>MagicNumber:Missions.kt$Progression$50</ID>
+    <ID>MagicNumber:Missions.kt$Progression$8</ID>
+    <ID>MagicNumber:Mutator.kt$Mutator.POOR$1.4f</ID>
+    <ID>MagicNumber:Mutator.kt$Mutator.SWARM$1.4f</ID>
+    <ID>MagicNumber:Mutator.kt$Mutator.SWIFT$1.3f</ID>
+    <ID>MagicNumber:Mutator.kt$Mutator.TOUGH$1.5f</ID>
+    <ID>MagicNumber:WaveSpawner.kt$WaveSpawner$3</ID>
+    <ID>MagicNumber:WaveSpawner.kt$WaveSpawner$4</ID>
+    <ID>MagicNumber:WaveSpawner.kt$WaveSpawner$5</ID>
+    <ID>MagicNumber:WaveSpawner.kt$WaveSpawner$6</ID>
+    <ID>MagicNumber:WaveSpawner.kt$WaveSpawner$7</ID>
+    <ID>MagicNumber:WaveSpawner.kt$WaveSpawner$8</ID>
+    <ID>MagicNumber:WeeklyChallenge.kt$WeeklyChallenge$1_000_033</ID>
+    <ID>MagicNumber:WeeklyChallenge.kt$WeeklyChallenge$7</ID>
+    <ID>MagicNumber:WeeklyChallenge.kt$WeeklyChallenge.Companion$104_729L</ID>
+    <ID>MagicNumber:WeeklyChallenge.kt$WeeklyChallenge.Companion$29</ID>
+    <ID>MagicNumber:WeeklyChallenge.kt$WeeklyChallenge.Companion$7</ID>
+    <ID>MemberNameEqualsClassName:Toggle.kt$Toggle$fun toggle()</ID>
+    <ID>NestedBlockDepth:DeckScreen.kt$DeckScreen$override fun onTouchUp(p: Vec2)</ID>
+    <ID>NestedBlockDepth:Match.kt$Match$private fun auras(dt: Float)</ID>
+    <ID>NestedBlockDepth:Match.kt$Match$private fun removeDead()</ID>
+    <ID>NestedBlockDepth:Match.kt$Match$private fun updateDice(dt: Float)</ID>
+    <ID>NestedBlockDepth:Match.kt$Match.Companion$private fun parse(text: String, rng: Random): Match</ID>
+    <ID>NestedBlockDepth:SandboxScreen.kt$SandboxScreen$override fun onTouchDown(p: Vec2)</ID>
+    <ID>NestedBlockDepth:Sound.kt$SoundPlanner$fun plan(events: List&lt;GameEvent&gt;, now: Float): Set&lt;String&gt;</ID>
+    <ID>ReturnCount:Board.kt$Board$fun canMerge(from: Cell, to: Cell): Boolean</ID>
+    <ID>ReturnCount:Board.kt$Board$fun merge(from: Cell, to: Cell, deck: List&lt;DieType&gt;, rng: Random): Boolean</ID>
+    <ID>ReturnCount:Board.kt$Board$fun resultCell(from: Cell, to: Cell): Cell</ID>
+    <ID>ReturnCount:CloudBlob.kt$CloudBlob$fun decode(blob: String): Map&lt;String, Any?&gt;?</ID>
+    <ID>ReturnCount:CloudController.kt$CloudController$fun push()</ID>
+    <ID>ReturnCount:Combat.kt$Combat$fun attack(die: Die, origin: Vec2, power: Float, enemies: List&lt;Enemy&gt;, path: EnemyPath, bonus: AttackBonus = AttackBonus.NONE, rng: Random = Random.Default): ShotEvent?</ID>
+    <ID>ReturnCount:DeckCodec.kt$DeckCodec$fun decode(s: String?): List&lt;DieType&gt;</ID>
+    <ID>ReturnCount:DeckEditor.kt$DeckEditor$fun slotAt(p: Vec2): Int?</ID>
+    <ID>ReturnCount:DragController.kt$DragController$fun down(p: Vec2): Boolean</ID>
+    <ID>ReturnCount:DragController.kt$DragController$fun dropTarget(p: Vec2): Cell?</ID>
+    <ID>ReturnCount:DragController.kt$DragController$fun snapTarget(): Cell?</ID>
+    <ID>ReturnCount:Effects.kt$Effects$fun vignetteAlpha(): Float</ID>
+    <ID>ReturnCount:Fader.kt$Fader$fun update(dt: Float): Boolean</ID>
+    <ID>ReturnCount:Layout.kt$Layout$fun cellAt(p: Vec2): Cell?</ID>
+    <ID>ReturnCount:Match.kt$Match$fun light(dr: Int, dc: Int, diagonal: Boolean): Int</ID>
+    <ID>ReturnCount:Match.kt$Match$fun merge(from: Cell, to: Cell): Boolean</ID>
+    <ID>ReturnCount:Match.kt$Match$fun powerUp(t: DieType): Boolean</ID>
+    <ID>ReturnCount:Match.kt$Match$private fun plantTrap(die: Die): Boolean</ID>
+    <ID>ReturnCount:MatchCode.kt$MatchCode$fun decode(text: String): MatchSetup?</ID>
+    <ID>ReturnCount:MatchCode.kt$MatchCode$private fun unpackHead(packed: Long, seed: Int): MatchSetup?</ID>
+    <ID>ReturnCount:MatchRenderer.kt$MatchRenderer$private fun lifted(match: Match, drag: DragController): Pair&lt;Die, Vec2&gt;?</ID>
+    <ID>ReturnCount:MatchScreen.kt$MatchScreen$override fun onTouchDown(p: Vec2)</ID>
+    <ID>ReturnCount:MatchScreen.kt$MatchScreen$private fun heldDie(): Pair&lt;Cell, Die&gt;?</ID>
+    <ID>ReturnCount:MergeTdGame.kt$MergeTdGame$private fun resumeSavedMatch(): Boolean</ID>
+    <ID>ReturnCount:SaveData.kt$SaveData$fun levelUp(t: DieType): Boolean</ID>
+    <ID>ReturnCount:SaveData.kt$SaveData$fun recordMatch(map: GameMap, deck: List&lt;DieType&gt;, wave: Int, kills: Int, bosses: Int, merges: Int, daily: Int? = null, mode: GameMode = GameMode.NORMAL, locked: Boolean = false): Boolean</ID>
+    <ID>ReturnCount:SaveData.kt$SaveData$fun retroCards(rng: Random): Map&lt;DieType, Int&gt;</ID>
+    <ID>ReturnCount:Sound.kt$SoundPlanner$fun countdown(prev: Float, now: Float): String?</ID>
+    <ID>ReturnCount:WaveSpawner.kt$WaveSpawner$fun composition(n: Int, bosses: List&lt;EnemyKind&gt; = DEFAULT_BOSS_ORDER, mode: GameMode = GameMode.NORMAL, swarm: Boolean = false): List&lt;EnemyKind&gt;</ID>
+    <ID>SwallowedException:Match.kt$Match.Companion$e: RuntimeException</ID>
+    <ID>TooGenericExceptionCaught:Match.kt$Match.Companion$e: RuntimeException</ID>
+    <ID>TooManyFunctions:BaseScreen.kt$BaseScreen : ScreenAdapter</ID>
+    <ID>TooManyFunctions:Board.kt$Board</ID>
+    <ID>TooManyFunctions:CloudController.kt$CloudController</ID>
+    <ID>TooManyFunctions:DieInfo.kt$DieInfo$Companion</ID>
+    <ID>TooManyFunctions:DieWindow.kt$DieWindow</ID>
+    <ID>TooManyFunctions:Draw.kt$com.iagothz.mergetd.ui.Draw.kt</ID>
+    <ID>TooManyFunctions:Effects.kt$Effects</ID>
+    <ID>TooManyFunctions:GameOverScreen.kt$GameOverScreen : BaseScreen</ID>
+    <ID>TooManyFunctions:Match.kt$Match</ID>
+    <ID>TooManyFunctions:MatchRenderer.kt$MatchRenderer</ID>
+    <ID>TooManyFunctions:MatchScreen.kt$MatchScreen : BaseScreen</ID>
+    <ID>TooManyFunctions:MergeTdGame.kt$MergeTdGame : Game</ID>
+    <ID>TooManyFunctions:SandboxScreen.kt$SandboxScreen : BaseScreen</ID>
+    <ID>TooManyFunctions:SaveData.kt$SaveData</ID>
+    <ID>TooManyFunctions:SettingsScreen.kt$SettingsScreen : BaseScreen</ID>
+    <ID>TooManyFunctions:Skin.kt$Skin</ID>
+    <ID>UnusedPrivateMember:MutatorsAndNewEnemiesTest.kt$MutatorsAndNewEnemiesTest$private fun Match.advance(seconds: Float)</ID>
+    <ID>UnusedPrivateProperty:MatchEventsTest.kt$MatchEventsTest$i</ID>
+  </CurrentIssues>
+</SmellBaseline>

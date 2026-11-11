@@ -19,9 +19,13 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       # gradle.properties pins org.gradle.java.home to a Windows path for local builds; the runner's JDK wins here.
-      - name: Tests
+      - name: Lint
         run: |
           chmod +x gradlew
+          ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" ktlintCheck detekt --console=plain
+
+      - name: Tests
+        run: |
           ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" :core:test :sim:test --console=plain
 
       - name: Debug APK

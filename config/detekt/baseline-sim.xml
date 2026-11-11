@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:Main.kt$fun main(args: Array&lt;String&gt;)</ID>
+    <ID>LongParameterList:Main.kt$(bot: String, map: GameMap, results: List&lt;GameResult&gt;, randomDecks: Boolean, secs: Double, levels: Int)</ID>
+    <ID>LongParameterList:Simulator.kt$Simulator$( deck: List&lt;DieType&gt;, bot: (Long) -&gt; Bot, seed: Long, map: GameMap = GameMap.DEFAULT, mode: GameMode = GameMode.NORMAL, maxWave: Int = MAX_WAVE, maxSeconds: Float = MAX_SECONDS, dieLevels: Map&lt;DieType, Int&gt; = emptyMap(), )</ID>
+    <ID>MagicNumber:Main.kt$10</ID>
+    <ID>MagicNumber:Main.kt$100</ID>
+    <ID>MagicNumber:Main.kt$15</ID>
+    <ID>MagicNumber:Main.kt$1e9</ID>
+    <ID>MagicNumber:Main.kt$20</ID>
+    <ID>MagicNumber:Main.kt$3</ID>
+    <ID>MagicNumber:Main.kt$30</ID>
+    <ID>MagicNumber:Main.kt$300</ID>
+    <ID>MagicNumber:Main.kt$5</ID>
+    <ID>MagicNumber:Main.kt$50</ID>
+    <ID>MagicNumber:Main.kt$9</ID>
+    <ID>MagicNumber:Main.kt$90</ID>
+    <ID>MagicNumber:Simulator.kt$Stats$100.0</ID>
+    <ID>ReturnCount:Bots.kt$SmartBot$override fun act(m: Match)</ID>
+  </CurrentIssues>
+</SmellBaseline>

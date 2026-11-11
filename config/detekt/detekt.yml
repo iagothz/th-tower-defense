@@ -1,0 +1,12 @@
+build:
+  maxIssues: 0
+
+style:
+  MaxLineLength:
+    active: false
+  MagicNumber:
+    excludes:
+      - '**/test/**'
+      - '**/ui/**'
+      - '**/android/**'
+      - '**/lwjgl3/**'

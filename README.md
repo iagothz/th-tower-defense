@@ -49,7 +49,18 @@ Tower defense de merge com dados, para jogar offline no Android. Feito em Kotlin
 ./gradlew :core:test :sim:test
 ```
 
-O GitHub Actions (`.github/workflows/ci.yml`) roda os testes e gera o APK de debug a cada push em `main`; o APK fica nos artefatos da execução.
+## Lint e formatação
+
+```bash
+./gradlew ktlintCheck detekt
+./gradlew ktlintFormat
+```
+
+O estilo fica em `.editorconfig` (ktlint, estilo IntelliJ, linhas até 200 colunas; as tabelas de texto não têm limite). As regras do detekt ficam em `config/detekt/detekt.yml`; os avisos que já existiam estão congelados em `config/detekt/baseline-*.xml`, então só código novo é cobrado. Para atualizar a baseline depois de corrigir avisos antigos: `./gradlew detektBaseline`.
+
+## CI
+
+O GitHub Actions (`.github/workflows/ci.yml`) roda lint, testes e gera o APK de debug a cada push em `main` e em cada pull request; o APK fica nos artefatos da execução.
 
 ## APK
 
@@ -133,3 +144,4 @@ Para a nuvem funcionar, o jogo precisa de um projeto do Play Games Services no P
 - `lwjgl3/`: launcher desktop.
 - `sim/`: simulador de balanceamento (bots e relatório).
 - `android/`: launcher Android.
+- `config/detekt/`: regras e baseline do detekt.
