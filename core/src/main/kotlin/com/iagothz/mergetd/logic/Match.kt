@@ -24,6 +24,8 @@ class Match(
     val week: Int? = null,
     /** Permanent levels from the account (see [DieLevels]); absent means 1. */
     val dieLevels: Map<DieType, Int> = emptyMap(),
+    /** A free-play board for trying things out: waves start only on request and leaks cost no life. Never saved or booked. */
+    val sandbox: Boolean = false,
 ) {
     /** What a code needs to replay this match; null for a match without a known seed. */
     val setup: MatchSetup? get() = seed?.let { MatchSetup(map, mode, it, deck, mutators) }
@@ -71,7 +73,10 @@ class Match(
     val isGameOver: Boolean get() = lives <= 0
     val buyCost: Int get() = Balance.BUY_BASE + Balance.BUY_STEP * purchases
     /** Seconds until the next wave starts; 0 while a wave is running. */
-    val waveCountdown: Float get() = if (inWave) 0f else countdown
+    val waveCountdown: Float get() = if (inWave || sandbox) 0f else countdown
+
+    /** Whether a wave is still spawning or has enemies on the path. */
+    val waveRunning: Boolean get() = inWave
 
     fun powerLevel(t: DieType): Int = powerLevels[t] ?: 1
 
@@ -225,6 +230,44 @@ class Match(
     /** Spawns one [kind] exactly as the current wave would. */
     internal fun debugSpawn(kind: EnemyKind) = spawn(kind)
 
+    // Sandbox: the board is the player's to arrange, and waves come when asked for.
+
+    /** Puts a die of [type] with [pips] (clamped to 1..MAX_PIPS) on [cell], replacing whatever was there. Sandbox only. */
+    fun place(cell: Cell, type: DieType, pips: Int): Boolean {
+        if (!sandbox) return false
+        board[cell] = Die(type, pips.coerceIn(1, Balance.MAX_PIPS))
+        events += GameEvent.DieBought(cell)
+        return true
+    }
+
+    /** Takes the die off [cell]. Sandbox only. */
+    fun remove(cell: Cell): Boolean {
+        if (!sandbox || board[cell] == null) return false
+        board[cell] = null
+        return true
+    }
+
+    /** Empties the board. Sandbox only. */
+    fun clearBoard() {
+        if (!sandbox) return
+        for (c in board.cells()) board[c] = null
+        trapList.clear()
+    }
+
+    /** Sends wave [n] right now, dropping whatever is on the path. Sandbox only. */
+    fun sendWave(n: Int) {
+        if (!sandbox) return
+        debugStartWave(n.coerceAtLeast(1))
+    }
+
+    /** Stops the wave: clears the path and the queue without paying rewards. Sandbox only. */
+    fun stopWave() {
+        if (!sandbox) return
+        enemyList.clear()
+        spawnQueue.clear()
+        inWave = false
+    }
+
     // Desktop dev-mode cheats (never wired in the Android build).
 
     internal fun devNextWave() = debugStartWave(wave + 1)
@@ -276,6 +319,7 @@ class Match(
 
     private fun updateSpawner(dt: Float) {
         if (!inWave) {
+            if (sandbox) return
             countdown -= dt
             if (countdown <= 0f) startWave(wave + 1)
             return
@@ -334,7 +378,7 @@ class Match(
             e.distance += e.speed() * dt
             if (e.distance >= path.length) {
                 // A Treasure that gets away costs nothing but the reward.
-                if (e.kind.lifeDamage > 0) {
+                if (e.kind.lifeDamage > 0 && !sandbox) {
                     lives = maxOf(0, lives - e.kind.lifeDamage)
                     events += GameEvent.Leaked(e.kind)
                 }

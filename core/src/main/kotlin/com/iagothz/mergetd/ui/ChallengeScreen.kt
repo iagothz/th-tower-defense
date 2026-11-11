@@ -9,7 +9,7 @@ import com.iagothz.mergetd.logic.Mutator
 import com.iagothz.mergetd.logic.Vec2
 import com.iagothz.mergetd.logic.WeeklyChallenge
 
-/** The two fixed runs everyone shares: today's challenge and this week's, each with its own record. */
+/** The two fixed runs everyone shares (today's challenge and this week's, each with its own record), plus the sandbox. */
 class ChallengeScreen(game: MergeTdGame) : BaseScreen(game) {
     override val tab get() = Tab.CHALLENGES
 
@@ -21,14 +21,17 @@ class ChallengeScreen(game: MergeTdGame) : BaseScreen(game) {
     private val weeklyCard = Rectangle(24f, 380f, 672f, 350f)
     private val playDaily = Button(Rectangle(dailyCard.x + 24f, dailyCard.y + 24f, 624f, 80f), S["Jogar"])
     private val playWeekly = Button(Rectangle(weeklyCard.x + 24f, weeklyCard.y + 24f, 624f, 80f), S["Jogar"])
-    private val buttons = listOf(playDaily, playWeekly)
+    private val sandboxCard = Rectangle(24f, 140f, 672f, 216f)
+    private val playSandbox = Button(Rectangle(sandboxCard.x + 24f, sandboxCard.y + 20f, 624f, 70f), S["Jogar"], color = SANDBOX_GREEN)
+    private val buttons = listOf(playDaily, playWeekly, playSandbox)
     private val tap = Tap<Button>()
 
     override fun draw(delta: Float) {
         buttons.forEach { it.pressed = tap.current === it }
         val shapes = game.shapes
         shapes.begin(ShapeRenderer.ShapeType.Filled)
-        for ((card, accent) in listOf(dailyCard to Color(0.55f, 0.30f, 0.75f, 1f), weeklyCard to Color(0.75f, 0.35f, 0.30f, 1f))) {
+        val cards = listOf(dailyCard to Color(0.55f, 0.30f, 0.75f, 1f), weeklyCard to Color(0.75f, 0.35f, 0.30f, 1f), sandboxCard to SANDBOX_GREEN)
+        for ((card, accent) in cards) {
             shapes.color = Skin.SHADOW
             shapes.roundedRect(card.x + 3f, card.y - 8f, card.width, card.height, 22f)
             shapes.color = Skin.PANEL
@@ -62,6 +65,12 @@ class ChallengeScreen(game: MergeTdGame) : BaseScreen(game) {
         // Wrapped: two mutators with their descriptions don't fit one line in English.
         game.tinyFont.draw(game.batch, S.f("Mutadores ×%s: %s", DieInfo.num(Mutator.multiplier(weekly.mutators)), names), weeklyCard.x + 28f, weeklyCard.y + 162f, weeklyCard.width - 56f, Align.left, true)
         game.tinyFont.color = Color.WHITE
+        // Sandbox.
+        game.batch.textLeft(game.font, S["Sandbox"], sandboxCard.x + 28f, sandboxCard.y + sandboxCard.height - 40f)
+        game.tinyFont.color = Skin.MUTED
+        game.tinyFont.draw(game.batch, S["Monte o tabuleiro como quiser: qualquer dado, qualquer pip, ondas quando pedir. Não conta para recordes."],
+            sandboxCard.x + 28f, sandboxCard.y + sandboxCard.height - 70f, sandboxCard.width - 56f, Align.left, true)
+        game.tinyFont.color = Color.WHITE
         buttons.forEach { it.drawText(game.batch, game.font) }
         game.batch.end()
     }
@@ -76,6 +85,11 @@ class ChallengeScreen(game: MergeTdGame) : BaseScreen(game) {
         when (tap.release(buttonAt(p))) {
             playDaily -> game.startDaily()
             playWeekly -> game.startWeekly()
+            playSandbox -> game.startSandbox()
         }
+    }
+
+    private companion object {
+        val SANDBOX_GREEN = Color(0.30f, 0.62f, 0.42f, 1f)
     }
 }

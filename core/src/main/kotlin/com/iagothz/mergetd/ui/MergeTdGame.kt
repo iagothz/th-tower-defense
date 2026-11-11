@@ -125,6 +125,9 @@ class MergeTdGame(val devMode: Boolean = false, private val shareText: ((String)
 
     fun showChallenges() = switchTo(ChallengeScreen(this))
 
+    /** Free play: any die at any pips, waves on request; nothing is saved or booked. */
+    fun startSandbox() = switchTo(SandboxScreen(this))
+
     /** This week's fixed run with its two mutators, booked against the week's score. */
     fun startWeekly() {
         save.clearMatch()

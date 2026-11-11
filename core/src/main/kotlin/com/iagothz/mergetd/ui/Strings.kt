@@ -112,6 +112,10 @@ object S {
         "Pontuação %d (onda %d × mutadores)" to "Score %d (wave %d × mutators)", "pontuação %d" to "score %d",
         "recorde: pontuação %d" to "best: score %d", "Desafios" to "Challenges", "Desafio semanal" to "Weekly challenge",
         "Semana de %s" to "Week of %s",
+        "Sandbox" to "Sandbox", "Monte o tabuleiro como quiser: qualquer dado, qualquer pip, ondas quando pedir. Não conta para recordes." to
+            "Build the board any way you like: any die, any pips, waves when you ask. Doesn't count for records.",
+        "Apagar" to "Erase", "Onda" to "Wave", "Chefe" to "Boss", "Parar" to "Stop", "Limpar" to "Clear",
+        "Escolha o dado" to "Pick a die", "Toque numa casa vazia para pôr %s" to "Tap an empty cell to place %s",
         "Compartilhar" to "Share", "Copiado!" to "Copied!",
         "Cheguei à onda %d no mapa %s (%s) no Merge TD." to "I reached wave %d on %s (%s) in Merge TD.",
         "Nv. %d" to "Lv. %d", "Bloqueado" to "Locked", "Abre no nível de conta %d" to "Opens at account level %d",
