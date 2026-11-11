@@ -3,9 +3,11 @@ package com.iagothz.mergetd.ui
 import com.badlogic.gdx.graphics.Color
 import com.iagothz.mergetd.logic.DieType
 import com.iagothz.mergetd.logic.EnemyKind
+import com.iagothz.mergetd.logic.Synergy
 import kotlin.math.sqrt
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class SkinTest {
@@ -38,6 +40,22 @@ class SkinTest {
     @Test
     fun everyDieHasAGlyph() {
         for (t in DieType.entries) assertTrue(DieGlyph.of(t).isNotEmpty(), "$t has no glyph")
+    }
+
+    @Test
+    fun theFireDieIsCalledIgnisInEveryLanguage() {
+        val before = S.language
+        try {
+            for (lang in listOf(Language.PT, Language.EN)) {
+                S.language = lang
+                assertEquals("Ignis", Skin.label(DieType.FIRE), "$lang")
+                assertEquals("Ignis", Skin.fullName(DieType.FIRE), "$lang")
+                val texts = EnemyKind.entries.map { Tips.forKiller(it) } + Synergy.entries.map { S[it.description] }
+                for (text in texts) assertFalse(Regex("\\b(Fogo|Fire)\\b").containsMatchIn(text), "$lang: $text")
+            }
+        } finally {
+            S.language = before
+        }
     }
 
     @Test

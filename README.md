@@ -23,7 +23,7 @@ Tower defense de merge com dados, para jogar offline no Android. Feito em Kotlin
 - **Elite** (grande, cura a escolta, vale 30 SP) a cada três ondas e **Tesouro** (rápido, não tira vida, vale 60 SP) a cada quatro, a partir da onda 6.
 - **Mutadores** na tela Partida (Velozes, Resistentes, Pobres, Enxame): cada um multiplica a pontuação (onda × mutadores). O **Desafio semanal** fixa mapa, deck e dois mutadores para a semana.
 - **Desafio do dia**: o dia sorteia mapa, 5 dados e a seed; o recorde é por dia e os últimos ficam em **Estatísticas**, junto com totais, recorde por mapa e melhores decks.
-- **Sinergias**: oito pares de dados (Fogo+Vento, Gelo+Terremoto, Veneno+Maldição, Luz+Crítico, Elétrico+Tempo, Ferro+Sniper, Caçador+Vampiro, Gravidade+Armadilha) ligam um bônus enquanto os dois estão no tabuleiro. Todo dado ganha uma habilidade própria em **7 pips**.
+- **Sinergias**: oito pares de dados (Ignis+Vento, Gelo+Terremoto, Veneno+Maldição, Luz+Crítico, Elétrico+Tempo, Ferro+Sniper, Caçador+Vampiro, Gravidade+Armadilha) ligam um bônus enquanto os dois estão no tabuleiro. Todo dado ganha uma habilidade própria em **7 pips**.
 - **Modos** na tela Partida: Normal, Boss Rush, Sobrevivência e Rápido, com recorde por mapa e modo.
 - Na tela **Partida**, escolha entre 4 caminhos (Ferradura, Serpente, Anel e Reta), com dificuldade e recorde próprios.
 - Todas as telas têm o mesmo cabeçalho; as subtelas (Estatísticas, Conquistas, Histórico, Inimigos) voltam pela seta no canto de cima, e o botão voltar do Android navega pelo jogo (fecha janelas, pausa, sobe um nível) e só fecha o jogo no Início. Em Config, Vibração, Reduzir movimento e Texto grande são interruptores.

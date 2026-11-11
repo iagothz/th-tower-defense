@@ -20,6 +20,7 @@ A versão fica em `gradle.properties` (`appVersion` e `appVersionCode`); o APK e
 - Decisões de arquitetura registradas em `docs/adr/`.
 
 ### Alterado
+- O dado de fogo agora se chama Ignis, nos dois idiomas.
 - Cartões de missão com ícone, barra com contagem e selo de XP.
 - O Play Games só inicializa com a nuvem ligada.
 - Montagem e fechamento da partida saíram das telas para a camada de aplicação, com testes.

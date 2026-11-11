@@ -104,7 +104,7 @@ object Skin {
     )
 
     private val labels = mapOf(
-        DieType.FIRE to "Fogo",
+        DieType.FIRE to "Ignis",
         DieType.ICE to "Gelo",
         DieType.POISON to "Veneno",
         DieType.ELECTRIC to "Elétrico",

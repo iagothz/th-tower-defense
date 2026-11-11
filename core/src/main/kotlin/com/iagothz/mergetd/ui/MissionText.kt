@@ -3,7 +3,7 @@ package com.iagothz.mergetd.ui
 import com.iagothz.mergetd.logic.Mission
 import com.iagothz.mergetd.logic.MissionKind
 
-/** The mission sentence in the current language: "Mate 40 inimigos com Fogo". */
+/** The mission sentence in the current language: "Mate 40 inimigos com Ignis". */
 fun Mission.text(): String {
     val what = when (kind) {
         MissionKind.KILLS_WITH -> Skin.fullName(type!!)

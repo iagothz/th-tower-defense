@@ -22,7 +22,7 @@ Categoria: Jogos › Estratégia. Classificação: sem violência realista, sem 
 
 Merge TD é um tower defense de juntar dados, para jogar sem internet.
 
-Compre dados com SP, arraste dois iguais um sobre o outro e eles viram um dado mais forte de tipo sorteado do seu deck. Cada tipo ataca de um jeito: Fogo explode em área, Gelo congela, Elétrico salta entre inimigos, Sniper mira o mais resistente, Veneno acumula, e por aí vai. Chegue a 7 pips e o dado ganha uma habilidade só dele.
+Compre dados com SP, arraste dois iguais um sobre o outro e eles viram um dado mais forte de tipo sorteado do seu deck. Cada tipo ataca de um jeito: Ignis, o gato mago do fogo, explode em área, Gelo congela, Elétrico salta entre inimigos, Sniper mira o mais resistente, Veneno acumula, e por aí vai. Chegue a 7 pips e o dado ganha uma habilidade só dele.
 
 • 25 tipos de dado e 8 sinergias entre pares.
 • 4 mapas com caminhos e climas diferentes.
@@ -54,7 +54,7 @@ Salvamento na nuvem com o Google Play Games. Desbloqueio de dados por nível e c
 
 Merge TD is a dice-merging tower defense you can play offline.
 
-Buy dice with SP, drag two matching dice together and they become a stronger die of a random type from your deck. Every type attacks its own way: Fire splashes, Ice freezes, Electric chains between enemies, Sniper picks the toughest one, Poison stacks, and so on. Reach 7 pips and the die gets an ability of its own.
+Buy dice with SP, drag two matching dice together and they become a stronger die of a random type from your deck. Every type attacks its own way: Ignis the fire wizard cat splashes, Ice freezes, Electric chains between enemies, Sniper picks the toughest one, Poison stacks, and so on. Reach 7 pips and the die gets an ability of its own.
 
 • 25 dice types and 8 synergies between pairs.
 • 4 maps with their own paths and weather.

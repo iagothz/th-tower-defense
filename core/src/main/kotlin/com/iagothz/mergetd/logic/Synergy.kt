@@ -2,7 +2,7 @@ package com.iagothz.mergetd.logic
 
 /** A bonus that switches on while both dice types stand on the board (not silenced). */
 enum class Synergy(val a: DieType, val b: DieType, val title: String, val description: String) {
-    BLAZE(DieType.FIRE, DieType.WIND, "Incêndio", "raio da explosão do Fogo +50%"),
+    BLAZE(DieType.FIRE, DieType.WIND, "Incêndio", "raio da explosão do Ignis +50%"),
     SHATTER(DieType.ICE, DieType.QUAKE, "Estilhaço", "Terremoto dá dano ×2 em inimigos lentos"),
     PLAGUE(DieType.POISON, DieType.CURSE, "Praga", "veneno +50% de dano por segundo"),
     DAZZLE(DieType.LIGHT, DieType.CRIT, "Ofuscar", "+10% de chance de crítico"),
